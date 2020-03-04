@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MAU.Net\MAU.Net.csproj" />
+    <ProjectReference Include="..\MAU.Net\MAU.csproj" />
   </ItemGroup>
 
 </Project>
