@@ -6,4 +6,10 @@
     <AssemblyName>MAU</AssemblyName>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Reference Include="WebSocketNet">
+      <HintPath>..\..\WebSocket.Net\WebSocketNet\bin\Release\netstandard2.0\WebSocketNet.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
