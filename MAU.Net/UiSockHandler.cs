@@ -11,23 +11,38 @@ namespace MAU
 {
 	public class UiSockHandler : WebSocketBehavior
 	{
+		public enum RequestType
+		{
+			None = 0,
+			GetEvents = 1,
+			EventCallback = 2,
+		}
+
 		public static bool Finished = false;
 
 		protected override void OnOpen()
 		{
 			Debug.WriteLine("OPENED");
-			var ret = new JObject
-			{
-				{ "message", "Connected" }
-			};
-			Send(ret.ToString());
-			Finished = true;
 		}
 
 		protected override void OnMessage(MessageEventArgs e)
 		{
 			Debug.WriteLine(e.Data);
-			Send("GG");
+
+			JObject jsonData = JObject.Parse(e.Data);
+			int orderId = jsonData["orderId"].Value<int>();
+			var requestType = (RequestType)jsonData["requestType"].Value<int>();
+			Debug.WriteLine($"order => {orderId}, Type => {requestType:G}");
+
+			Finished = true;
+
+			var ret = new JObject
+			{
+				{ "orderId", orderId },
+				{ "uiElementId", "Connected" },
+				{ "message", "Connected" }
+			};
+			Send(ret.ToString());
 		}
 	}
 }

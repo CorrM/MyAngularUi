@@ -17,6 +17,7 @@ export class UiElementDirective implements OnInit {
 
     ngOnInit() {
         this.UiService.UiElements.set(this.ElementId, this.el);
+        this.UiService.GetEvents(this.ElementId);
     }
 
     @HostListener('click')
