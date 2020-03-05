@@ -7,8 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="WebSocketNet">
-      <HintPath>..\..\WebSocket.Net\WebSocketNet\bin\Release\netstandard2.0\WebSocketNet.dll</HintPath>
+      <HintPath>..\..\WebSocket.Net\WebSocketNet\bin\Debug\netstandard2.0\WebSocketNet.dll</HintPath>
     </Reference>
   </ItemGroup>
 
