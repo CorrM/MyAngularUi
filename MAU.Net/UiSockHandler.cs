@@ -34,8 +34,6 @@ namespace MAU
 			var requestType = (RequestType)jsonData["requestType"].Value<int>();
 			Debug.WriteLine($"order => {orderId}, Type => {requestType:G}");
 
-			Finished = true;
-
 			var ret = new JObject
 			{
 				{ "orderId", orderId },
@@ -43,6 +41,8 @@ namespace MAU
 				{ "message", "Connected" }
 			};
 			Send(ret.ToString());
+
+			Finished = true;
 		}
 	}
 }
