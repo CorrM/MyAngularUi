@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-import { MyAngularUiModule } from 'my-angular-ui'
+import { MyAngularUiModule } from './my-angular-ui/my-angular-ui.module';
 
 import { AppComponent } from './app.component';
 

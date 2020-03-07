@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { MyAngularUiService } from 'my-angular-ui'
+import { MyAngularUiService } from './my-angular-ui/my-angular-ui.service';
 
 
 @Component({

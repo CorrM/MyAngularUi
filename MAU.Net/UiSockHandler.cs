@@ -28,6 +28,7 @@ namespace MAU
 		protected override void OnMessage(MessageEventArgs e)
 		{
 			Debug.WriteLine(e.Data);
+			Finished = true;
 
 			JObject jsonData = JObject.Parse(e.Data);
 			int orderId = jsonData["orderId"].Value<int>();
@@ -42,7 +43,6 @@ namespace MAU
 			};
 			Send(ret.ToString());
 
-			Finished = true;
 		}
 	}
 }

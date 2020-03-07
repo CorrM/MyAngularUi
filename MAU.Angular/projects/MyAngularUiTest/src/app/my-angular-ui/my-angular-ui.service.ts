@@ -1,6 +1,9 @@
-import { Injectable, ElementRef } from '@angular/core';
+import { Injectable, ElementRef, Injector } from '@angular/core';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { UtilsService } from './utils.service';
+import { Subject } from 'rxjs';
+
+export let AppInjector: Injector;
 
 enum RequestType {
     None = 0,
@@ -12,23 +15,26 @@ enum RequestType {
     providedIn: 'root'
 })
 export class MyAngularUiService {
-    private reconnectTime: number = 2;
-    private eventsTimerId;
-    private subject: WebSocketSubject<unknown>;
-    private orders: Map<number, any>;
+    private _connected: boolean = false;
+    private _reconnectTime: number = 2;
+    private _eventsTimerId;
+    private _subject: WebSocketSubject<any>;
+    private _orders: Map<number, any>;
 
     public UiElements: Map<string, ElementRef>;
     public UiElementEvents: Map<string, string[]>;
     public Port: number;
 
-    constructor(private utils: UtilsService) {
+    constructor(private utils: UtilsService, private injector: Injector) {
         this.UiElements = new Map<string, ElementRef>();
         this.UiElementEvents = new Map<string, string[]>();
-        this.orders = new Map<number, any>();
+        this._orders = new Map<number, any>();
+
+        AppInjector = this.injector;
     }
 
     public Start(port: number): void {
-        if (this.subject) {
+        if (this._subject) {
             return;
         }
 
@@ -36,97 +42,109 @@ export class MyAngularUiService {
         this.Port = port;
         this.Connect();
 
-        // Get
-        this.eventsTimerId = setInterval(() => {
-            this.UiElementEvents.forEach(async (value: string[], key: string) => {
-                if (!value) {
-                    this.UiElementEvents.set(key, await this.GetEvents(key));
-                }
-            });
-        }, 3000);
+        // Get handled events
+        // this._eventsTimerId = setInterval(() => {
+        //     this.UiElementEvents.forEach((value: string[], key: string) => {
+        //         if (value.length == 0) {
+        //             this.UiElementEvents.set(key, this.GetEvents(key));
+        //         }
+        //     });
+        // }, 3000);
     }
 
     public Stop(): void {
-        clearInterval(this.eventsTimerId);
+        clearInterval(this._eventsTimerId);
     }
 
     private Connect(): void {
-        this.subject = webSocket(`ws://localhost:${this.Port}/UiHandler`);
-        this.subject.subscribe(
-            msg => this.OnMessage(msg),
-            err => this.OnError(err),
+        this._subject = webSocket({
+            url: `ws://localhost:${this.Port}/UiHandler`,
+            openObserver: { next: val => { this._connected = true; console.log("opened"); } }
+        });
+        this._subject.subscribe(
+            msg => () => this.OnMessage(msg),
+            err => () => this.OnError(err),
             () => this.OnClose()
         );
     }
 
-    public async SendData(uiElementId: string, requestType: RequestType, data: any): Promise<number> {
-        return new Promise<number>(() => {
-            console.log(`SendData Called.`);
-
-            // Check
-            if (!this.subject) {
-                return -1;
-            }
-            if (!this.UiElements.has(uiElementId)) {
-                return -1;
-            }
-
-            // Get unique orderid
-            let orderId: number = this.utils.GetRandomInt(5000);
-            while (this.orders.has(orderId)) {
-                orderId = this.utils.GetRandomInt(5000);
-            }
-
-            console.log(`Send new order ${orderId}`);
-
-            // Send
-            this.subject.next({
-                orderId: orderId,
-                requestType: requestType,
-                uiElementId: uiElementId,
-                data: !data ? {} : data
-            });
-            return orderId;
-        });
+    public AddElement(uiElementId: string, el: ElementRef) {
+        this.UiElements.set(uiElementId, el);
+        this.UiElementEvents.set(uiElementId, []);
     }
 
-    public SendEventCallback(uiElementId: string, eventName: string, data: any): Promise<number> {
+    public SendData(uiElementId: string, requestType: RequestType, data: any): number {
+        console.log(`SendData Called.`);
+
+        if (this._subject.closed) {
+            console.log(`SendData Can't send to closed socket.`);
+            return -1;
+        }
+
+        // Check
+        if (!this._subject) {
+            return -1;
+        }
+        if (!this.UiElements.has(uiElementId)) {
+            return -1;
+        }
+
+        // Get unique orderid
+        let orderId: number = this.utils.GetRandomInt(5000);
+        while (this._orders.has(orderId)) {
+            orderId = this.utils.GetRandomInt(5000);
+        }
+
+        console.log(`Send new order ${orderId}`);
+
+        // Send
+        this._subject.next({
+            orderId: orderId,
+            requestType: requestType,
+            uiElementId: uiElementId,
+            data: !data ? {} : data
+        });
+        return orderId;
+    }
+
+    public SendEventCallback(uiElementId: string, eventName: string, data: any): number {
         return this.SendData(uiElementId, RequestType.EventCallback, { eventName: eventName, data: data });
     }
 
-    private async GetEvents(uiElementId: string): Promise<string[]> {
+    private GetEvents(uiElementId: string): string[] {
         // Send request to get handled events in .NET
-        let orderId: number = await this.SendData(uiElementId, RequestType.GetEvents, {});
+        let orderId: number = this.SendData(uiElementId, RequestType.GetEvents, {});
+
+        if (orderId == -1) {
+            return null;
+        }
 
         // Get response
-        let data = await this.GetMessage(orderId);
+        let data = this.GetMessage(orderId);
 
+        if (!data) {
+            return [];
+        }
         console.log(`Data Recevied ${data}`);
-
         return data["events"];
     }
 
-    private GetMessage(orderId: number): Promise<any> {
-        return new Promise<any>(async () => {
-            while (this.orders) {
-                if (this.orders.has(orderId)) {
-                    let retData = this.orders.get(orderId);
-                    this.orders.delete(orderId);
+    private GetMessage(orderId: number): any {
+        if (this._orders.has(orderId)) {
+            let retData = this._orders.get(orderId);
+            this._orders.delete(orderId);
 
-                    return retData;
-                }
-                await this.utils.Sleep(8);
-            }
+            return retData;
+        }
 
-            return null;
-        });
+        return null;
     }
 
     private OnMessage(msg: any): void {
         let orderId: number = msg["orderId"];
 
-        if (this.orders.has(orderId)) {
-            this.orders.set(orderId, msg);
+        if (this._orders.has(orderId)) {
+            this._orders.set(orderId, msg);
         } else {
             console.log(`Unhandled order ${orderId} !!`)
         }
@@ -135,12 +153,14 @@ export class MyAngularUiService {
     }
 
     private OnError(err: any): void {
-        console.log(`Error: Reconnecting after ${this.reconnectTime} sec.`);
-        setTimeout(() => this.Connect(), this.reconnectTime * 1000);
+        this._connected = false;
+        console.log(`Error: Reconnecting after ${this._reconnectTime} sec.`);
+        setTimeout(() => this.Connect(), this._reconnectTime * 1000);
     }
 
     private OnClose(): void {
-        console.log(`Closed: Reconnecting after ${this.reconnectTime} sec.`);
-        setTimeout(() => this.Connect(), this.reconnectTime * 1000);
+        this._connected = false;
+        console.log(`Closed: Reconnecting after ${this._reconnectTime} sec.`);
+        setTimeout(() => this.Connect(), this._reconnectTime * 1000);
     }
 }

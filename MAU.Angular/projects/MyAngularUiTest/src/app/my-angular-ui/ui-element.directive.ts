@@ -1,6 +1,5 @@
-import { Directive, ElementRef, HostListener, Input, OnInit } from '@angular/core';
-import { MyAngularUiService } from './my-angular-ui.service';
-import { AppInjector } from './my-angular-ui.module';
+import { Directive, ElementRef, Input, OnInit, HostListener } from '@angular/core';
+import { MyAngularUiService, AppInjector } from './my-angular-ui.service';
 
 @Directive({
     selector: '[mauUiElement]'
@@ -16,11 +15,11 @@ export class UiElementDirective implements OnInit {
     }
 
     ngOnInit() {
-        this.UiService.UiElements.set(this.ElementId, this.el);
+        this.UiService.AddElement(this.ElementId, this.el);
     }
 
-    @HostListener('click')
-    onMouseEnter() {
-        console.log(this.UiService);
+    @HostListener("*")
+    OnEvent(event: Event) {
+        console.log(event);
     }
 }
