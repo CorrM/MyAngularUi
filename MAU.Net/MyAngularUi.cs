@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using WebSocketNet;
@@ -9,6 +11,7 @@ namespace MAU
 {
 	public class MyAngularUi : IDisposable
 	{
+		private static Dictionary<string, UiElement> UiElements { get; } = new Dictionary<string, UiElement>();
 		public WebSocketServer WebSocket { get; private set; }
 		public int Port { get; }
 
@@ -24,6 +27,28 @@ namespace MAU
 
 			await Task.Run(WebSocket.Start);
 			return WebSocket.IsListening;
+		}
+
+		public static void RegisterUi(UiElement element)
+		{
+			UiElements.Add(element.Id, element);
+		}
+		public static void RegisterUi(ICollection<UiElement> element)
+		{
+			foreach (UiElement uiElement in element)
+				UiElements.Add(uiElement.Id, uiElement);
+		}
+
+		public static bool GetUiElement(string elementId, out UiElement element)
+		{
+			if (UiElements.ContainsKey(elementId))
+			{
+				element = UiElements[elementId];
+				return true;
+			}
+
+			element = null;
+			return false;
 		}
 
 		public void Wait()

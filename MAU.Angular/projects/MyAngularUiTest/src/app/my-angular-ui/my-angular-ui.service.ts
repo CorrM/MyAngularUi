@@ -2,6 +2,7 @@ import { Injectable, ElementRef, Injector } from '@angular/core';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { UtilsService } from './utils.service';
 import { Subject } from 'rxjs';
+import { EventManager } from '@angular/platform-browser';
 
 export let AppInjector: Injector;
 
@@ -16,7 +17,7 @@ enum RequestType {
 })
 export class MyAngularUiService {
     private _connected: boolean = false;
-    private _reconnectTime: number = 2;
+    private static reconnectTime: number = 2;
     private _eventsTimerId;
     private _subject: WebSocketSubject<any>;
     private _orders: Map<number, any>;
@@ -25,7 +26,7 @@ export class MyAngularUiService {
     public UiElementEvents: Map<string, string[]>;
     public Port: number;
 
-    constructor(private utils: UtilsService, private injector: Injector) {
+    constructor(private utils: UtilsService, private injector: Injector, private eventManager: EventManager) {
         this.UiElements = new Map<string, ElementRef>();
         this.UiElementEvents = new Map<string, string[]>();
         this._orders = new Map<number, any>();
@@ -43,13 +44,7 @@ export class MyAngularUiService {
         this.Connect();
 
         // Get handled events
-        // this._eventsTimerId = setInterval(() => {
-        //     this.UiElementEvents.forEach((value: string[], key: string) => {
-        //         if (value.length == 0) {
-        //             this.UiElementEvents.set(key, this.GetEvents(key));
-        //         }
-        //     });
-        // }, 3000);
+        this._eventsTimerId = setInterval(() => this.InitEvents(), 3000);
     }
 
     public Stop(): void {
@@ -62,8 +57,8 @@ export class MyAngularUiService {
             openObserver: { next: val => { this._connected = true; console.log("opened"); } }
         });
         this._subject.subscribe(
-            msg => () => this.OnMessage(msg),
-            err => () => this.OnError(err),
+            msg => this.OnMessage(msg),
+            err => this.OnError(err),
             () => this.OnClose()
         );
     }
@@ -74,14 +69,11 @@ export class MyAngularUiService {
     }
 
     public SendData(uiElementId: string, requestType: RequestType, data: any): number {
-        console.log(`SendData Called.`);
-
-        if (this._subject.closed) {
+        // Check
+        if (!this._connected) {
             console.log(`SendData Can't send to closed socket.`);
             return -1;
         }
-
-        // Check
         if (!this._subject) {
             return -1;
         }
@@ -94,6 +86,7 @@ export class MyAngularUiService {
         while (this._orders.has(orderId)) {
             orderId = this.utils.GetRandomInt(5000);
         }
+        this._orders.set(orderId, null);
 
         console.log(`Send new order ${orderId}`);
 
@@ -111,12 +104,28 @@ export class MyAngularUiService {
         return this.SendData(uiElementId, RequestType.EventCallback, { eventName: eventName, data: data });
     }
 
+    private InitEvents(): void {
+        this.UiElementEvents.forEach((events: string[], uiElementId: string) => {
+            if (events.length == 0) {
+                // Set events
+                this.UiElementEvents.set(uiElementId, this.GetEvents(uiElementId));
+
+                // Set event handler
+                events = this.UiElementEvents.get(uiElementId);
+                events.forEach((eventName: string) => {
+                    let domObj = this.UiElements.get(uiElementId).nativeElement;
+                    this.eventManager.addEventListener(domObj, eventName, (event: Event) => this.FireEvent(uiElementId, event));
+                });
+            }
+        });
+    }
+
     private GetEvents(uiElementId: string): string[] {
         // Send request to get handled events in .NET
         let orderId: number = this.SendData(uiElementId, RequestType.GetEvents, {});
 
         if (orderId == -1) {
-            return null;
+            return [];
         }
 
         // Get response
@@ -125,8 +134,14 @@ export class MyAngularUiService {
         if (!data) {
             return [];
         }
-        console.log(`Data Recevied ${data}`);
+
+        console.log("Data Recevied" + data);
         return data["events"];
+    }
+
+    private FireEvent(uiElementId: string, event: Event): void {
+        let eventName: string = event.type;
+        this.SendEventCallback(uiElementId, eventName, {});
     }
 
     private GetMessage(orderId: number): any {
@@ -154,13 +169,13 @@ export class MyAngularUiService {
 
     private OnError(err: any): void {
         this._connected = false;
-        console.log(`Error: Reconnecting after ${this._reconnectTime} sec.`);
-        setTimeout(() => this.Connect(), this._reconnectTime * 1000);
+        console.log(`Error: Reconnecting after ${MyAngularUiService.reconnectTime} sec.`);
+        setTimeout(() => this.Connect(), MyAngularUiService.reconnectTime * 1000);
     }
 
     private OnClose(): void {
         this._connected = false;
-        console.log(`Closed: Reconnecting after ${this._reconnectTime} sec.`);
-        setTimeout(() => this.Connect(), this._reconnectTime * 1000);
+        console.log(`Closed: Reconnecting after ${MyAngularUiService.reconnectTime} sec.`);
+        setTimeout(() => this.Connect(), MyAngularUiService.reconnectTime * 1000);
     }
 }

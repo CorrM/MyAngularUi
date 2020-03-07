@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MAU", "MAU.Net\MAU.csproj", "{CCFB8F7E-DE3D-4DE7-A03D-BC7F3677CB52}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MAU", "MAU.Net\MAU.csproj", "{CCFB8F7E-DE3D-4DE7-A03D-BC7F3677CB52}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MAU.Test", "MAU.Test\MAU.Test.csproj", "{BCEFEAA9-7C79-4F06-ADD8-5DF2880494AD}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MAU.Example", "MAU.Example\MAU.Example.csproj", "{F39F35A8-A9F3-4A6E-A6CB-342A826756D5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{CCFB8F7E-DE3D-4DE7-A03D-BC7F3677CB52}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CCFB8F7E-DE3D-4DE7-A03D-BC7F3677CB52}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CCFB8F7E-DE3D-4DE7-A03D-BC7F3677CB52}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BCEFEAA9-7C79-4F06-ADD8-5DF2880494AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BCEFEAA9-7C79-4F06-ADD8-5DF2880494AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BCEFEAA9-7C79-4F06-ADD8-5DF2880494AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BCEFEAA9-7C79-4F06-ADD8-5DF2880494AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F39F35A8-A9F3-4A6E-A6CB-342A826756D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F39F35A8-A9F3-4A6E-A6CB-342A826756D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F39F35A8-A9F3-4A6E-A6CB-342A826756D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F39F35A8-A9F3-4A6E-A6CB-342A826756D5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

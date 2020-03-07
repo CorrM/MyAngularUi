@@ -9,10 +9,7 @@ namespace MAU.Test
 		[TestMethod]
 		public async Task ConnectTest()
 		{
-			using var ws = new MyAngularUi(3000);
-			bool serverState = await ws.Start();
-			Assert.AreEqual(true, serverState);
-			ws.Wait();
+			
 		}
 	}
 }
