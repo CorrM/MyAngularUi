@@ -70,7 +70,7 @@ namespace MAU
 			});
 		}
 
-		internal static Task Send(int orderId, string uiElementId, RequestType requestType, JObject data = default)
+		internal static Task Send(string uiElementId, RequestType requestType, JObject data = default)
 		{
 			if (_instance == null)
 				throw new NullReferenceException("Create Instance First.!");
@@ -79,7 +79,6 @@ namespace MAU
 			{
 				var dSend = new JObject
 				{
-					{ "orderId", orderId },
 					{ "requestType", (int)requestType },
 					{ "uiElementId", uiElementId },
 					{ "data", data }
@@ -87,16 +86,11 @@ namespace MAU
 
 				string dataToSend = dSend.ToString(Formatting.None);
 
-				UiSockHandler.Instance.Send(dataToSend);
+				if (UiSockHandler.Instance.Send(dataToSend))
+					Debug.WriteLine($"Send > {dataToSend}");
 
-				Debug.WriteLine($"Send > {dataToSend}");
 				Debug.WriteLine("===============");
 			});
-		}
-		internal static Task Send(string uiElementId, RequestType requestType, JObject data = default)
-		{
-			int orderId = Utils.RandomInt(1, 5000);
-			return Send(orderId, uiElementId, requestType, data);
 		}
 
 		internal async Task OnMessage(MessageEventArgs e)
@@ -108,7 +102,6 @@ namespace MAU
 			var jsonData = jsonRequest["data"].Value<JObject>();
 
 			// Get request info
-			int orderId = jsonRequest["orderId"].Value<int>();
 			string uiId = jsonRequest["uiElementId"].Value<string>();
 			var requestType = (RequestType)jsonRequest["requestType"].Value<int>();
 
@@ -142,9 +135,6 @@ namespace MAU
 					uiElement.SetProp(propName, propValue);
 					break;
 
-				case RequestType.SetPropValue:
-					break;
-
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
@@ -152,7 +142,7 @@ namespace MAU
 			ret ??= new JObject();
 			
 			// Send response
-			await Send(orderId, uiId, requestType, ret);
+			await Send(uiId, requestType, ret);
 		}
 		#endregion
 

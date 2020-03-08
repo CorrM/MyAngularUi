@@ -15,24 +15,17 @@ namespace MAU.Attributes
 	public sealed class UiProperty : LocationInterceptionAspect
 	{
 		public string PropertyName { get; private set; }
+		public bool IsAttribute { get; private set; }
 
-		public UiProperty(string propertyName)
+		public UiProperty(string propertyName, bool isAttribute = true)
 		{
 			PropertyName = propertyName;
+			IsAttribute = isAttribute;
 		}
 
 		public static bool HasAttribute(PropertyInfo propertyInfo)
 		{
 			return propertyInfo.GetCustomAttributes(typeof(UiProperty), false).Any();
-		}
-
-		public override void OnGetValue(LocationInterceptionArgs args)
-		{
-			// args.SetNewValue();
-			Debug.WriteLine("OnGet");
-			// MyAngularUi.Send();
-
-			base.OnGetValue(args);
 		}
 
 		public override void OnSetValue(LocationInterceptionArgs args)
@@ -41,6 +34,7 @@ namespace MAU.Attributes
 
 			var data = new JObject
 			{
+				{"propIsAttr", IsAttribute},
 				{"propName", PropertyName},
 				{"propVal", args.Value.ToString()}
 			};

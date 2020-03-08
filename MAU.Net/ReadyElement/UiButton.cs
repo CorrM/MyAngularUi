@@ -5,8 +5,7 @@ namespace MAU.ReadyElement
 {
 	public class UiButton : UiElement
 	{
-		[UiProperty("innerText")]
-		public string Text { get; set; }
+		
 
 		public UiButton(string id) : base(id) { }
 
@@ -14,7 +13,7 @@ namespace MAU.ReadyElement
 		public void OnClick()
 		{
 			Debug.WriteLine("Click Event Called");
-			Text = "CorrM";
+			Html = "<b>CorrM</b>";
 		}
 	}
 }

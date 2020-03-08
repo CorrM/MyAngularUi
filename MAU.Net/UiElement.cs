@@ -9,10 +9,29 @@ namespace MAU
 {
 	public abstract class UiElement
 	{
-		public string Id { get; }
+		#region [ Private Proparties ]
+
 		private Dictionary<string, MethodInfo> _handledEvents { get; }
 		private Dictionary<string, PropertyInfo> _handledProps { get; }
+
+		#endregion
+
+		#region [ Public Proparties ]
+
 		public IReadOnlyCollection<string> Events => _handledEvents.Keys.ToList();
+		public string Id { get; }
+
+		#endregion
+
+		#region [ UI Proparties ]
+
+		[UiProperty("innerText", false)]
+		public string Text { get; set; }
+
+		[UiProperty("innerHTML", false)]
+		public string Html { get; set; }
+
+		#endregion
 
 		protected UiElement(string id)
 		{
@@ -55,11 +74,6 @@ namespace MAU
 		{
 			if (_handledProps.ContainsKey(propName))
 				_handledProps[propName].SetValue(this, propValue);
-		}
-		public void GetProp(string propName)
-		{
-			if (_handledProps.ContainsKey(propName))
-				_handledProps[propName].SetValue(this, "EMPTY");
 		}
 	}
 }
