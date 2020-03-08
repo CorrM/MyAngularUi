@@ -87,7 +87,7 @@ export class MyAngularUiService {
     private OnMessage(msg: any): void {
         let orderId: number = msg["orderId"];
 
-        // order mean it's will be handled in other place
+        // order mean it's will be handled in other place 
         if (this._orders.has(orderId)) {
             this._orders.set(orderId, msg);
             return;
