@@ -10,14 +10,16 @@ enum RequestType {
     None = 0,
     GetEvents = 1,
     EventCallback = 2,
+    GetPropValue = 3,
+    SetPropValue = 4
 }
 
 @Injectable({
     providedIn: 'root'
 })
 export class MyAngularUiService {
-    private _connected: boolean = false;
     private static reconnectTime: number = 2;
+    private _connected: boolean = false;
     private _eventsTimerId;
     private _subject: WebSocketSubject<any>;
     private _orders: Map<number, any>;
@@ -44,7 +46,7 @@ export class MyAngularUiService {
         this.Connect();
 
         // Get handled events
-        this._eventsTimerId = setInterval(() => this.InitEvents(), 3000);
+        this._eventsTimerId = setInterval(() => this.InitElements(), 3000);
     }
 
     public Stop(): void {
@@ -52,6 +54,8 @@ export class MyAngularUiService {
     }
 
     private Connect(): void {
+        this._orders.clear();
+
         this._subject = webSocket({
             url: `ws://localhost:${this.Port}/UiHandler`,
             openObserver: { next: val => { this._connected = true; console.log("opened"); } }
@@ -63,12 +67,9 @@ export class MyAngularUiService {
         );
     }
 
-    public AddElement(uiElementId: string, el: ElementRef) {
-        this.UiElements.set(uiElementId, el);
-        this.UiElementEvents.set(uiElementId, []);
-    }
+    //#region Send
 
-    public SendData(uiElementId: string, requestType: RequestType, data: any): number {
+    private SendData(orderId: number, uiElementId: string, requestType: RequestType, data: any): number {
         // Check
         if (!this._connected) {
             console.log(`SendData Can't send to closed socket.`);
@@ -81,11 +82,6 @@ export class MyAngularUiService {
             return -1;
         }
 
-        // Get unique orderid
-        let orderId: number = this.utils.GetRandomInt(5000);
-        while (this._orders.has(orderId)) {
-            orderId = this.utils.GetRandomInt(5000);
-        }
         this._orders.set(orderId, null);
 
         console.log(`Send new order ${orderId}`);
@@ -100,11 +96,46 @@ export class MyAngularUiService {
         return orderId;
     }
 
-    public SendEventCallback(uiElementId: string, eventName: string, data: any): number {
-        return this.SendData(uiElementId, RequestType.EventCallback, { eventName: eventName, data: data });
+    private Send(uiElementId: string, requestType: RequestType, data: any): number {
+        // Get unique orderid
+        let orderId: number = this.utils.GetRandomInt(5000);
+        while (this._orders.has(orderId)) {
+            orderId = this.utils.GetRandomInt(5000);
+        }
+
+        return this.SendData(orderId, uiElementId, requestType, data);
     }
 
-    private InitEvents(): void {
+    private SendEventCallback(uiElementId: string, eventName: string, data: any): number {
+        return this.Send(uiElementId, RequestType.EventCallback, { eventName: eventName, data: data });
+    }
+
+    private SendAndRecv(uiElementId: string, requestType: RequestType, data: any): any {
+        let orderId: number = this.Send(uiElementId, requestType, data);
+
+        if (orderId == -1) {
+            return null;
+        }
+
+        // Get response
+        let dataRet = this.GetMessage(orderId);
+
+        if (!dataRet) {
+            return null;
+        }
+
+        return dataRet["data"];
+    }
+
+    //#endregion
+
+    public AddElement(uiElementId: string, el: ElementRef) {
+        this.UiElements.set(uiElementId, el);
+        this.UiElementEvents.set(uiElementId, []);
+    }
+
+    private InitElements(): void {
+        // Events
         this.UiElementEvents.forEach((events: string[], uiElementId: string) => {
             if (events.length == 0) {
                 // Set events
@@ -121,27 +152,41 @@ export class MyAngularUiService {
     }
 
     private GetEvents(uiElementId: string): string[] {
-        // Send request to get handled events in .NET
-        let orderId: number = this.SendData(uiElementId, RequestType.GetEvents, {});
-
-        if (orderId == -1) {
-            return [];
-        }
-
-        // Get response
-        let data = this.GetMessage(orderId);
+        let data = this.SendAndRecv(uiElementId, RequestType.GetEvents, {});
 
         if (!data) {
             return [];
         }
 
-        console.log("Data Recevied" + data);
         return data["events"];
     }
 
     private FireEvent(uiElementId: string, event: Event): void {
         let eventName: string = event.type;
         this.SendEventCallback(uiElementId, eventName, {});
+    }
+
+    private GetProp(uiElementId: string, propName: string): void {
+        // Send
+        let orderId: number = this.Send(uiElementId, RequestType.GetPropValue, {});
+
+        if (orderId == -1) {
+            return;
+        }
+
+        // Get response
+        let data = this.GetMessage(orderId);
+
+        if (!data) {
+            return;
+        }
+
+        console.log("Data Recevied" + data);
+        return data["data"];
+    }
+
+    private SetProp(uiElementId: string, propName: string, propVal: string): void {
+
     }
 
     private GetMessage(orderId: number): any {
@@ -165,6 +210,7 @@ export class MyAngularUiService {
         }
 
         console.log(`Recived a new order ${orderId}`);
+        let order = this._orders.get(orderId);
     }
 
     private OnError(err: any): void {
