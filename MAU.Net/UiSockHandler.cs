@@ -20,7 +20,11 @@ namespace MAU
 			Instance ??= this;
 		}
 
-		internal new void Send(string data) => base.Send(data);
+		internal new void Send(string data)
+		{
+			if (base.ConnectionState == WebSocketState.Open)
+				base.Send(data);
+		}
 
 		protected override void OnOpen()
 		{

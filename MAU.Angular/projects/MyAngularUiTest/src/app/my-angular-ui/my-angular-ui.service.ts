@@ -36,6 +36,8 @@ export class MyAngularUiService {
         AppInjector = this.injector;
     }
 
+    //#region WebSocket
+
     public Start(port: number): void {
         if (this._subject) {
             return;
@@ -65,6 +67,60 @@ export class MyAngularUiService {
             err => this.OnError(err),
             () => this.OnClose()
         );
+    }
+
+    //#endregion
+
+    private GetOrder(orderId: number): any {
+        let retData: any = null;
+
+        // while (this._orders && retData == null) {
+        //     if (this._orders.has(orderId)) {
+        //         retData = this._orders.get(orderId);
+        //     }
+        // }
+
+        // this._orders.delete(orderId);
+        return retData;
+    }
+
+    private OnMessage(msg: any): void {
+        let orderId: number = msg["orderId"];
+
+        // order mean it's will be handled in other place
+        if (this._orders.has(orderId)) {
+            this._orders.set(orderId, msg);
+            return;
+        }
+
+        // Handle request
+        let requestType: RequestType = msg["requestType"];
+        let uiElementId: string = msg["uiElementId"];
+        let data: any = msg["data"];
+
+        switch (requestType) {
+            case RequestType.SetPropValue:
+                this.SetProp(uiElementId, data["propName"], data["propVal"]);
+                console.log(data);
+                break;
+
+            default:
+                break;
+        }
+
+        console.log(`Recived a new order ${orderId}`);
+    }
+
+    private OnError(err: any): void {
+        this._connected = false;
+        console.log(`Error: Reconnecting after ${MyAngularUiService.reconnectTime} sec.`);
+        setTimeout(() => this.Connect(), MyAngularUiService.reconnectTime * 1000);
+    }
+
+    private OnClose(): void {
+        this._connected = false;
+        console.log(`Closed: Reconnecting after ${MyAngularUiService.reconnectTime} sec.`);
+        setTimeout(() => this.Connect(), MyAngularUiService.reconnectTime * 1000);
     }
 
     //#region Send
@@ -118,7 +174,7 @@ export class MyAngularUiService {
         }
 
         // Get response
-        let dataRet = this.GetMessage(orderId);
+        let dataRet = this.GetOrder(orderId);
 
         if (!dataRet) {
             return null;
@@ -137,7 +193,7 @@ export class MyAngularUiService {
     private InitElements(): void {
         // Events
         this.UiElementEvents.forEach((events: string[], uiElementId: string) => {
-            if (events.length == 0) {
+            if (events.length == 0 && this._connected) {
                 // Set events
                 this.UiElementEvents.set(uiElementId, this.GetEvents(uiElementId));
 
@@ -167,61 +223,17 @@ export class MyAngularUiService {
     }
 
     private GetProp(uiElementId: string, propName: string): void {
-        // Send
-        let orderId: number = this.Send(uiElementId, RequestType.GetPropValue, {});
-
-        if (orderId == -1) {
-            return;
-        }
-
-        // Get response
-        let data = this.GetMessage(orderId);
+        let val = this.UiElements.get(uiElementId).nativeElement.getAttribute(propName);
+        let data = this.SendAndRecv(uiElementId, RequestType.GetPropValue, { propName: propName, propValue: val });
 
         if (!data) {
             return;
         }
 
-        console.log("Data Recevied" + data);
         return data["data"];
     }
 
     private SetProp(uiElementId: string, propName: string, propVal: string): void {
-
-    }
-
-    private GetMessage(orderId: number): any {
-        if (this._orders.has(orderId)) {
-            let retData = this._orders.get(orderId);
-            this._orders.delete(orderId);
-
-            return retData;
-        }
-
-        return null;
-    }
-
-    private OnMessage(msg: any): void {
-        let orderId: number = msg["orderId"];
-
-        if (this._orders.has(orderId)) {
-            this._orders.set(orderId, msg);
-        } else {
-            console.log(`Unhandled order ${orderId} !!`)
-        }
-
-        console.log(`Recived a new order ${orderId}`);
-        let order = this._orders.get(orderId);
-    }
-
-    private OnError(err: any): void {
-        this._connected = false;
-        console.log(`Error: Reconnecting after ${MyAngularUiService.reconnectTime} sec.`);
-        setTimeout(() => this.Connect(), MyAngularUiService.reconnectTime * 1000);
-    }
-
-    private OnClose(): void {
-        this._connected = false;
-        console.log(`Closed: Reconnecting after ${MyAngularUiService.reconnectTime} sec.`);
-        setTimeout(() => this.Connect(), MyAngularUiService.reconnectTime * 1000);
+        this.UiElements.get(uiElementId).nativeElement.setAttribute(propName, propVal);
     }
 }

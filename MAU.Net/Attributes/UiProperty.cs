@@ -14,8 +14,7 @@ namespace MAU.Attributes
 	[PSerializable]
 	public sealed class UiProperty : LocationInterceptionAspect
 	{
-		[field: PNonSerialized]
-		public string PropertyName { get; }
+		public string PropertyName { get; private set; }
 
 		public UiProperty(string propertyName)
 		{
@@ -39,11 +38,10 @@ namespace MAU.Attributes
 		public override void OnSetValue(LocationInterceptionArgs args)
 		{
 			var holder = (UiElement)args.Instance;
-			string propName = args.Binding.LocationInfo.Name;
 
 			var data = new JObject
 			{
-				{"propName", propName},
+				{"propName", PropertyName},
 				{"propVal", args.Value.ToString()}
 			};
 

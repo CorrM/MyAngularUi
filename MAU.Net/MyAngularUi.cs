@@ -86,10 +86,11 @@ namespace MAU
 				};
 
 				string dataToSend = dSend.ToString(Formatting.None);
-				Debug.WriteLine($"Send > {dataToSend}");
-				Debug.WriteLine("===============");
 
 				UiSockHandler.Instance.Send(dataToSend);
+
+				Debug.WriteLine($"Send > {dataToSend}");
+				Debug.WriteLine("===============");
 			});
 		}
 		internal static Task Send(string uiElementId, RequestType requestType, JObject data = default)
