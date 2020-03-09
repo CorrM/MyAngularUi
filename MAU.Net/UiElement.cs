@@ -31,6 +31,9 @@ namespace MAU
 		[UiProperty("innerHTML", false)]
 		public string Html { get; set; }
 
+		[UiProperty("textContent", false)]
+		public string TextContent { get; set; }
+
 		#endregion
 
 		protected UiElement(string id)
@@ -69,8 +72,7 @@ namespace MAU
 			if (_handledEvents.ContainsKey(eventName))
 				_handledEvents[eventName].Invoke(this, Array.Empty<object>());
 		}
-
-		public void SetProp(string propName, object propValue)
+		public void SetPropValue(string propName, object propValue)
 		{
 			if (_handledProps.ContainsKey(propName))
 				_handledProps[propName].SetValue(this, propValue);

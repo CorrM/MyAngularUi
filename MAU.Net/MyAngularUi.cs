@@ -132,7 +132,7 @@ namespace MAU
 					string propName = jsonData["propName"].Value<string>();
 					string propValue = jsonData["propValue"].Value<string>();
 
-					uiElement.SetProp(propName, propValue);
+					uiElement.SetPropValue(propName, propValue);
 					break;
 
 				default:
