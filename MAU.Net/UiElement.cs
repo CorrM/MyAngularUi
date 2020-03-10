@@ -66,7 +66,6 @@ namespace MAU
 				}
 			}
 		}
-
 		public void FireEvent(string eventName)
 		{
 			if (_handledEvents.ContainsKey(eventName))

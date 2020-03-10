@@ -22,14 +22,27 @@ namespace MAU
 			SetPropValue = 4
 		}
 
-		#region [ Fields ]
+		#region [ Static Fields ]
 
 		private static MyAngularUi _instance;
-		private static Dictionary<string, UiElement> UiElements { get; } = new Dictionary<string, UiElement>();
+		private static readonly Dictionary<string, UiElement> _uiElements = new Dictionary<string, UiElement>();
 
 		#endregion
 
-		#region [ Props ]
+		#region [ Fields ]
+
+		private readonly Thread _mainTimer;
+		private readonly Queue<string> _requestsQueue;
+
+		#endregion
+
+		#region [ Private Props ]
+
+		private bool Working { get; set; }
+
+		#endregion
+
+		#region [ Public Props ]
 
 		public WebSocketServer WebSocket { get; private set; }
 		public int Port { get; }
@@ -41,6 +54,16 @@ namespace MAU
 		protected MyAngularUi(int webSocketPort)
 		{
 			Port = webSocketPort;
+
+			_requestsQueue = new Queue<string>();
+			_mainTimer = new Thread(async () =>
+			{
+				while (Working)
+				{
+					await TimerHandler();
+					Thread.Sleep(8);
+				}
+			});
 		}
 		public static MyAngularUi Instance(int webSocketPort)
 		{
@@ -62,37 +85,60 @@ namespace MAU
 		{
 			return Task.Run(() =>
 			{
+				if (WebSocket != null)
+					return WebSocket.IsListening;
+
 				WebSocket = new WebSocketServer(Port);
 				WebSocket.AddWebSocketService<UiSockHandler>("/UiHandler");
-
 				WebSocket.Start();
+
+				Working = true;
+				_mainTimer.Start();
+
 				return WebSocket.IsListening;
 			});
 		}
 
-		internal static Task Send(string uiElementId, RequestType requestType, JObject data = default)
+		internal Task<bool> Send(string dataToSend)
 		{
-			if (_instance == null)
-				throw new NullReferenceException("Create Instance First.!");
-
 			return Task.Run(() =>
 			{
-				var dSend = new JObject
-				{
-					{ "requestType", (int)requestType },
-					{ "uiElementId", uiElementId },
-					{ "data", data }
-				};
+				if (_instance == null)
+					throw new NullReferenceException("Create Instance First.!");
 
-				string dataToSend = dSend.ToString(Formatting.None);
+				if (UiSockHandler.Instance == null)
+					return false;
 
-				if (UiSockHandler.Instance.Send(dataToSend))
-					Debug.WriteLine($"Send > {dataToSend}");
-
-				Debug.WriteLine("===============");
+				bool sendState = UiSockHandler.Instance.Send(dataToSend);
+				return sendState;
 			});
 		}
+		internal async Task<bool> Send(string uiElementId, RequestType requestType, JObject data)
+		{
+			var dSend = new JObject
+			{
+				{ "requestType", (int)requestType },
+				{ "uiElementId", uiElementId },
+				{ "data", data }
+			};
 
+			string dataToSend = dSend.ToString(Formatting.None);
+			bool sendState = await Send(dataToSend);
+
+			if (sendState)
+				Debug.WriteLine($"Send > {dataToSend}");
+
+			// Queue this request to send when connect again
+			if (!sendState)
+				_requestsQueue.Enqueue(dataToSend);
+
+			Debug.WriteLine("===============");
+			return sendState;
+		}
+		internal static Task<bool> SendRequest(string uiElementId, RequestType requestType, JObject data)
+		{
+			return Instance().Send(uiElementId, requestType, data);
+		}
 		internal async Task OnMessage(MessageEventArgs e)
 		{
 			Debug.WriteLine($"Recv > {e.Data}");
@@ -140,28 +186,39 @@ namespace MAU
 			}
 
 			ret ??= new JObject();
-			
+
 			// Send response
 			await Send(uiId, requestType, ret);
 		}
+
 		#endregion
 
 		#region [ UiHandler ]
 
+		private async Task TimerHandler()
+		{
+			// Handle request queue
+			if (_requestsQueue.Count > 0)
+			{
+				string dataToSend = _requestsQueue.Peek();
+				if (await Send(dataToSend))
+					_requestsQueue.Dequeue();
+			}
+		}
 		public static void RegisterUi(UiElement element)
 		{
-			UiElements.Add(element.Id, element);
+			_uiElements.Add(element.Id, element);
 		}
 		public static void RegisterUi(ICollection<UiElement> element)
 		{
 			foreach (UiElement uiElement in element)
-				UiElements.Add(uiElement.Id, uiElement);
+				_uiElements.Add(uiElement.Id, uiElement);
 		}
 		public static bool GetUiElement(string elementId, out UiElement element)
 		{
-			if (UiElements.ContainsKey(elementId))
+			if (_uiElements.ContainsKey(elementId))
 			{
-				element = UiElements[elementId];
+				element = _uiElements[elementId];
 				return true;
 			}
 

@@ -39,7 +39,7 @@ namespace MAU.Attributes
 				{"propVal", args.Value.ToString()}
 			};
 
-			_ = MyAngularUi.Send(holder.Id, MyAngularUi.RequestType.SetPropValue, data);
+			_ = MyAngularUi.SendRequest(holder.Id, MyAngularUi.RequestType.SetPropValue, data);
 
 			base.OnSetValue(args);
 		}

@@ -62,6 +62,8 @@ export class MyAngularUiService {
     }
 
     private OnMessage(msg: any): void {
+        console.log(msg);
+        
         // Handle request
         let requestType: RequestType = msg["requestType"];
         let uiElementId: string = msg["uiElementId"];
