@@ -34,11 +34,38 @@ export class MyAngularUiService {
         this.Mutation = new MutationObserver((mutations: MutationRecord[]) => {
             mutations.forEach((mutation: MutationRecord) => {
                 if (mutation.type == "attributes") {
-                    let uiElementId: string = (<any>mutation.target).getAttribute("mauuielement");
-                    let attribute: string = mutation.attributeName;
+                    const uiElementId: string = (<HTMLElement>mutation.target).getAttribute("mauuielement");
+                    const attribute: string = mutation.attributeName;
 
                     // Send data to .Net
                     this.GetProp(uiElementId, true, attribute);
+                }
+                else if (mutation.type == "childList") {
+                    const uiElementId: string = (<HTMLElement>mutation.target).getAttribute("mauuielement");
+
+                    // Send data to .Net
+                    this.GetProp(uiElementId, false, "innerHTML");
+                    this.GetProp(uiElementId, false, "innerText");
+                    this.GetProp(uiElementId, false, "textContent");
+                }
+                else if (mutation.type == "characterData") {
+                    let htmlEl: HTMLElement = mutation.target.parentElement;
+
+                    // Get our UiElement Maximum 15Lvl Depth
+                    for (let index = 0; index < 15; index++) {
+                        if (htmlEl.hasAttribute("mauuielement")) {
+                            const uiElementId: string = htmlEl.getAttribute("mauuielement");
+
+                            // Send data to .Net
+                            this.GetProp(uiElementId, false, "innerHTML");
+                            this.GetProp(uiElementId, false, "innerText");
+                            this.GetProp(uiElementId, false, "textContent");
+                            return;
+                        }
+                        else {
+                            htmlEl = htmlEl.parentElement;
+                        }
+                    }
                 }
             });
         });
