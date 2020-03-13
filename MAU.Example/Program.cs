@@ -11,10 +11,7 @@ namespace MAU.Example
 		private static void InitElements()
 		{
 			// FirstUi
-			var btn = new UiButton("FirstUi")
-			{
-				Html = "<b>TEST</b>"
-			};
+			var btn = new UiButton("FirstUi") { Html = "<b>CorrMHere</b>" };
 			MyAngularUi.RegisterUi(btn);
 		}
 

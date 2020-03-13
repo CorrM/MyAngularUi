@@ -86,7 +86,7 @@ namespace MAU
 		public void FireEvent(string eventName, string eventType, JObject eventData)
 		{
 			if (HandledEvents.ContainsKey(eventName))
-				HandledEvents[eventName].Invoke(this, new object[] { eventType, eventData });
+				_ = Task.Run(() => HandledEvents[eventName].Invoke(this, new object[] { eventType, eventData }));
 		}
 		public void SetPropValue(string propName, object propValue)
 		{

@@ -83,7 +83,7 @@ export class MyAngularUiService {
     }
 
     public Stop(): void {
-        // clearInterval(this._eventsTimerId);
+        this.Mutation.disconnect();
     }
 
     private Connect(): void {
