@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -13,12 +14,35 @@ namespace MAU
 {
 	public class MyAngularUi : IDisposable
 	{
+		/// <summary>
+		/// 
+		/// </summary>
 		public enum RequestType
 		{
+			/// <summary>
+			/// I just love to set none in my enums xD
+			/// </summary>
 			None = 0,
+
+			/// <summary>
+			/// Angular request to know what events,
+			/// handled in dotnet
+			/// </summary>
 			GetEvents = 1,
+
+			/// <summary>
+			/// Angular fire event
+			/// </summary>
 			EventCallback = 2,
+
+			/// <summary>
+			/// Request angular to send property value
+			/// </summary>
 			GetPropValue = 3,
+
+			/// <summary>
+			/// Set property value in angular side
+			/// </summary>
 			SetPropValue = 4
 		}
 
@@ -103,6 +127,9 @@ namespace MAU
 		{
 			return Task.Run(() =>
 			{
+				if (string.IsNullOrWhiteSpace(dataToSend))
+					return false;
+
 				if (_instance == null)
 					throw new NullReferenceException("Create Instance First.!");
 
@@ -137,7 +164,7 @@ namespace MAU
 		}
 		internal static Task<bool> SendRequest(string uiElementId, RequestType requestType, JObject data)
 		{
-			return Instance().Send(uiElementId, requestType, data);
+			return Instance().Send(uiElementId, requestType, data ?? new JObject());
 		}
 		internal async Task OnMessage(MessageEventArgs e)
 		{
@@ -156,39 +183,39 @@ namespace MAU
 				throw new KeyNotFoundException("UiElement not found.");
 
 			// Process
-			JObject ret = null;
 			switch (requestType)
 			{
 				case RequestType.None:
 					break;
 
 				case RequestType.GetEvents:
-					ret = new JObject
+					var ret = new JObject
 					{
 						{ "events", new JArray(uiElement.Events) }
 					};
-					break;
+
+					// Send response
+					await Send(uiId, requestType, ret);
+					return;
 
 				case RequestType.EventCallback:
 					string eventName = jsonData["eventName"].Value<string>();
-					_ = Task.Run(() => uiElement.FireEvent(eventName));
-					break;
+					string eventType = jsonData["eventType"].Value<string>();
+					JObject eventData = JObject.Parse(jsonData["data"].Value<string>());
+
+					uiElement.FireEvent(eventName, eventType, eventData);
+					return;
 
 				case RequestType.GetPropValue:
 					string propName = jsonData["propName"].Value<string>();
 					string propValue = jsonData["propValue"].Value<string>();
 
 					uiElement.SetPropValue(propName, propValue);
-					break;
+					return;
 
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
-
-			ret ??= new JObject();
-
-			// Send response
-			await Send(uiId, requestType, ret);
 		}
 
 		#endregion
@@ -208,6 +235,10 @@ namespace MAU
 		public static void RegisterUi(UiElement element)
 		{
 			_uiElements.Add(element.Id, element);
+
+			// Request value from angular
+			foreach ((string propName, PropertyInfo _) in element.HandledProps.Select(x => (x.Key, x.Value)))
+				element.GetPropValue(propName);
 		}
 		public static void RegisterUi(ICollection<UiElement> element)
 		{

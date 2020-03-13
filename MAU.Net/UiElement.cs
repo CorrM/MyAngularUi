@@ -3,22 +3,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using MAU.Attributes;
+using Newtonsoft.Json.Linq;
+using static MAU.MyAngularUi;
 
 namespace MAU
 {
 	public abstract class UiElement
 	{
-		#region [ Private Proparties ]
 
-		private Dictionary<string, MethodInfo> _handledEvents { get; }
-		private Dictionary<string, PropertyInfo> _handledProps { get; }
+		#region [ Internal Fields ]
+
+		/// <summary>
+		/// Not fire <see cref="UiProperty.OnSetValue"/> when set value local
+		/// </summary>
+		internal bool HandleOnSet { get; set; } = true;
+
+		internal readonly Dictionary<string, MethodInfo> HandledEvents;
+		internal readonly Dictionary<string, PropertyInfo> HandledProps;
 
 		#endregion
 
 		#region [ Public Proparties ]
 
-		public IReadOnlyCollection<string> Events => _handledEvents.Keys.ToList();
+		public IReadOnlyCollection<string> Events => HandledEvents.Keys.ToList();
 		public string Id { get; }
 
 		#endregion
@@ -39,7 +48,8 @@ namespace MAU
 		protected UiElement(string id)
 		{
 			Id = id;
-			_handledEvents = new Dictionary<string, MethodInfo>();
+			HandledEvents = new Dictionary<string, MethodInfo>();
+			HandledProps = new Dictionary<string, PropertyInfo>();
 
 			InitElements();
 		}
@@ -52,7 +62,7 @@ namespace MAU
 				foreach (MethodInfo methodInfo in methodInfos.Where(UiEvent.HasAttribute))
 				{
 					var attr = methodInfo.GetCustomAttribute<UiEvent>();
-					_handledEvents.Add(attr.EventName, methodInfo);
+					HandledEvents.Add(attr.EventName, methodInfo);
 				}
 			}
 
@@ -62,19 +72,43 @@ namespace MAU
 				foreach (PropertyInfo propertyInfo in propertyInfos.Where(UiProperty.HasAttribute))
 				{
 					var attr = propertyInfo.GetCustomAttribute<UiProperty>();
-					_handledProps.Add(attr.PropertyName, propertyInfo);
+					HandledProps.Add(attr.PropertyName, propertyInfo);
 				}
 			}
 		}
-		public void FireEvent(string eventName)
+		internal UiProperty GetUiPropAttribute(string propName)
 		{
-			if (_handledEvents.ContainsKey(eventName))
-				_handledEvents[eventName].Invoke(this, Array.Empty<object>());
+			return HandledProps.ContainsKey(propName)
+				? HandledProps[propName].GetCustomAttribute<UiProperty>()
+				: null;
+		}
+
+		public void FireEvent(string eventName, string eventType, JObject eventData)
+		{
+			if (HandledEvents.ContainsKey(eventName))
+				HandledEvents[eventName].Invoke(this, new object[] { eventType, eventData });
 		}
 		public void SetPropValue(string propName, object propValue)
 		{
-			if (_handledProps.ContainsKey(propName))
-				_handledProps[propName].SetValue(this, propValue);
+			if (!HandledProps.ContainsKey(propName))
+				return;
+
+			HandleOnSet = false;
+			HandledProps[propName].SetValue(this, propValue);
+			HandleOnSet = true;
+		}
+		public void GetPropValue(string propName)
+		{
+			if (!HandledProps.ContainsKey(propName))
+				return;
+
+			var data = new JObject
+			{
+				{"propName", propName},
+				{"propIsAttr", GetUiPropAttribute(propName).IsAttribute}
+			};
+
+			_ = SendRequest(Id, RequestType.GetPropValue, data);
 		}
 	}
 }

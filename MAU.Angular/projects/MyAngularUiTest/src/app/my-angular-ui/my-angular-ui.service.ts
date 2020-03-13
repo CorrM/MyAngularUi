@@ -1,9 +1,7 @@
 import { Injectable, ElementRef, Injector } from '@angular/core';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { UtilsService } from './utils.service';
-import { Subject } from 'rxjs';
 import { EventManager } from '@angular/platform-browser';
-import { async } from '@angular/core/testing';
 
 export let AppInjector: Injector;
 
@@ -19,10 +17,11 @@ enum RequestType {
     providedIn: 'root'
 })
 export class MyAngularUiService {
-    private static reconnectTime: number = 2;
+    private static reconnectTime: number = 1;
     private _connected: boolean = false;
     private _subject: WebSocketSubject<any>;
 
+    public Mutation: MutationObserver;
     public UiElements: Map<string, ElementRef>;
     public UiElementEvents: Map<string, string[]>;
     public Port: number;
@@ -32,6 +31,17 @@ export class MyAngularUiService {
         this.UiElementEvents = new Map<string, string[]>();
 
         AppInjector = this.injector;
+        this.Mutation = new MutationObserver((mutations: MutationRecord[]) => {
+            mutations.forEach((mutation: MutationRecord) => {
+                if (mutation.type == "attributes") {
+                    let uiElementId: string = (<any>mutation.target).getAttribute("mauuielement");
+                    let attribute: string = mutation.attributeName;
+
+                    // Send data to .Net
+                    this.GetProp(uiElementId, true, attribute);
+                }
+            });
+        });
     }
 
     public Start(port: number): void {
@@ -63,7 +73,7 @@ export class MyAngularUiService {
 
     private OnMessage(msg: any): void {
         console.log(msg);
-        
+
         // Handle request
         let requestType: RequestType = msg["requestType"];
         let uiElementId: string = msg["uiElementId"];
@@ -78,6 +88,7 @@ export class MyAngularUiService {
                 let events = this.UiElementEvents.get(uiElementId);
                 events.forEach((eventName: string) => {
                     let domObj = this.UiElements.get(uiElementId).nativeElement;
+                    // ToDo: Add checker to addEventListener, so it's not duplicate event handler
                     this.eventManager.addEventListener(domObj, eventName, (event: Event) => this.FireEvent(uiElementId, event));
                 });
                 break;
@@ -113,10 +124,7 @@ export class MyAngularUiService {
             console.log(`SendData Can't send to closed socket.`);
             return false;
         }
-        if (!this._subject) {
-            return false;
-        }
-        if (!this.UiElements.has(uiElementId)) {
+        if (!this._subject || !this.UiElements.has(uiElementId)) {
             return false;
         }
 
@@ -129,8 +137,8 @@ export class MyAngularUiService {
         return true;
     }
 
-    private SendEventCallback(uiElementId: string, eventName: string, data: any): boolean {
-        return this.Send(uiElementId, RequestType.EventCallback, { eventName: eventName, data: data });
+    private SendEventCallback(uiElementId: string, eventName: string, eventType: string, data: any): boolean {
+        return this.Send(uiElementId, RequestType.EventCallback, { eventName: eventName, eventType: eventType, data: data });
     }
 
     public AddElement(uiElementId: string, el: ElementRef) {
@@ -155,7 +163,7 @@ export class MyAngularUiService {
 
     private FireEvent(uiElementId: string, event: Event): void {
         let eventName: string = event.type;
-        this.SendEventCallback(uiElementId, eventName, {});
+        this.SendEventCallback(uiElementId, eventName, event.constructor.name, this.utils.ObjectToJson(event));
     }
 
     private GetProp(uiElementId: string, propIsAttr: boolean, propName: string): void {

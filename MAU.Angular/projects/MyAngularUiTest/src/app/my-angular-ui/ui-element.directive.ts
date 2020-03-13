@@ -5,21 +5,18 @@ import { MyAngularUiService, AppInjector } from './my-angular-ui.service';
     selector: '[mauUiElement]'
 })
 export class UiElementDirective implements OnInit {
-    private UiService: MyAngularUiService;
+    private uiService: MyAngularUiService;
 
     @Input("mauUiElement")
     ElementId: string;
 
     constructor(private el: ElementRef) {
-        this.UiService = AppInjector.get(MyAngularUiService);
+        this.uiService = AppInjector.get(MyAngularUiService);
     }
 
     ngOnInit() {
-        this.UiService.AddElement(this.ElementId, this.el);
-    }
+        this.uiService.AddElement(this.ElementId, this.el);
 
-    @HostListener("*")
-    OnEvent(event: Event) {
-        console.log(event);
+        this.uiService.Mutation.observe(this.el.nativeElement, { characterData: true, attributes: true, childList: true, subtree: true });
     }
 }

@@ -1,16 +1,17 @@
 ﻿using System;
-using System.ComponentModel;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using Newtonsoft.Json.Linq;
 using PostSharp.Aspects;
+using PostSharp.Extensibility;
 using PostSharp.Serialization;
 
 namespace MAU.Attributes
 {
 	[AttributeUsage(AttributeTargets.Property)]
+	[MulticastAttributeUsage(PersistMetaData = true)]
 	[PSerializable]
 	public sealed class UiProperty : LocationInterceptionAspect
 	{
@@ -25,12 +26,18 @@ namespace MAU.Attributes
 
 		public static bool HasAttribute(PropertyInfo propertyInfo)
 		{
-			return propertyInfo.GetCustomAttributes(typeof(UiProperty), false).Any();
+			return propertyInfo.GetCustomAttributes<UiProperty>(false).Any();
 		}
 
 		public override void OnSetValue(LocationInterceptionArgs args)
 		{
 			var holder = (UiElement)args.Instance;
+
+			if (!holder.HandleOnSet)
+			{
+				base.OnSetValue(args);
+				return;
+			}
 
 			var data = new JObject
 			{
@@ -40,8 +47,8 @@ namespace MAU.Attributes
 			};
 
 			_ = MyAngularUi.SendRequest(holder.Id, MyAngularUi.RequestType.SetPropValue, data);
-
 			base.OnSetValue(args);
 		}
+
 	}
 }
