@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using WebSocketNet;
 using WebSocketNet.Server;
+using MAU.WebSocket;
 
 namespace MAU
 {

@@ -8,11 +8,10 @@ using Newtonsoft.Json.Linq;
 using WebSocketNet;
 using WebSocketNet.Server;
 
-namespace MAU
+namespace MAU.WebSocket
 {
 	internal class UiSockHandler : WebSocketBehavior
 	{
-
 		internal static UiSockHandler Instance { get; private set; }
 
 		public UiSockHandler()
