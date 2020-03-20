@@ -108,7 +108,7 @@ namespace MAU
 				{"propIsAttr", GetUiPropAttribute(propName).IsAttribute}
 			};
 
-			_ = SendRequest(Id, RequestType.GetPropValue, data);
+			_ = MyAngularUi.SendRequest(Id, RequestType.GetPropValue, data);
 		}
 	}
 }

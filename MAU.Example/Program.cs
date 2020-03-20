@@ -17,9 +17,8 @@ namespace MAU.Example
 
 		public static async Task MainTask()
 		{
-			// Init MyAngularUi
-			using var ws = MyAngularUi.Instance(3000);
-			await ws.Start();
+			MyAngularUi.Setup(3000);
+			await MyAngularUi.Start();
 
 			InitElements();
 

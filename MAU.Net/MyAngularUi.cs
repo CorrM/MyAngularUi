@@ -13,7 +13,7 @@ using MAU.WebSocket;
 
 namespace MAU
 {
-	public class MyAngularUi : IDisposable
+	public static class MyAngularUi
 	{
 		/// <summary>
 		/// 
@@ -49,67 +49,54 @@ namespace MAU
 
 		#region [ Static Fields ]
 
-		private static MyAngularUi _instance;
-		private static readonly Dictionary<string, UiElement> _uiElements = new Dictionary<string, UiElement>();
+		private static Thread _mainTimer;
+		private static Queue<string> _requestsQueue;
+		private static Dictionary<string, UiElement> _uiElements;
+		private static bool _working;
 
 		#endregion
 
-		#region [ Fields ]
+		#region [ Public Static Props ]
 
-		private readonly Thread _mainTimer;
-		private readonly Queue<string> _requestsQueue;
-
-		#endregion
-
-		#region [ Private Props ]
-
-		private bool Working { get; set; }
+		public static WebSocketServer WebSocket { get; private set; }
+		public static int Port { get; private set; }
+		public static bool Init { get; private set; }
 
 		#endregion
 
-		#region [ Public Props ]
+		#region [ Methods ]
 
-		public WebSocketServer WebSocket { get; private set; }
-		public int Port { get; }
-
-		#endregion
-
-		#region [ Consturtor ]
-
-		protected MyAngularUi(int webSocketPort)
+		public static void Setup(int webSocketPort)
 		{
+			if (!Init)
+				return;
+
+			Init = true;
 			Port = webSocketPort;
 
+			_uiElements = new Dictionary<string, UiElement>();
 			_requestsQueue = new Queue<string>();
 			_mainTimer = new Thread(async () =>
 			{
-				while (Working)
+				while (_working)
 				{
 					await TimerHandler();
-					Thread.Sleep(8);
+					await Task.Delay(8);
 				}
 			});
 		}
-		public static MyAngularUi Instance(int webSocketPort)
+		public static void Stop()
 		{
-			return _instance ??= new MyAngularUi(webSocketPort);
+			Init = false;
+			WebSocket?.Stop();
 		}
-		public static MyAngularUi Instance()
-		{
-			if (_instance == null)
-				throw new NullReferenceException("Call 'Instance(int)' first");
-
-			return _instance;
-		}
-
-		#endregion
-
-		#region [ WebSocket Wrapper ]
-
-		public Task<bool> Start()
+		public static Task<bool> Start()
 		{
 			return Task.Run(() =>
 			{
+				if (!Init)
+					return false;
+
 				if (WebSocket != null)
 					return WebSocket.IsListening;
 
@@ -117,22 +104,22 @@ namespace MAU
 				WebSocket.AddWebSocketService<UiSockHandler>("/UiHandler");
 				WebSocket.Start();
 
-				Working = true;
+				_working = true;
 				_mainTimer.Start();
 
 				return WebSocket.IsListening;
 			});
 		}
 
-		internal Task<bool> Send(string dataToSend)
+		internal static Task<bool> Send(string dataToSend)
 		{
 			return Task.Run(() =>
 			{
 				if (string.IsNullOrWhiteSpace(dataToSend))
 					return false;
 
-				if (_instance == null)
-					throw new NullReferenceException("Create Instance First.!");
+				if (!Init)
+					throw new NullReferenceException("Call 'Setup` Function First.");
 
 				if (UiSockHandler.Instance == null)
 					return false;
@@ -141,7 +128,7 @@ namespace MAU
 				return sendState;
 			});
 		}
-		internal async Task<bool> Send(string uiElementId, RequestType requestType, JObject data)
+		internal static async Task<bool> Send(string uiElementId, RequestType requestType, JObject data)
 		{
 			var dSend = new JObject
 			{
@@ -165,9 +152,9 @@ namespace MAU
 		}
 		internal static Task<bool> SendRequest(string uiElementId, RequestType requestType, JObject data)
 		{
-			return Instance().Send(uiElementId, requestType, data ?? new JObject());
+			return Send(uiElementId, requestType, data ?? new JObject());
 		}
-		internal async Task OnMessage(MessageEventArgs e)
+		internal static async Task OnMessage(MessageEventArgs e)
 		{
 			Debug.WriteLine($"Recv > {e.Data}");
 
@@ -223,7 +210,7 @@ namespace MAU
 
 		#region [ UiHandler ]
 
-		private async Task TimerHandler()
+		private static async Task TimerHandler()
 		{
 			// Handle request queue
 			if (_requestsQueue.Count > 0)
@@ -258,28 +245,6 @@ namespace MAU
 			return false;
 		}
 
-		#endregion
-
-		#region IDisposable Support
-		private bool _disposedValue = false; // To detect redundant calls
-
-		protected virtual void Dispose(bool disposing)
-		{
-			if (_disposedValue)
-				return;
-
-			if (disposing)
-			{
-				WebSocket?.Stop();
-			}
-
-			_disposedValue = true;
-		}
-
-		public void Dispose()
-		{
-			Dispose(true);
-		}
 		#endregion
 	}
 }

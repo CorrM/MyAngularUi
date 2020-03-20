@@ -34,7 +34,7 @@ namespace MAU.WebSocket
 		}
 		protected override void OnMessage(MessageEventArgs e)
 		{
-			_ = MyAngularUi.Instance().OnMessage(e);
+			_ = MyAngularUi.OnMessage(e);
 		}
 	}
 }
