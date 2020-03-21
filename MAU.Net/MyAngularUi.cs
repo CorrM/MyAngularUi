@@ -15,9 +15,6 @@ namespace MAU
 {
 	public static class MyAngularUi
 	{
-		/// <summary>
-		/// 
-		/// </summary>
 		public enum RequestType
 		{
 			/// <summary>

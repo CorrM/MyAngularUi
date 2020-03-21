@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using MAU.Attributes;
+using MAU.Events;
 using Newtonsoft.Json.Linq;
 using static MAU.MyAngularUi;
 
@@ -97,7 +98,7 @@ namespace MAU
 
 			// Invoke all subscribers
 			foreach (var handler in eventDelegate.GetInvocationList())
-				_ = Task.Run(() => handler.Method.Invoke(handler.Target, new object[] { eventType, eventData }));
+				_ = Task.Run(() => handler.Method.Invoke(handler.Target, new object[] { eventName, new UiEventInfo(eventType, eventData) }));
 		}
 		public void SetPropValue(string propName, object propValue)
 		{

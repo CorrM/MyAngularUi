@@ -16,8 +16,8 @@
     <RepositoryUrl>https://github.com/CorrM/MyAngularUi.Net</RepositoryUrl>
     <RepositoryType>GUI</RepositoryType>
     <PackageTags>CorrM, MyAngularUi, IslamNofl</PackageTags>
-    <Version>1.0.1</Version>
-    <FileVersion>1.0.1.0</FileVersion>
+    <Version>1.1.1</Version>
+    <FileVersion>1.1.1.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

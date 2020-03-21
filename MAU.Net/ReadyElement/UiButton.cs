@@ -1,14 +1,12 @@
-﻿using System.Diagnostics;
-using MAU.Attributes;
-using MAU.Events;
-using Newtonsoft.Json.Linq;
+﻿using MAU.Attributes;
+using static MAU.Events.UiEventHandler;
 
 namespace MAU.ReadyElement
 {
 	public class UiButton : UiElement
 	{
 		[UiEvent("click")]
-		public event UiEventHandler.MauEventHandler Click;
+		public event MauEventHandler Click;
 
 		public UiButton(string id) : base(id) { }
 	}

@@ -17,9 +17,9 @@ namespace MAU.Example
 			MyAngularUi.RegisterUi(btn);
 		}
 
-		private static void Btn_Click(string eventType, JObject eventData)
+		private static void Btn_Click(string eventName, Events.UiEventInfo eventInfo)
 		{
-			Console.WriteLine(eventType + " Event Called.");
+			Console.WriteLine(eventInfo.TypeName + " Event Called.");
 		}
 
 		public static async Task MainTask()
