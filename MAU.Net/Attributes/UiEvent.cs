@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace MAU.Attributes
 {
-	[AttributeUsage(AttributeTargets.Method)]
+	[AttributeUsage(AttributeTargets.Event)]
 	public sealed class UiEvent : Attribute
 	{
 		public string EventName { get; }
@@ -14,7 +14,7 @@ namespace MAU.Attributes
 			EventName = eventName;
 		}
 
-		public static bool HasAttribute(MethodInfo methodInfo)
+		public static bool HasAttribute(EventInfo methodInfo)
 		{
 			return methodInfo.GetCustomAttributes(typeof(UiEvent), false).Any();
 		}

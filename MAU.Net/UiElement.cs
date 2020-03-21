@@ -20,7 +20,7 @@ namespace MAU
 		/// </summary>
 		internal bool HandleOnSet { get; set; } = true;
 
-		internal readonly Dictionary<string, MethodInfo> HandledEvents;
+		internal readonly Dictionary<string, EventInfo> HandledEvents;
 		internal readonly Dictionary<string, PropertyInfo> HandledProps;
 
 		#endregion
@@ -48,7 +48,7 @@ namespace MAU
 		protected UiElement(string id)
 		{
 			Id = id;
-			HandledEvents = new Dictionary<string, MethodInfo>();
+			HandledEvents = new Dictionary<string, EventInfo>();
 			HandledProps = new Dictionary<string, PropertyInfo>();
 
 			InitElements();
@@ -58,11 +58,11 @@ namespace MAU
 		{
 			// Events
 			{
-				MethodInfo[] methodInfos = this.GetType().GetMethods(BindingFlags.Public | BindingFlags.Instance);
-				foreach (MethodInfo methodInfo in methodInfos.Where(UiEvent.HasAttribute))
+				EventInfo[] eventInfos = this.GetType().GetEvents(BindingFlags.Public | BindingFlags.Instance);
+				foreach (EventInfo eventInfo in eventInfos.Where(UiEvent.HasAttribute))
 				{
-					var attr = methodInfo.GetCustomAttribute<UiEvent>();
-					HandledEvents.Add(attr.EventName, methodInfo);
+					var attr = eventInfo.GetCustomAttribute<UiEvent>();
+					HandledEvents.Add(attr.EventName, eventInfo);
 				}
 			}
 
@@ -85,8 +85,19 @@ namespace MAU
 
 		public void FireEvent(string eventName, string eventType, JObject eventData)
 		{
-			if (HandledEvents.ContainsKey(eventName))
-				_ = Task.Run(() => HandledEvents[eventName].Invoke(this, new object[] { eventType, eventData }));
+			if (!HandledEvents.ContainsKey(eventName))
+				return;
+
+			string netEventName = HandledEvents[eventName].Name;
+			var eventDelegate = (MulticastDelegate)this.GetType().GetField(netEventName, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
+
+			// There any subscriber .?
+			if (eventDelegate == null)
+				return;
+
+			// Invoke all subscribers
+			foreach (var handler in eventDelegate.GetInvocationList())
+				_ = Task.Run(() => handler.Method.Invoke(handler.Target, new object[] { eventType, eventData }));
 		}
 		public void SetPropValue(string propName, object propValue)
 		{

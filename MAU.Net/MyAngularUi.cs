@@ -68,7 +68,7 @@ namespace MAU
 
 		public static void Setup(int webSocketPort)
 		{
-			if (!Init)
+			if (Init)
 				return;
 
 			Init = true;

@@ -5,6 +5,19 @@
     <RootNamespace>MAU</RootNamespace>
     <AssemblyName>MAU</AssemblyName>
     <LangVersion>latest</LangVersion>
+    <PackageId>MyAngularUi</PackageId>
+    <Authors>CorrM</Authors>
+    <Company />
+    <Product>MyAngularUi</Product>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Copyright>CorrM</Copyright>
+    <PackageLicenseExpression>LGPL-3.0-only</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/CorrM/MyAngularUi.Net</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/CorrM/MyAngularUi.Net</RepositoryUrl>
+    <RepositoryType>GUI</RepositoryType>
+    <PackageTags>CorrM, MyAngularUi, IslamNofl</PackageTags>
+    <Version>1.0.1</Version>
+    <FileVersion>1.0.1.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using MAU.ReadyElement;
+using Newtonsoft.Json.Linq;
 
 namespace MAU.Example
 {
@@ -12,7 +13,13 @@ namespace MAU.Example
 		{
 			// FirstUi
 			var btn = new UiButton("FirstUi") { Html = "<b>CorrMHere</b>" };
+			btn.Click += Btn_Click;
 			MyAngularUi.RegisterUi(btn);
+		}
+
+		private static void Btn_Click(string eventType, JObject eventData)
+		{
+			Console.WriteLine(eventType + " Event Called.");
 		}
 
 		public static async Task MainTask()
