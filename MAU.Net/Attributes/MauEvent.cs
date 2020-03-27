@@ -5,18 +5,18 @@ using System.Reflection;
 namespace MAU.Attributes
 {
 	[AttributeUsage(AttributeTargets.Event)]
-	public sealed class UiEvent : Attribute
+	public sealed class MauEvent : Attribute
 	{
 		public string EventName { get; }
 
-		public UiEvent(string eventName)
+		public MauEvent(string eventName)
 		{
 			EventName = eventName;
 		}
 
-		public static bool HasAttribute(EventInfo methodInfo)
+		public static bool HasAttribute(EventInfo eventInfo)
 		{
-			return methodInfo.GetCustomAttributes(typeof(UiEvent), false).Any();
+			return eventInfo.GetCustomAttributes(typeof(MauEvent), false).Any();
 		}
 	}
 }

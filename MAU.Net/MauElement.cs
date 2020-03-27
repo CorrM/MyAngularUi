@@ -7,18 +7,18 @@ using System.Threading.Tasks;
 using MAU.Attributes;
 using MAU.Events;
 using Newtonsoft.Json.Linq;
-using static MAU.Events.UiEventHandler;
+using static MAU.Events.MauEventHandlers;
 using static MAU.MyAngularUi;
 
 namespace MAU
 {
-	public abstract class UiElement
+	public abstract class MauElement
 	{
 
 		#region [ Internal Fields ]
 
 		/// <summary>
-		/// Not fire <see cref="UiProperty.OnSetValue"/> when set value local
+		/// Not fire <see cref="MauProperty.OnSetValue"/> when set value local
 		/// </summary>
 		internal bool HandleOnSet { get; set; } = true;
 
@@ -36,25 +36,25 @@ namespace MAU
 
 		#region [ UI Proparties ]
 
-		[UiProperty("innerText", false)]
+		[MauProperty("innerText", false)]
 		public string Text { get; set; }
 
-		[UiProperty("innerHTML", false)]
+		[MauProperty("innerHTML", false)]
 		public string Html { get; set; }
 
-		[UiProperty("textContent", false)]
+		[MauProperty("textContent", false)]
 		public string TextContent { get; set; }
 
 		#endregion
 
 		#region [ UI Events ]
 
-		[UiEvent("click")]
+		[MauEvent("click")]
 		public event MauEventHandler Click;
 
 		#endregion
 
-		protected UiElement(string id)
+		protected MauElement(string id)
 		{
 			Id = id;
 			HandledEvents = new Dictionary<string, EventInfo>();
@@ -68,9 +68,9 @@ namespace MAU
 			// Events
 			{
 				EventInfo[] eventInfos = this.GetType().GetEvents(BindingFlags.Public | BindingFlags.Instance);
-				foreach (EventInfo eventInfo in eventInfos.Where(UiEvent.HasAttribute))
+				foreach (EventInfo eventInfo in eventInfos.Where(MauEvent.HasAttribute))
 				{
-					var attr = eventInfo.GetCustomAttribute<UiEvent>();
+					var attr = eventInfo.GetCustomAttribute<MauEvent>();
 					HandledEvents.Add(attr.EventName, eventInfo);
 				}
 			}
@@ -78,17 +78,17 @@ namespace MAU
 			// Properties
 			{
 				PropertyInfo[] propertyInfos = this.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance);
-				foreach (PropertyInfo propertyInfo in propertyInfos.Where(UiProperty.HasAttribute))
+				foreach (PropertyInfo propertyInfo in propertyInfos.Where(MauProperty.HasAttribute))
 				{
-					var attr = propertyInfo.GetCustomAttribute<UiProperty>();
+					var attr = propertyInfo.GetCustomAttribute<MauProperty>();
 					HandledProps.Add(attr.PropertyName, propertyInfo);
 				}
 			}
 		}
-		internal UiProperty GetUiPropAttribute(string propName)
+		internal MauProperty GetUiPropAttribute(string propName)
 		{
 			return HandledProps.ContainsKey(propName)
-				? HandledProps[propName].GetCustomAttribute<UiProperty>()
+				? HandledProps[propName].GetCustomAttribute<MauProperty>()
 				: null;
 		}
 
@@ -122,7 +122,7 @@ namespace MAU
 
 			// Invoke all subscribers
 			foreach (var handler in eventDelegate.GetInvocationList())
-				_ = Task.Run(() => handler.Method.Invoke(handler.Target, new object[] { eventName, new UiEventInfo(eventType, eventData) }));
+				_ = Task.Run(() => handler.Method.Invoke(handler.Target, new object[] { eventName, new MauEventInfo(eventType, eventData) }));
 		}
 		public void SetPropValue(string propName, object propValue)
 		{

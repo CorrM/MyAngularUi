@@ -53,7 +53,7 @@ namespace MAU
 
 		private static Thread _mainTimer;
 		private static Queue<string> _requestsQueue;
-		private static Dictionary<string, UiElement> _uiElements;
+		private static Dictionary<string, MauElement> _uiElements;
 		private static bool _working;
 
 		#endregion
@@ -76,7 +76,7 @@ namespace MAU
 			Init = true;
 			Port = webSocketPort;
 
-			_uiElements = new Dictionary<string, UiElement>();
+			_uiElements = new Dictionary<string, MauElement>();
 			_requestsQueue = new Queue<string>();
 			_mainTimer = new Thread(async () =>
 			{
@@ -103,7 +103,7 @@ namespace MAU
 					return WebSocket.IsListening;
 
 				WebSocket = new WebSocketServer(Port);
-				WebSocket.AddWebSocketService<UiSockHandler>("/UiHandler");
+				WebSocket.AddWebSocketService<MauSockHandler>("/UiHandler");
 				WebSocket.Start();
 
 				_working = true;
@@ -123,10 +123,10 @@ namespace MAU
 				if (!Init)
 					throw new NullReferenceException("Call 'Setup` Function First.");
 
-				if (UiSockHandler.Instance == null)
+				if (MauSockHandler.Instance == null)
 					return false;
 
-				bool sendState = UiSockHandler.Instance.Send(dataToSend);
+				bool sendState = MauSockHandler.Instance.Send(dataToSend);
 				return sendState;
 			});
 		}
@@ -169,7 +169,7 @@ namespace MAU
 			var requestType = (RequestType)jsonRequest["requestType"].Value<int>();
 
 			// Check if ui is registered
-			if (!GetUiElement(uiId, out UiElement uiElement))
+			if (!GetUiElement(uiId, out MauElement uiElement))
 				throw new KeyNotFoundException("UiElement not found.");
 
 			// Process
@@ -222,7 +222,7 @@ namespace MAU
 					_requestsQueue.Dequeue();
 			}
 		}
-		public static void RegisterUi(UiElement element)
+		public static void RegisterUi(MauElement element)
 		{
 			_uiElements.Add(element.Id, element);
 
@@ -230,12 +230,12 @@ namespace MAU
 			foreach ((string propName, PropertyInfo _) in element.HandledProps.Select(x => (x.Key, x.Value)))
 				element.GetPropValue(propName);
 		}
-		public static void RegisterUi(ICollection<UiElement> element)
+		public static void RegisterUi(ICollection<MauElement> element)
 		{
-			foreach (UiElement uiElement in element)
+			foreach (MauElement uiElement in element)
 				_uiElements.Add(uiElement.Id, uiElement);
 		}
-		public static bool GetUiElement(string elementId, out UiElement element)
+		public static bool GetUiElement(string elementId, out MauElement element)
 		{
 			if (_uiElements.ContainsKey(elementId))
 			{

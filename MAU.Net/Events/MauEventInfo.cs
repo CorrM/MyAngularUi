@@ -5,12 +5,12 @@ using System.Text;
 
 namespace MAU.Events
 {
-	public struct UiEventInfo
+	public struct MauEventInfo
 	{
 		public string TypeName;
 		public JObject Data;
 
-		public UiEventInfo(string typeName, JObject data)
+		public MauEventInfo(string typeName, JObject data)
 		{
 			TypeName = typeName;
 			Data = data;

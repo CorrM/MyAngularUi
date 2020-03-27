@@ -12,14 +12,14 @@ namespace MAU.Example
 		private static async Task InitElements()
 		{
 			// FirstUi
-			var sele = new UiSelect("FirstUi", "option");
+			var sele = new MauSelect("FirstUi", "option");
 			sele.Click += Btn_Click;
 			MyAngularUi.RegisterUi(sele);
 
 			await sele.AddOption("", "");
 		}
 
-		private static void Btn_Click(string eventName, Events.UiEventInfo eventInfo)
+		private static void Btn_Click(string eventName, Events.MauEventInfo eventInfo)
 		{
 			Console.WriteLine(eventInfo.TypeName + " Event Called.");
 		}

@@ -13,12 +13,12 @@ namespace MAU.Attributes
 	[AttributeUsage(AttributeTargets.Property)]
 	[MulticastAttributeUsage(PersistMetaData = true)]
 	[PSerializable]
-	public sealed class UiProperty : LocationInterceptionAspect
+	public sealed class MauProperty : LocationInterceptionAspect
 	{
 		public string PropertyName { get; private set; }
 		public bool IsAttribute { get; private set; }
 
-		public UiProperty(string propertyName, bool isAttribute = true)
+		public MauProperty(string propertyName, bool isAttribute = true)
 		{
 			PropertyName = propertyName;
 			IsAttribute = isAttribute;
@@ -26,12 +26,12 @@ namespace MAU.Attributes
 
 		public static bool HasAttribute(PropertyInfo propertyInfo)
 		{
-			return propertyInfo.GetCustomAttributes<UiProperty>(false).Any();
+			return propertyInfo.GetCustomAttributes<MauProperty>(false).Any();
 		}
 
 		public override void OnSetValue(LocationInterceptionArgs args)
 		{
-			var holder = (UiElement)args.Instance;
+			var holder = (MauElement)args.Instance;
 
 			if (!holder.HandleOnSet)
 			{

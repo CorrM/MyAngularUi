@@ -10,11 +10,11 @@ using WebSocketNet.Server;
 
 namespace MAU.WebSocket
 {
-	internal class UiSockHandler : WebSocketBehavior
+	internal class MauSockHandler : WebSocketBehavior
 	{
-		internal static UiSockHandler Instance { get; private set; }
+		internal static MauSockHandler Instance { get; private set; }
 
-		public UiSockHandler()
+		public MauSockHandler()
 		{
 			Instance ??= this;
 		}

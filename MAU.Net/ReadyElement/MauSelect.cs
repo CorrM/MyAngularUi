@@ -4,15 +4,15 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using static MAU.Events.UiEventHandler;
+using static MAU.Events.MauEventHandlers;
 
 namespace MAU.ReadyElement
 {
-	public class UiSelect : UiElement
+	public class MauSelect : MauElement
 	{
 		public string OptionTagName { get; set; }
 
-		public UiSelect(string id, string optionTagName) : base(id)
+		public MauSelect(string id, string optionTagName) : base(id)
 		{
 			OptionTagName = optionTagName;
 		}
