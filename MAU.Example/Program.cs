@@ -9,12 +9,14 @@ namespace MAU.Example
 	{
 		public static void Main(string[] args) => MainTask().GetAwaiter().GetResult();
 
-		private static void InitElements()
+		private static async Task InitElements()
 		{
 			// FirstUi
-			var btn = new UiButton("FirstUi") { Html = "<b>CorrMHere</b>" };
-			btn.Click += Btn_Click;
-			MyAngularUi.RegisterUi(btn);
+			var sele = new UiSelect("FirstUi", "option");
+			sele.Click += Btn_Click;
+			MyAngularUi.RegisterUi(sele);
+
+			await sele.AddOption("", "");
 		}
 
 		private static void Btn_Click(string eventName, Events.UiEventInfo eventInfo)
@@ -27,7 +29,7 @@ namespace MAU.Example
 			MyAngularUi.Setup(3000);
 			await MyAngularUi.Start();
 
-			InitElements();
+			await InitElements();
 
 			while (true)
 				await Task.Delay(8);

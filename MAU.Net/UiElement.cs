@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using MAU.Attributes;
 using MAU.Events;
 using Newtonsoft.Json.Linq;
+using static MAU.Events.UiEventHandler;
 using static MAU.MyAngularUi;
 
 namespace MAU
@@ -43,6 +44,13 @@ namespace MAU
 
 		[UiProperty("textContent", false)]
 		public string TextContent { get; set; }
+
+		#endregion
+
+		#region [ UI Events ]
+
+		[UiEvent("click")]
+		public event MauEventHandler Click;
 
 		#endregion
 
@@ -90,7 +98,23 @@ namespace MAU
 				return;
 
 			string netEventName = HandledEvents[eventName].Name;
-			var eventDelegate = (MulticastDelegate)this.GetType().GetField(netEventName, BindingFlags.Instance | BindingFlags.NonPublic).GetValue(this);
+			Type t = this.GetType();
+			FieldInfo fi = null;
+
+			// Search for that event
+			while (t != null)
+			{
+				fi = t.GetField(netEventName, BindingFlags.Instance | BindingFlags.NonPublic);
+				if (fi != null)
+					break;
+				t = t.BaseType;
+			}
+
+			if (fi == null)
+				return;
+
+			// Get event
+			var eventDelegate = (MulticastDelegate)fi.GetValue(this);
 
 			// There any subscriber .?
 			if (eventDelegate == null)

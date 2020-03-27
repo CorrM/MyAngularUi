@@ -41,7 +41,12 @@ namespace MAU
 			/// <summary>
 			/// Set property value in angular side
 			/// </summary>
-			SetPropValue = 4
+			SetPropValue = 4,
+
+			/// <summary>
+			/// Execute TypeScript code in front-end side
+			/// </summary>
+			ExecuteCode = 5
 		}
 
 		#region [ Static Fields ]
@@ -141,7 +146,7 @@ namespace MAU
 				Debug.WriteLine($"Send > {dataToSend}");
 
 			// Queue this request to send when connect again
-			if (!sendState)
+			if (!sendState && !string.IsNullOrWhiteSpace(dataToSend))
 				_requestsQueue.Enqueue(dataToSend);
 
 			Debug.WriteLine("===============");
