@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using MAU.ReadyElement;
 using Newtonsoft.Json.Linq;
@@ -9,27 +10,17 @@ namespace MAU.Example
 	{
 		public static void Main(string[] args) => MainTask().GetAwaiter().GetResult();
 
-		private static async Task InitElements()
-		{
-			// FirstUi
-			var sele = new MauSelect("FirstUi", "option");
-			sele.Click += Btn_Click;
-			MyAngularUi.RegisterUi(sele);
-
-			await sele.AddOption("", "");
-		}
-
-		private static void Btn_Click(string eventName, Events.MauEventInfo eventInfo)
-		{
-			Console.WriteLine(eventInfo.TypeName + " Event Called.");
-		}
-
 		public static async Task MainTask()
 		{
+			// Setup MyAngularUi
 			MyAngularUi.Setup(3000);
 			await MyAngularUi.Start();
 
-			await InitElements();
+			await Task.Delay(1000);
+
+			// 
+			var setupComp = new SetupComponent();
+			setupComp.InitElements();
 
 			while (true)
 				await Task.Delay(8);

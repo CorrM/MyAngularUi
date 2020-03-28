@@ -1,37 +1,37 @@
 ﻿using MAU.Attributes;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using static MAU.Events.MauEventHandlers;
 
 namespace MAU.ReadyElement
 {
 	public class MauSelect : MauElement
 	{
-		public string OptionTagName { get; set; }
+		#region [ Events ]
 
-		public MauSelect(string id, string optionTagName) : base(id)
+
+
+		#endregion
+
+		#region [ Public Props ]
+
+		[MauVariable]
+		public List<string> Options { get; private set; }
+
+		[MauProperty("role")]
+		public string SelectedOption { get; set; }
+
+		#endregion
+
+		public MauSelect(MauComponent parentComponent, string id) : base(parentComponent, id)
 		{
-			OptionTagName = optionTagName;
+			Options = new List<string>();
 		}
 
-		public Dictionary<string, string> GetValues()
+		public void UpdateOptions()
 		{
-			return new Dictionary<string, string>();
-		}
-
-		public async Task AddOption(string value, string viewValue)
-		{
-			string code = $"var option = document.createElement(\"mat-option\");\r\noption.innerText = \"GG\";\r\noption.value = \"myvalue\";\r\n{Id}.appendChild(option);";
-
-			var data = new JObject()
-			{
-				{ "code", code }
-			};
-
-			await MyAngularUi.SendRequest(Id, MyAngularUi.RequestType.ExecuteCode, data);
+			MauVariable.UpdateVar(this, nameof(Options));
 		}
 	}
 }

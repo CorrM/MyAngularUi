@@ -5,6 +5,6 @@ namespace MAU.ReadyElement
 {
 	public class MauButton : MauElement
 	{
-		public MauButton(string id) : base(id) { }
+		public MauButton(MauComponent parentComponent, string id) : base(parentComponent, id) { }
 	}
 }

@@ -46,7 +46,12 @@ namespace MAU
 			/// <summary>
 			/// Execute TypeScript code in front-end side
 			/// </summary>
-			ExecuteCode = 5
+			ExecuteCode = 5,
+
+			/// <summary>
+			/// Set variable value in front-end side
+			/// </summary>
+			SetVarValue = 6
 		}
 
 		#region [ Static Fields ]
@@ -155,6 +160,15 @@ namespace MAU
 		internal static Task<bool> SendRequest(string uiElementId, RequestType requestType, JObject data)
 		{
 			return Send(uiElementId, requestType, data ?? new JObject());
+		}
+		internal static Task<bool> SendTsCode(string uiElementId, string code)
+		{
+			var data = new JObject()
+			{
+				{ "code", code }
+			};
+
+			return SendRequest(uiElementId, RequestType.ExecuteCode, data);
 		}
 		internal static async Task OnMessage(MessageEventArgs e)
 		{

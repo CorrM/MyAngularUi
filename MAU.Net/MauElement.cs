@@ -14,13 +14,17 @@ namespace MAU
 {
 	public abstract class MauElement
 	{
-
-		#region [ Internal Fields ]
+		#region [ Internal Props ]
 
 		/// <summary>
 		/// Not fire <see cref="MauProperty.OnSetValue"/> when set value local
 		/// </summary>
 		internal bool HandleOnSet { get; set; } = true;
+		internal MauComponent ParentComponent { get; }
+
+		#endregion
+
+		#region [ Internal Fields ]
 
 		internal readonly Dictionary<string, EventInfo> HandledEvents;
 		internal readonly Dictionary<string, PropertyInfo> HandledProps;
@@ -54,8 +58,9 @@ namespace MAU
 
 		#endregion
 
-		protected MauElement(string id)
+		protected MauElement(MauComponent parentComponent, string id)
 		{
+			ParentComponent = parentComponent;
 			Id = id;
 			HandledEvents = new Dictionary<string, EventInfo>();
 			HandledProps = new Dictionary<string, PropertyInfo>();
@@ -122,7 +127,7 @@ namespace MAU
 
 			// Invoke all subscribers
 			foreach (var handler in eventDelegate.GetInvocationList())
-				_ = Task.Run(() => handler.Method.Invoke(handler.Target, new object[] { eventName, new MauEventInfo(eventType, eventData) }));
+				_ = Task.Run(() => handler.Method.Invoke(handler.Target, new object[] { this, new MauEventInfo(eventName, eventType, eventData) }));
 		}
 		public void SetPropValue(string propName, object propValue)
 		{
