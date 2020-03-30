@@ -1,11 +1,11 @@
 import { NgModule, Injector } from '@angular/core';
-import { UiElementDirective } from './ui-element.directive';
+import { MauElementDirective } from './mau-element.directive';
 
 
 @NgModule({
-    declarations: [UiElementDirective],
+    declarations: [MauElementDirective],
     imports: [
     ],
-    exports: [UiElementDirective]
+    exports: [MauElementDirective]
 })
 export class MyAngularUiModule { }

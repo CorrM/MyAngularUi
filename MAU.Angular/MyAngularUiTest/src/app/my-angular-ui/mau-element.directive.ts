@@ -1,21 +1,25 @@
-import { Directive, ElementRef, Input, OnInit, HostListener } from '@angular/core';
+import { Directive, ElementRef, Input, OnInit } from '@angular/core';
 import { MyAngularUiService, AppInjector } from './my-angular-ui.service';
+import { MatSelect } from '@angular/material/select';
 
 @Directive({
-    selector: '[mauUiElement]'
+    selector: '[mauId]'
 })
-export class UiElementDirective implements OnInit {
+export class MauElementDirective implements OnInit {
     private uiService: MyAngularUiService;
 
-    @Input("mauUiElement")
+    @Input("mauId")
     ElementId: string;
+
+    @Input("mauRef")
+    ViewRef: any;
 
     constructor(private el: ElementRef) {
         this.uiService = AppInjector.get(MyAngularUiService);
     }
 
     ngOnInit() {
-        this.uiService.AddElement(this.ElementId, this.el);
+        this.uiService.AddElement(this.ElementId, { El: this.el, Component: this.ViewRef } );
 
         this.uiService.Mutation.observe(this.el.nativeElement, { characterData: true, attributes: true, childList: true, subtree: true });
     }

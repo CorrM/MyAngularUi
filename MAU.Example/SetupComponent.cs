@@ -17,8 +17,8 @@ namespace MAU.Example
 
 		public override void InitElements()
 		{
-			// FirstUi
-			select = new MauSelect(this, "FirstUi");
+			// FirstSelect
+			select = new MauSelect(this, "FirstSelect");
 			select.Click += Btn_Click;
 			select.SelectionChange += Select_SelectionChange;
 			select.Options.AddRange(new[] { "CorrM-0", "CorrM-1", "CorrM-2" });

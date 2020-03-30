@@ -1,16 +1,24 @@
-import { Injectable, ElementRef, Injector } from '@angular/core';
+import { Injectable, ElementRef, Injector, EventEmitter, Renderer2, RendererFactory2 } from '@angular/core';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { UtilsService } from './utils.service';
-import { EventManager } from '@angular/platform-browser';
+import * as ts from "typescript";
+import { MatSelect } from '@angular/material/select';
 
 export let AppInjector: Injector;
+
+interface MauElement {
+    El: ElementRef,
+    Component: any
+}
 
 enum RequestType {
     None = 0,
     GetEvents = 1,
     EventCallback = 2,
     GetPropValue = 3,
-    SetPropValue = 4
+    SetPropValue = 4,
+    ExecuteCode = 5,
+    SetVarValue = 6
 }
 
 @Injectable({
@@ -20,14 +28,22 @@ export class MyAngularUiService {
     private static reconnectTime: number = 1;
     private _connected: boolean = false;
     private _subject: WebSocketSubject<any>;
+    private _variables: Map<string, any>;
+    private _renderer: Renderer2;
 
     public Mutation: MutationObserver;
-    public UiElements: Map<string, ElementRef>;
+    public UiElements: Map<string, MauElement>;
     public UiElementEvents: Map<string, string[]>;
     public Port: number;
 
-    constructor(private utils: UtilsService, private injector: Injector, private eventManager: EventManager) {
-        this.UiElements = new Map<string, ElementRef>();
+    constructor(
+        private utils: UtilsService,
+        private injector: Injector,
+        private rendererFactory: RendererFactory2) {
+        this._renderer = rendererFactory.createRenderer(null, null);
+        this._variables = new Map<string, any>();
+
+        this.UiElements = new Map<string, MauElement>();
         this.UiElementEvents = new Map<string, string[]>();
 
         AppInjector = this.injector;
@@ -114,9 +130,27 @@ export class MyAngularUiService {
                 // Set event handler
                 let events = this.UiElementEvents.get(uiElementId);
                 events.forEach((eventName: string) => {
-                    let domObj = this.UiElements.get(uiElementId).nativeElement;
-                    // ToDo: Add checker to addEventListener, so it's not duplicate event handler
-                    this.eventManager.addEventListener(domObj, eventName, (event: Event) => this.FireEvent(uiElementId, event));
+                    let mauEl: MauElement = this.UiElements.get(uiElementId);
+
+                    // Access event as property
+                    let compEvent: EventEmitter<any> = mauEl.Component[eventName];
+
+                    // * Set subscribe to EventEmitter, that's for some custom components
+                    // * Like Angular Matiral components (MatSelect, ...)
+                    if (compEvent !== undefined) {
+                        compEvent.subscribe({
+                            next: (event: MessageEvent) => {
+                                this.FireEvent(uiElementId, eventName, event);
+                            }
+                        });
+                    }
+                    // * Add normal listener if it's normal HTML Element
+                    else {
+                        // ToDo: Add checker to `listen`, so it's not duplicate event handler
+                        this._renderer.listen(mauEl.El.nativeElement, eventName, (event: Event) => {
+                            this.FireEvent(uiElementId, undefined, event);
+                        });
+                    }
                 });
                 break;
 
@@ -126,6 +160,14 @@ export class MyAngularUiService {
 
             case RequestType.SetPropValue:
                 this.SetProp(uiElementId, data["propIsAttr"], data["propName"], data["propVal"]);
+                break;
+
+            case RequestType.ExecuteCode:
+                this.ExecuteCode(uiElementId, data["code"]);
+                break;
+
+            case RequestType.SetVarValue:
+                this.SetVar(data["varName"], data["varValue"]);
                 break;
 
             default:
@@ -168,7 +210,7 @@ export class MyAngularUiService {
         return this.Send(uiElementId, RequestType.EventCallback, { eventName: eventName, eventType: eventType, data: data });
     }
 
-    public AddElement(uiElementId: string, el: ElementRef) {
+    public AddElement(uiElementId: string, el: MauElement) {
         this.UiElements.set(uiElementId, el);
         this.UiElementEvents.set(uiElementId, []);
     }
@@ -188,18 +230,22 @@ export class MyAngularUiService {
         this.Send(uiElementId, RequestType.GetEvents, {});
     }
 
-    private FireEvent(uiElementId: string, event: Event): void {
-        let eventName: string = event.type;
-        this.SendEventCallback(uiElementId, eventName, event.constructor.name, this.utils.ObjectToJson(event));
+    private FireEvent(uiElementId: string, eventName: string, event: Event): void {
+        let eName: string = event.type ? event.type : eventName;
+        this.SendEventCallback(uiElementId, eName, event.constructor.name, this.utils.ObjectToJson(event));
     }
 
     private GetProp(uiElementId: string, propIsAttr: boolean, propName: string): void {
+        if (!this.UiElements.has(uiElementId)) {
+            return;
+        }
+
         let val: any;
         if (propIsAttr) {
-            val = this.UiElements.get(uiElementId).nativeElement.getAttribute(propName);
+            val = this.UiElements.get(uiElementId).El.nativeElement.getAttribute(propName);
         }
         else {
-            val = this.UiElements.get(uiElementId).nativeElement[propName];
+            val = this.UiElements.get(uiElementId).El.nativeElement[propName];
         }
 
         this.Send(uiElementId, RequestType.GetPropValue, { propName: propName, propValue: val });
@@ -208,10 +254,38 @@ export class MyAngularUiService {
     private SetProp(uiElementId: string, propIsAttr: boolean, propName: string, propVal: string): void {
 
         if (propIsAttr) {
-            this.UiElements.get(uiElementId).nativeElement.setAttribute(propName, propVal);
+            this.UiElements.get(uiElementId).El.nativeElement.setAttribute(propName, propVal);
         }
         else {
-            this.UiElements.get(uiElementId).nativeElement[propName] = propVal;
+            this.UiElements.get(uiElementId).El.nativeElement[propName] = propVal;
         }
     }
+
+    private ExecuteCode(uiElementId: string, code: string) {
+        // Access the element (So in TS code just use 'uiElementId' to access the mauElement)
+        let elSelector: string = `let elCorrM = this.UiElements.get(uiElementId).El.nativeElement;`;
+        code = code.replace(uiElementId, "elCorrM");
+        code = `${elSelector}\n${code}`;
+
+        const codeExecuter = {
+            Run: (pString: string) => {
+                return eval(pString)
+            }
+        };
+
+        codeExecuter.Run.call(this, code);
+    }
+
+    private SetVar(varName: string, varVal: any) {
+        this._variables.set(varName, varVal);
+    }
+
+    public GetVar(component: any, varName: string): any {
+        let fullVarName = `${component.constructor.name}_${varName}`;
+
+        return this._variables.has(fullVarName)
+            ? this._variables.get(fullVarName)
+            : null;
+    }
+
 }
