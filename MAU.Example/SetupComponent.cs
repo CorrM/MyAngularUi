@@ -30,7 +30,7 @@ namespace MAU.Example
 
 		private void Select_SelectionChange(MauElement element, Events.MauEventInfo eventInfo)
 		{
-			
+			Console.WriteLine(select.SelectedOption);
 		}
 
 		#region [ Ui Events ]
