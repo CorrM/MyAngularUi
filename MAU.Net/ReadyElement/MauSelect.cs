@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using static MAU.Events.MauEventHandlers;
 
 namespace MAU.ReadyElement
 {
@@ -10,7 +11,8 @@ namespace MAU.ReadyElement
 	{
 		#region [ Events ]
 
-
+		[MauEvent("selectionChange")]
+		public event MauEventHandler SelectionChange;
 
 		#endregion
 

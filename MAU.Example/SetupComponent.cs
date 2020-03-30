@@ -20,11 +20,17 @@ namespace MAU.Example
 			// FirstUi
 			select = new MauSelect(this, "FirstUi");
 			select.Click += Btn_Click;
+			select.SelectionChange += Select_SelectionChange;
 			select.Options.AddRange(new[] { "CorrM-0", "CorrM-1", "CorrM-2" });
 			select.UpdateOptions();
 
 			// Regester all MauElements
 			RegisterComponent();
+		}
+
+		private void Select_SelectionChange(MauElement element, Events.MauEventInfo eventInfo)
+		{
+			
 		}
 
 		#region [ Ui Events ]
