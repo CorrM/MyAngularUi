@@ -7,7 +7,7 @@ using static MAU.Events.MauEventHandlers;
 
 namespace MAU.ReadyElement
 {
-	public class MauSelect : MauElement
+	public class MauMatSelect : MauElement
 	{
 		#region [ Events ]
 
@@ -26,7 +26,7 @@ namespace MAU.ReadyElement
 
 		#endregion
 
-		public MauSelect(MauComponent parentComponent, string id) : base(parentComponent, id)
+		public MauMatSelect(MauComponent parentComponent, string id) : base(parentComponent, id)
 		{
 			Options = new List<string>();
 		}

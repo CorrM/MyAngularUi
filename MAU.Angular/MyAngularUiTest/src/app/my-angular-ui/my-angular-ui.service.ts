@@ -1,8 +1,6 @@
 import { Injectable, ElementRef, Injector, EventEmitter, Renderer2, RendererFactory2 } from '@angular/core';
 import { webSocket, WebSocketSubject } from 'rxjs/webSocket';
 import { UtilsService } from './utils.service';
-import * as ts from "typescript";
-import { MatSelect } from '@angular/material/select';
 
 export let AppInjector: Injector;
 

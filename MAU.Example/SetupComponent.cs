@@ -11,14 +11,14 @@ namespace MAU.Example
 
 		#region [ Ui Elements ]
 
-		protected MauSelect select;
+		protected MauMatSelect select;
 
 		#endregion
 
 		public override void InitElements()
 		{
 			// FirstSelect
-			select = new MauSelect(this, "FirstSelect");
+			select = new MauMatSelect(this, "FirstSelect");
 			select.Click += Btn_Click;
 			select.SelectionChange += Select_SelectionChange;
 			select.Options.AddRange(new[] { "CorrM-0", "CorrM-1", "CorrM-2" });
@@ -37,7 +37,7 @@ namespace MAU.Example
 
 		private static void Btn_Click(MauElement element, Events.MauEventInfo eventInfo)
 		{
-			MauSelect mauSelect = (MauSelect)element;
+			MauMatSelect mauSelect = (MauMatSelect)element;
 			Console.WriteLine(mauSelect.SelectedOption);
 		}
 
