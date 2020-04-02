@@ -38,7 +38,7 @@ namespace MAU.Example
 		private static void Btn_Click(MauElement element, Events.MauEventInfo eventInfo)
 		{
 			MauMatSelect mauSelect = (MauMatSelect)element;
-			Console.WriteLine(mauSelect.SelectedOption);
+			Console.WriteLine($"mauSelect => Clicked");
 		}
 
 		#endregion

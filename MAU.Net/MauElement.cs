@@ -72,7 +72,7 @@ namespace MAU
 		{
 			// Events
 			{
-				EventInfo[] eventInfos = this.GetType().GetEvents(BindingFlags.Public | BindingFlags.Instance);
+				EventInfo[] eventInfos = this.GetType().GetEvents(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 				foreach (EventInfo eventInfo in eventInfos.Where(MauEvent.HasAttribute))
 				{
 					var attr = eventInfo.GetCustomAttribute<MauEvent>();

@@ -1,4 +1,5 @@
 ﻿using MAU.Attributes;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -14,6 +15,9 @@ namespace MAU.ReadyElement
 		[MauEvent("selectionChange")]
 		public event MauEventHandler SelectionChange;
 
+		[MauEvent("valueChange")]
+		protected event MauEventHandler ValueChange;
+
 		#endregion
 
 		#region [ Public Props ]
@@ -21,14 +25,20 @@ namespace MAU.ReadyElement
 		[MauVariable]
 		public List<string> Options { get; private set; }
 
-		[MauProperty("value", false)]
-		public string SelectedOption { get; set; }
+		// [MauProperty("value", false)]
+		public string SelectedOption { get; private set; }
 
 		#endregion
 
 		public MauMatSelect(MauComponent parentComponent, string id) : base(parentComponent, id)
 		{
 			Options = new List<string>();
+			ValueChange += MauMatSelect_ValueChange;
+		}
+
+		private void MauMatSelect_ValueChange(MauElement element, Events.MauEventInfo eventInfo)
+		{
+			SelectedOption = eventInfo.Data["value"].Value<string>();
 		}
 
 		public void UpdateOptions()
