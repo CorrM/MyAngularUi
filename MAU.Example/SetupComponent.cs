@@ -38,6 +38,7 @@ namespace MAU.Example
 		private static void Btn_Click(MauElement element, Events.MauEventInfo eventInfo)
 		{
 			MauMatSelect mauSelect = (MauMatSelect)element;
+			mauSelect.Disabled = false;
 			Console.WriteLine($"mauSelect => Clicked");
 		}
 

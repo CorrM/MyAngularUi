@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using MAU.Attributes;
 using MAU.Events;
 using Newtonsoft.Json.Linq;
+using static MAU.Attributes.MauProperty;
 using static MAU.Events.MauEventHandlers;
 using static MAU.MyAngularUi;
 
@@ -40,14 +41,17 @@ namespace MAU
 
 		#region [ UI Proparties ]
 
-		[MauProperty("innerText", false)]
+		[MauProperty("innerText", MauPropertyType.NativeProperty)]
 		public string Text { get; set; }
 
-		[MauProperty("innerHTML", false)]
+		[MauProperty("innerHTML", MauPropertyType.NativeProperty)]
 		public string Html { get; set; }
 
-		[MauProperty("textContent", false)]
+		[MauProperty("textContent", MauPropertyType.NativeProperty)]
 		public string TextContent { get; set; }
+
+		[MauProperty("disabled", MauPropertyType.ComponentProperty)]
+		public bool Disabled { get; set; }
 
 		#endregion
 
@@ -135,7 +139,7 @@ namespace MAU
 				return;
 
 			HandleOnSet = false;
-			HandledProps[propName].SetValue(this, propValue);
+			HandledProps[propName].SetValue(this, Convert.ChangeType(propValue, HandledProps[propName].PropertyType));
 			HandleOnSet = true;
 		}
 		public void GetPropValue(string propName)
@@ -146,7 +150,7 @@ namespace MAU
 			var data = new JObject
 			{
 				{"propName", propName},
-				{"propIsAttr", GetUiPropAttribute(propName).IsAttribute}
+				{"propType", (int)GetUiPropAttribute(propName).PropType}
 			};
 
 			_ = MyAngularUi.SendRequest(Id, RequestType.GetPropValue, data);

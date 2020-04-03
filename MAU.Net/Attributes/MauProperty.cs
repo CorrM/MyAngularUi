@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PostSharp.Aspects;
 using PostSharp.Extensibility;
@@ -15,13 +16,20 @@ namespace MAU.Attributes
 	[PSerializable]
 	public sealed class MauProperty : LocationInterceptionAspect
 	{
-		public string PropertyName { get; private set; }
-		public bool IsAttribute { get; private set; }
+		public enum MauPropertyType
+		{
+			NativeAttribute = 0,
+			NativeProperty = 1,
+			ComponentProperty = 2
+		}
 
-		public MauProperty(string propertyName, bool isAttribute = true)
+		public string PropertyName { get; private set; }
+		public MauPropertyType PropType { get; private set; }
+
+		public MauProperty(string propertyName, MauPropertyType propType = MauPropertyType.NativeAttribute)
 		{
 			PropertyName = propertyName;
-			IsAttribute = isAttribute;
+			PropType = propType;
 		}
 
 		public static bool HasAttribute(PropertyInfo propertyInfo)
@@ -41,9 +49,9 @@ namespace MAU.Attributes
 
 			var data = new JObject
 			{
-				{"propIsAttr", IsAttribute},
+				{"propType", (int)PropType},
 				{"propName", PropertyName},
-				{"propVal", args.Value.ToString()}
+				{"propVal", JsonConvert.SerializeObject(args.Value)}
 			};
 
 			_ = MyAngularUi.SendRequest(holder.Id, MyAngularUi.RequestType.SetPropValue, data);

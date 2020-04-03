@@ -25,7 +25,6 @@ namespace MAU.ReadyElement
 		[MauVariable]
 		public List<string> Options { get; private set; }
 
-		// [MauProperty("value", false)]
 		public string SelectedOption { get; private set; }
 
 		#endregion
