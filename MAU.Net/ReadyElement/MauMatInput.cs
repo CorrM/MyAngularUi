@@ -8,6 +8,9 @@ namespace MAU.ReadyElement
 	{
 		#region [ Events ]
 
+		[MauEvent("input")]
+		public event MauEventHandler InputChange;
+
 		#endregion
 
 		#region [ Public Props ]
@@ -18,8 +21,11 @@ namespace MAU.ReadyElement
 		[MauProperty("type", MauPropertyType.ComponentProperty)]
 		public string InputType { get; set; }
 
-		[MauProperty("readonly", MauPropertyType.ComponentProperty)]
+		[MauProperty("readOnly", MauPropertyType.ComponentProperty)]
 		public bool Readonly { get; set; }
+
+		[MauProperty("value", MauPropertyType.NativeProperty)]
+		public string Value { get; set; }
 
 		#endregion
 

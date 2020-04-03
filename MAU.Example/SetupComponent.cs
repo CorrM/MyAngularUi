@@ -9,6 +9,10 @@ namespace MAU.Example
 	public class SetupComponent : MauComponent
 	{
 
+		/// <summary>
+		/// ToDo: Change logic to get prop value when call `MauProperty` property
+		/// </summary>
+
 		#region [ Ui Elements ]
 
 		protected MauMatInput processId;
@@ -22,7 +26,7 @@ namespace MAU.Example
 			// ProcessId
 			//
 			processId = new MauMatInput(this, "ProcessId");
-			processId.Click += ProcessId_Click;
+			processId.InputChange += ProcessId_InputChange;
 			processId.Placeholder = "Game Process ID";
 
 			/*
@@ -41,7 +45,7 @@ namespace MAU.Example
 			RegisterComponent();
 		}
 
-		private void ProcessId_Click(MauElement element, Events.MauEventInfo eventInfo)
+		private void ProcessId_InputChange(MauElement element, Events.MauEventInfo eventInfo)
 		{
 
 		}
