@@ -35,7 +35,7 @@ namespace MAU
 		#region [ Public Proparties ]
 
 		public IReadOnlyCollection<string> Events => HandledEvents.Keys.ToList();
-		public string Id { get; }
+		public string MauId { get; }
 
 		#endregion
 
@@ -50,9 +50,6 @@ namespace MAU
 		[MauProperty("textContent", MauPropertyType.NativeProperty)]
 		public string TextContent { get; set; }
 
-		[MauProperty("disabled", MauPropertyType.ComponentProperty)]
-		public bool Disabled { get; set; }
-
 		#endregion
 
 		#region [ UI Events ]
@@ -65,7 +62,7 @@ namespace MAU
 		protected MauElement(MauComponent parentComponent, string id)
 		{
 			ParentComponent = parentComponent;
-			Id = id;
+			MauId = id;
 			HandledEvents = new Dictionary<string, EventInfo>();
 			HandledProps = new Dictionary<string, PropertyInfo>();
 
@@ -139,7 +136,14 @@ namespace MAU
 				return;
 
 			HandleOnSet = false;
-			HandledProps[propName].SetValue(this, Convert.ChangeType(propValue, HandledProps[propName].PropertyType));
+			Type valType = HandledProps[propName].PropertyType;
+
+			// Make valid value
+			object val = propValue == null
+				? Activator.CreateInstance(valType)
+				: Convert.ChangeType(propValue, valType);
+
+			HandledProps[propName].SetValue(this, val);
 			HandleOnSet = true;
 		}
 		public void GetPropValue(string propName)
@@ -153,7 +157,7 @@ namespace MAU
 				{"propType", (int)GetUiPropAttribute(propName).PropType}
 			};
 
-			_ = MyAngularUi.SendRequest(Id, RequestType.GetPropValue, data);
+			_ = MyAngularUi.SendRequest(MauId, RequestType.GetPropValue, data);
 		}
 	}
 }

@@ -47,14 +47,16 @@ namespace MAU.Attributes
 				return;
 			}
 
+			Console.WriteLine($"[OnSetVal] ({PropertyName}) => {(dynamic)args.Value}");
+
 			var data = new JObject
 			{
 				{"propType", (int)PropType},
 				{"propName", PropertyName},
-				{"propVal", JsonConvert.SerializeObject(args.Value)}
+				{"propVal", (dynamic)args.Value}
 			};
 
-			_ = MyAngularUi.SendRequest(holder.Id, MyAngularUi.RequestType.SetPropValue, data);
+			_ = MyAngularUi.SendRequest(holder.MauId, MyAngularUi.RequestType.SetPropValue, data);
 			base.OnSetValue(args);
 		}
 

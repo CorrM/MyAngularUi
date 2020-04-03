@@ -30,7 +30,7 @@ namespace MAU
 				.ToList();
 
 			// Regester them
-			foreach (MauElement element in mauElements)
+			foreach (MauElement element in mauElements.Where(e => e != null))
 				MyAngularUi.RegisterUi(element);
 		}
 	}

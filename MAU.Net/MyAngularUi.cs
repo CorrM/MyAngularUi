@@ -172,8 +172,6 @@ namespace MAU
 		}
 		internal static async Task OnMessage(MessageEventArgs e)
 		{
-			Debug.WriteLine($"Recv > {e.Data}");
-
 			// Decode json
 			JObject jsonRequest = JObject.Parse(e.Data);
 			var jsonData = jsonRequest["data"].Value<JObject>();
@@ -184,7 +182,12 @@ namespace MAU
 
 			// Check if ui is registered
 			if (!GetUiElement(uiId, out MauElement uiElement))
-				throw new KeyNotFoundException("UiElement not found.");
+			{
+				// //////////////////////////////////////////////////////////////// Remove comment prefex when finish debug
+				// throw new KeyNotFoundException("UiElement not found.");
+				return;
+			}
+			Debug.WriteLine($"Recv > {e.Data}");
 
 			// Process
 			switch (requestType)
@@ -238,7 +241,7 @@ namespace MAU
 		}
 		public static void RegisterUi(MauElement element)
 		{
-			_uiElements.Add(element.Id, element);
+			_uiElements.Add(element.MauId, element);
 
 			// Request value from angular
 			foreach ((string propName, PropertyInfo _) in element.HandledProps.Select(x => (x.Key, x.Value)))
@@ -247,7 +250,7 @@ namespace MAU
 		public static void RegisterUi(ICollection<MauElement> element)
 		{
 			foreach (MauElement uiElement in element)
-				_uiElements.Add(uiElement.Id, uiElement);
+				_uiElements.Add(uiElement.MauId, uiElement);
 		}
 		public static bool GetUiElement(string elementId, out MauElement element)
 		{

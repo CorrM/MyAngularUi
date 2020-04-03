@@ -11,26 +11,45 @@ namespace MAU.Example
 
 		#region [ Ui Elements ]
 
-		protected MauMatSelect select;
+		protected MauMatInput processId;
+		protected MauMatSelect unrealVersion;
 
 		#endregion
 
 		public override void InitElements()
 		{
-			// FirstSelect
-			select = new MauMatSelect(this, "FirstSelect");
-			select.Click += Btn_Click;
-			select.SelectionChange += Select_SelectionChange;
-			select.Options.AddRange(new[] { "CorrM-0", "CorrM-1", "CorrM-2" });
-			select.UpdateOptions();
+			//
+			// ProcessId
+			//
+			processId = new MauMatInput(this, "ProcessId");
+			processId.Click += ProcessId_Click;
+			processId.Placeholder = "Game Process ID";
+
+			/*
+			//
+			// UEVersion
+			//
+			unrealVersion = new MauMatSelect(this, "UEVersion");
+			unrealVersion.Click += Btn_Click;
+			unrealVersion.SelectionChange += Select_SelectionChange;
+			unrealVersion.Options.AddRange(new[] { "CorrM-0", "CorrM-1", "CorrM-2" });
+			unrealVersion.UpdateOptions();
+			*/
+
 
 			// Regester all MauElements
 			RegisterComponent();
 		}
 
+		private void ProcessId_Click(MauElement element, Events.MauEventInfo eventInfo)
+		{
+
+		}
+
 		private void Select_SelectionChange(MauElement element, Events.MauEventInfo eventInfo)
 		{
-			Console.WriteLine(select.SelectedOption);
+			Console.WriteLine(unrealVersion.SelectedOption);
+			unrealVersion.SetOption(unrealVersion.Options[0]);
 		}
 
 		#region [ Ui Events ]
@@ -38,7 +57,6 @@ namespace MAU.Example
 		private static void Btn_Click(MauElement element, Events.MauEventInfo eventInfo)
 		{
 			MauMatSelect mauSelect = (MauMatSelect)element;
-			mauSelect.Disabled = false;
 			Console.WriteLine($"mauSelect => Clicked");
 		}
 
