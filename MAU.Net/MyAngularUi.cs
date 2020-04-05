@@ -135,12 +135,12 @@ namespace MAU
 				return sendState;
 			});
 		}
-		internal static async Task<bool> Send(string uiElementId, RequestType requestType, JObject data)
+		internal static async Task<bool> Send(string mauElementId, RequestType requestType, JObject data)
 		{
 			var dSend = new JObject
 			{
 				{ "requestType", (int)requestType },
-				{ "uiElementId", uiElementId },
+				{ "mauElementId", mauElementId },
 				{ "data", data }
 			};
 
@@ -157,18 +157,18 @@ namespace MAU
 			Debug.WriteLine("===============");
 			return sendState;
 		}
-		internal static Task<bool> SendRequest(string uiElementId, RequestType requestType, JObject data)
+		internal static Task<bool> SendRequest(string mauElementId, RequestType requestType, JObject data)
 		{
-			return Send(uiElementId, requestType, data ?? new JObject());
+			return Send(mauElementId, requestType, data ?? new JObject());
 		}
-		internal static Task<bool> SendTsCode(string uiElementId, string code)
+		internal static Task<bool> SendTsCode(string mauElementId, string code)
 		{
 			var data = new JObject()
 			{
 				{ "code", code }
 			};
 
-			return SendRequest(uiElementId, RequestType.ExecuteCode, data);
+			return SendRequest(mauElementId, RequestType.ExecuteCode, data);
 		}
 		internal static async Task OnMessage(MessageEventArgs e)
 		{
@@ -177,7 +177,7 @@ namespace MAU
 			var jsonData = jsonRequest["data"].Value<JObject>();
 
 			// Get request info
-			string uiId = jsonRequest["uiElementId"].Value<string>();
+			string uiId = jsonRequest["mauElementId"].Value<string>();
 			var requestType = (RequestType)jsonRequest["requestType"].Value<int>();
 
 			// Check if ui is registered

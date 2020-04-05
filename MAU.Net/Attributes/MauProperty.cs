@@ -26,7 +26,7 @@ namespace MAU.Attributes
 		public string PropertyName { get; private set; }
 		public MauPropertyType PropType { get; private set; }
 
-		public MauProperty(string propertyName, MauPropertyType propType = MauPropertyType.NativeAttribute)
+		public MauProperty(string propertyName, MauPropertyType propType)
 		{
 			PropertyName = propertyName;
 			PropType = propType;

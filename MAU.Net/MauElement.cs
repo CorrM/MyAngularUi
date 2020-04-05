@@ -139,9 +139,18 @@ namespace MAU
 			Type valType = HandledProps[propName].PropertyType;
 
 			// Make valid value
-			object val = propValue == null
-				? Activator.CreateInstance(valType)
-				: Convert.ChangeType(propValue, valType);
+			object val;
+			if (valType == typeof(string))
+			{
+				val = propValue;
+			}
+			else
+			{
+				val = propValue == null
+					? Activator.CreateInstance(valType)
+					: Convert.ChangeType(propValue, valType);
+			}
+			
 
 			HandledProps[propName].SetValue(this, val);
 			HandleOnSet = true;
@@ -151,10 +160,11 @@ namespace MAU
 			if (!HandledProps.ContainsKey(propName))
 				return;
 
+			MauProperty mauPropertyAttr = GetUiPropAttribute(propName);
 			var data = new JObject
 			{
 				{"propName", propName},
-				{"propType", (int)GetUiPropAttribute(propName).PropType}
+				{"propType", (int)mauPropertyAttr.PropType}
 			};
 
 			_ = MyAngularUi.SendRequest(MauId, RequestType.GetPropValue, data);

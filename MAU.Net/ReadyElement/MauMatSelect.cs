@@ -37,12 +37,6 @@ namespace MAU.ReadyElement
 		public MauMatSelect(MauComponent parentComponent, string mauId) : base(parentComponent, mauId)
 		{
 			Options = new List<string>();
-			ValueChange += MauMatSelect_ValueChange;
-		}
-
-		private void MauMatSelect_ValueChange(MauElement element, Events.MauEventInfo eventInfo)
-		{
-			SelectedOption = eventInfo.Data["value"].Value<string>();
 		}
 
 		#region [ MatSelect Options ]
