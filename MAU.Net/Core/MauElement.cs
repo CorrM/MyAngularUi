@@ -147,6 +147,7 @@ namespace MAU.Core
 			{
 				val = propValue;
 			}
+
 			else if (valType.IsEnum)
 			{
 				if (!MauEnumMember.HasNotSetValue(valType))
@@ -162,6 +163,7 @@ namespace MAU.Core
 				else
 					val = Enum.Parse(valType, enumValName);
 			}
+
 			else
 			{
 				val = propValue == null

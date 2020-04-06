@@ -33,22 +33,22 @@ namespace MAU.Attributes
 				throw new ArgumentException("Variable not 'MauVariable'", nameof(mauVarName));
 
 			// Get Holder Component
-			MauComponent holderComponent;
+			string varPrefix;
 			if (mauComponentElement.GetType().IsSubclassOf(typeof(MauElement)))
-				holderComponent = ((MauElement)mauComponentElement).ParentComponent;
+				varPrefix = ((MauElement)mauComponentElement).MauId;
 			else if (mauComponentElement.GetType().IsSubclassOf(typeof(MauElement)))
-				holderComponent = (MauComponent)mauComponentElement;
+				varPrefix = ((MauComponent)mauComponentElement).ComponentName;
 			else
 				throw new Exception("'MauVariable' Only valid on ('MauElement', 'MauComponent')");
 
 			// Ui not regester yet (RegisterComponent function not called)
-			if (holderComponent == null)
+			if (string.IsNullOrWhiteSpace(varPrefix))
 				return;
 
 			// Get Data
 			var data = new JObject
 			{
-				{ "varName", $"{holderComponent.ComponentName}_{mauVarName}" },
+				{ "varName", $"{varPrefix}_{mauVarName}" },
 			};
 
 			if (Utils.IsIEnumerable(pInfo.PropertyType))

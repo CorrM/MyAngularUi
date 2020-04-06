@@ -11,17 +11,13 @@ namespace MAU.Example
 {
 	public class SetupComponent : MauComponent
 	{
-
-		/// <summary>
-		/// ToDo: Change logic to get prop value when call `MauProperty` property
-		/// </summary>
-
 		#region [ Mau Elements ]
 
 		protected MauMatInput processId;
 		protected MauMatButton processAutoFind;
 		protected MauMatCheckBox useKernel;
 		protected MauMatSelect unrealVersion;
+		protected MauMatSelect unrealConfig;
 
 		#endregion
 
@@ -50,38 +46,41 @@ namespace MAU.Example
 			// UEVersion
 			//
 			unrealVersion = new MauMatSelect(this, "UEVersion");
-			unrealVersion.OpenedChange += UnrealVersion_OpenedChange;
 			unrealVersion.SelectionChange += UnrealVersion_SelectionChange;
 			unrealVersion.Options.AddRange(new[] { "CorrM-0", "CorrM-1", "CorrM-2" });
 			unrealVersion.UpdateOptions();
+
+			//
+			// UEConfig
+			//
+			unrealConfig = new MauMatSelect(this, "UEConfig");
+			unrealConfig.SelectionChange += UnrealConfig_SelectionChange; ;
+			unrealConfig.Options.AddRange(new[] { "CorrM-0", "CorrM-1", "CorrM-2" });
+			unrealConfig.UpdateOptions();
 
 			// Regester all MauElements
 			RegisterComponent();
 		}
 
+
+		#region [ Mau Events ]
+
+		private void UnrealConfig_SelectionChange(MauElement element, MauEventInfo eventInfo)
+		{
+			
+		}
 		private void UseKernel_Change(MauElement element, MauEventInfo eventInfo)
 		{
 			Console.WriteLine(useKernel.Checked);
 		}
-
 		private void ProcessAutoFind_Click(MauElement element, MauEventInfo eventInfo)
 		{
 			Console.WriteLine(processAutoFind.Disabled);
-			processAutoFind.Color = ThemePalette.Warn;
 		}
-
-		#region [ Mau Events ]
-
-		private void UnrealVersion_OpenedChange(MauElement element, MauEventInfo eventInfo)
-		{
-			Console.WriteLine(unrealVersion.PanelOpen);
-		}
-
 		private void ProcessId_InputChange(MauElement element, MauEventInfo eventInfo)
 		{
-			unrealVersion.Toggle();
-		}
 
+		}
 		private void UnrealVersion_SelectionChange(MauElement element, MauEventInfo eventInfo)
 		{
 			Console.WriteLine(unrealVersion.SelectedOption);
