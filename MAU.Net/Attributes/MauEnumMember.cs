@@ -33,12 +33,10 @@ namespace MAU.Attributes
 		{
 			return propertyInfo.GetCustomAttributes<MauEnumMember>(false).Any();
 		}
-
 		public static bool HasAttribute(FieldInfo fieldInfo)
 		{
 			return fieldInfo.GetCustomAttributes<MauEnumMember>(false).Any();
 		}
-
 		public static bool HasAttribute(Enum enumValue)
 		{
 			Type enumType = enumValue.GetType();

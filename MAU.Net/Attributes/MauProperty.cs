@@ -50,13 +50,8 @@ namespace MAU.Attributes
 				return;
 			}
 
-			if (args.Value.GetType().IsEnum)
-			{
-				if (MauEnumMember.HasAttribute((Enum)args.Value))
-				{
-					value = MauEnumMember.GetValue((Enum)args.Value);
-				}
-			}
+			if (args.Value.GetType().IsEnum && MauEnumMember.HasAttribute((Enum)args.Value))
+				value = MauEnumMember.GetValue((Enum)args.Value);
 
 			var data = new JObject
 			{

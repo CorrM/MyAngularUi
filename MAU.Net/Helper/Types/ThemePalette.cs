@@ -7,7 +7,7 @@ namespace MAU.Helper.Types
 {
 	public enum ThemePalette
 	{
-		[MauEnumMember(0)]
+		[MauEnumMember("")]
 		NoSet,
 
 		[MauEnumMember("primary")]
