@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Newtonsoft.Json;
 using WebSocketNet;
 using WebSocketNet.Server;
+using MAU.Core;
 using MAU.WebSocket;
 
 namespace MAU
@@ -51,14 +52,19 @@ namespace MAU
 			/// <summary>
 			/// Set variable value in front-end side
 			/// </summary>
-			SetVarValue = 6
+			SetVarValue = 6,
+
+			/// <summary>
+			/// Call method on front-end side
+			/// </summary>
+			CallMethod = 7
 		}
 
 		#region [ Static Fields ]
 
 		private static Thread _mainTimer;
 		private static Queue<string> _requestsQueue;
-		private static Dictionary<string, MauElement> _uiElements;
+		private static Dictionary<string, MauElement> _mauElements;
 		private static bool _working;
 
 		#endregion
@@ -81,7 +87,7 @@ namespace MAU
 			Init = true;
 			Port = webSocketPort;
 
-			_uiElements = new Dictionary<string, MauElement>();
+			_mauElements = new Dictionary<string, MauElement>();
 			_requestsQueue = new Queue<string>();
 			_mainTimer = new Thread(async () =>
 			{
@@ -239,9 +245,13 @@ namespace MAU
 					_requestsQueue.Dequeue();
 			}
 		}
+		public static bool MauRegistered(string mauId)
+		{
+			return _mauElements.ContainsKey(mauId);
+		}
 		public static void RegisterUi(MauElement element)
 		{
-			_uiElements.Add(element.MauId, element);
+			_mauElements.Add(element.MauId, element);
 
 			// Request value from angular
 			foreach ((string propName, PropertyInfo _) in element.HandledProps.Select(x => (x.Key, x.Value)))
@@ -250,13 +260,13 @@ namespace MAU
 		public static void RegisterUi(ICollection<MauElement> element)
 		{
 			foreach (MauElement uiElement in element)
-				_uiElements.Add(uiElement.MauId, uiElement);
+				_mauElements.Add(uiElement.MauId, uiElement);
 		}
 		public static bool GetUiElement(string elementId, out MauElement element)
 		{
-			if (_uiElements.ContainsKey(elementId))
+			if (_mauElements.ContainsKey(elementId))
 			{
-				element = _uiElements[elementId];
+				element = _mauElements[elementId];
 				return true;
 			}
 

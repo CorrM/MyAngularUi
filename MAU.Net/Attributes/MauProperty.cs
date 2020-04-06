@@ -8,11 +8,12 @@ using Newtonsoft.Json.Linq;
 using PostSharp.Aspects;
 using PostSharp.Extensibility;
 using PostSharp.Serialization;
+using MAU.Core;
 
 namespace MAU.Attributes
 {
 	[AttributeUsage(AttributeTargets.Property)]
-	[MulticastAttributeUsage(PersistMetaData = true)]
+	[MulticastAttributeUsage(MulticastTargets.Property, PersistMetaData = true)]
 	[PSerializable]
 	public sealed class MauProperty : LocationInterceptionAspect
 	{
@@ -46,8 +47,6 @@ namespace MAU.Attributes
 				base.OnSetValue(args);
 				return;
 			}
-
-			Console.WriteLine($"[OnSetVal] ({PropertyName}) => {(dynamic)args.Value}");
 
 			var data = new JObject
 			{

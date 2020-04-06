@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MAU
+namespace MAU.Core
 {
 	public abstract class MauComponent
 	{
@@ -31,7 +31,12 @@ namespace MAU
 
 			// Regester them
 			foreach (MauElement element in mauElements.Where(e => e != null))
+			{
+				if (MyAngularUi.MauRegistered(element.MauId))
+					throw new Exception("MauElement with same mauId was registered.");
+
 				MyAngularUi.RegisterUi(element);
+			}
 		}
 	}
 }

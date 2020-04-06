@@ -1,4 +1,5 @@
-﻿using MAU.ReadyElement;
+﻿using MAU.Core;
+using MAU.ReadyElement;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,27 +17,32 @@ namespace MAU.Example
 		#region [ Ui Elements ]
 
 		protected MauMatInput processId;
+		protected MauMatButton processAutoFind;
 		protected MauMatSelect unrealVersion;
 
 		#endregion
 
 		public override void InitElements()
 		{
-			/*
 			//
 			// ProcessId
 			//
 			processId = new MauMatInput(this, "ProcessId");
 			processId.InputChange += ProcessId_InputChange;
 			processId.Placeholder = "Game Process ID";
-			*/
+
+			//
+			// ProcessAutoFind
+			//
+			processAutoFind = new MauMatButton(this, "ProcessAutoFind");
 
 			//
 			// UEVersion
 			//
 			unrealVersion = new MauMatSelect(this, "UEVersion");
 			unrealVersion.Click += Btn_Click;
-			unrealVersion.SelectionChange += Select_SelectionChange;
+			unrealVersion.OpenedChange += UnrealVersion_OpenedChange;
+			unrealVersion.SelectionChange += unrealVersion_SelectionChange;
 			unrealVersion.Options.AddRange(new[] { "CorrM-0", "CorrM-1", "CorrM-2" });
 			unrealVersion.UpdateOptions();
 
@@ -44,12 +50,17 @@ namespace MAU.Example
 			RegisterComponent();
 		}
 
-		private void ProcessId_InputChange(MauElement element, Events.MauEventInfo eventInfo)
+		private void UnrealVersion_OpenedChange(MauElement element, Events.MauEventInfo eventInfo)
 		{
-
+			Console.WriteLine(unrealVersion.PanelOpen);
 		}
 
-		private void Select_SelectionChange(MauElement element, Events.MauEventInfo eventInfo)
+		private void ProcessId_InputChange(MauElement element, Events.MauEventInfo eventInfo)
+		{
+			unrealVersion.Toggle();
+		}
+
+		private void unrealVersion_SelectionChange(MauElement element, Events.MauEventInfo eventInfo)
 		{
 			Console.WriteLine(unrealVersion.SelectedOption);
 		}

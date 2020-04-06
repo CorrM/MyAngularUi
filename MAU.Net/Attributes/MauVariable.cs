@@ -6,11 +6,12 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using MAU.Core;
 
 namespace MAU.Attributes
 {
 	[AttributeUsage(AttributeTargets.Property)]
-	[MulticastAttributeUsage(PersistMetaData = true)]
+	[MulticastAttributeUsage(MulticastTargets.Property, PersistMetaData = true)]
 	[PSerializable]
 	public sealed class MauVariable : LocationInterceptionAspect
 	{

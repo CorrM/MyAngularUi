@@ -11,7 +11,7 @@ using static MAU.Attributes.MauProperty;
 using static MAU.Events.MauEventHandlers;
 using static MAU.MyAngularUi;
 
-namespace MAU
+namespace MAU.Core
 {
 	public abstract class MauElement
 	{
@@ -59,10 +59,13 @@ namespace MAU
 
 		#endregion
 
-		protected MauElement(MauComponent parentComponent, string id)
+		protected MauElement(MauComponent parentComponent, string mauId)
 		{
+			if (MyAngularUi.MauRegistered(mauId))
+				throw new ArgumentOutOfRangeException(nameof(mauId), "MauElement with same mauId was registered.");
+
 			ParentComponent = parentComponent;
-			MauId = id;
+			MauId = mauId;
 			HandledEvents = new Dictionary<string, EventInfo>();
 			HandledProps = new Dictionary<string, PropertyInfo>();
 

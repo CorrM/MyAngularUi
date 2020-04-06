@@ -1,4 +1,5 @@
-﻿using MAU.Attributes;
+﻿using MAU.Core;
+using MAU.Attributes;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -6,31 +7,69 @@ using System.Text;
 using System.Threading.Tasks;
 using static MAU.Attributes.MauProperty;
 using static MAU.Events.MauEventHandlers;
+using static MAU.Attributes.MauMethod;
 
 namespace MAU.ReadyElement
 {
 	public class MauMatSelect : MauElement
 	{
-		#region [ Events ]
+		#region [ Mau Events ]
+
+		[MauEvent("openedChange")]
+		public event MauEventHandler OpenedChange;
 
 		[MauEvent("selectionChange")]
 		public event MauEventHandler SelectionChange;
 
-		[MauEvent("valueChange")]
-		protected event MauEventHandler ValueChange;
+		// [MauEvent("valueChange")]
+		// protected event MauEventHandler ValueChange;
 
 		#endregion
 
-		#region [ Public Props ]
+		#region [ Mau Variable ]
 
 		[MauVariable]
 		public List<string> Options { get; private set; }
 
-		[MauProperty("value", MauPropertyType.ComponentProperty)]
-		public string SelectedOption { get; private set; }
+		#endregion
+
+		#region [ Mau Properties ]
+
+		[MauProperty("disableOptionCentering", MauPropertyType.ComponentProperty)]
+		public bool DisableOptionCentering { get; set; }
+
+		[MauProperty("disableRipple", MauPropertyType.ComponentProperty)]
+		public bool DisableRipple { get; set; }
 
 		[MauProperty("disabled", MauPropertyType.ComponentProperty)]
 		public bool Disabled { get; set; }
+
+		[MauProperty("id", MauPropertyType.ComponentProperty)]
+		public string Id { get; set; }
+
+		[MauProperty("multiple", MauPropertyType.ComponentProperty)]
+		public bool Multiple { get; set; }
+
+		[MauProperty("placeholder", MauPropertyType.ComponentProperty)]
+		public string Placeholder { get; set; }
+
+		[MauProperty("required", MauPropertyType.ComponentProperty)]
+		public bool Required { get; set; }
+
+		[MauProperty("typeaheadDebounceInterval", MauPropertyType.ComponentProperty)]
+		public long TypeaheadDebounceInterval { get; set; }
+
+		[MauProperty("value", MauPropertyType.ComponentProperty)]
+		public string SelectedOption { get; private set; }
+
+		[MauProperty("empty", MauPropertyType.ComponentProperty)]
+		public bool Empty { get; set; }
+
+		[MauProperty("focused", MauPropertyType.ComponentProperty)]
+		public bool Focused { get; set; }
+
+		[MauProperty("panelOpen", MauPropertyType.ComponentProperty)]
+		public bool PanelOpen { get; set; }
 
 		#endregion
 
@@ -64,5 +103,16 @@ namespace MAU.ReadyElement
 
 		#endregion
 
+		[MauMethod("close", MauMethodType.ComponentMethod)]
+		public void Close() { }
+
+		[MauMethod("focus", MauMethodType.ComponentMethod)]
+		public void Focus() { }
+
+		[MauMethod("open", MauMethodType.ComponentMethod)]
+		public void Open() { }
+
+		[MauMethod("toggle", MauMethodType.ComponentMethod)]
+		public void Toggle() { }
 	}
 }
