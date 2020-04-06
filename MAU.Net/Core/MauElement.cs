@@ -149,15 +149,18 @@ namespace MAU.Core
 			}
 			else if (valType.IsEnum)
 			{
+				if (!MauEnumMember.HasNotSetValue(valType))
+					throw new Exception($"NoSet must to be in any MauProperty value is 'Enum', {valType.FullName}");
+
 				string enumValName = valType.GetFields()
 					.Where(f => MauEnumMember.HasAttribute(f))
 					.Where(f => f.GetCustomAttributes<MauEnumMember>(false).FirstOrDefault().GetValue().Equals(propValue))
 					.FirstOrDefault()?.Name;
 
 				if (string.IsNullOrEmpty(enumValName))
-					throw new Exception($"Enum `{valType.Name}` not have field called `{propValue}`");
-
-				val = Enum.Parse(valType, enumValName);
+					val = Enum.ToObject(valType, 0);
+				else
+					val = Enum.Parse(valType, enumValName);
 			}
 			else
 			{

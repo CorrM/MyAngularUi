@@ -50,8 +50,14 @@ namespace MAU.Attributes
 				return;
 			}
 
-			if (args.Value.GetType().IsEnum && MauEnumMember.HasAttribute((Enum)args.Value))
-				value = MauEnumMember.GetValue((Enum)args.Value);
+			if (args.Value.GetType().IsEnum)
+			{
+				if (!MauEnumMember.HasNotSetValue(args.Value.GetType()))
+					throw new Exception($"NoSet must to be in any MauProperty value is 'Enum', {args.Value.GetType().FullName}");
+
+				if (MauEnumMember.HasAttribute((Enum)args.Value))
+					value = MauEnumMember.GetValue((Enum)args.Value);
+			}
 
 			var data = new JObject
 			{

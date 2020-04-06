@@ -21,8 +21,8 @@ namespace MAU.ReadyElement
 		[MauEvent("selectionChange")]
 		public event MauEventHandler SelectionChange;
 
-		// [MauEvent("valueChange")]
-		// protected event MauEventHandler ValueChange;
+		[MauEvent("valueChange")]
+		public event MauEventHandler ValueChange;
 
 		#endregion
 

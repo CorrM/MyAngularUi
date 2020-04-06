@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace MAU.Helper.Types
+namespace MAU.Helper.Enums
 {
 	public enum ThemePalette
 	{

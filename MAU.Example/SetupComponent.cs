@@ -1,5 +1,6 @@
 ﻿using MAU.Core;
 using MAU.Events;
+using MAU.Helper.Enums;
 using MAU.ReadyElement;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,7 @@ namespace MAU.Example
 
 		protected MauMatInput processId;
 		protected MauMatButton processAutoFind;
+		protected MauMatCheckBox useKernel;
 		protected MauMatSelect unrealVersion;
 
 		#endregion
@@ -39,6 +41,12 @@ namespace MAU.Example
 			processAutoFind.Click += ProcessAutoFind_Click;
 
 			//
+			// UseKernel
+			//
+			useKernel = new MauMatCheckBox(this, "UseKernel");
+			useKernel.Change += UseKernel_Change;
+
+			//
 			// UEVersion
 			//
 			unrealVersion = new MauMatSelect(this, "UEVersion");
@@ -49,14 +57,17 @@ namespace MAU.Example
 
 			// Regester all MauElements
 			RegisterComponent();
+		}
 
-			processAutoFind.Test();
+		private void UseKernel_Change(MauElement element, MauEventInfo eventInfo)
+		{
+			Console.WriteLine(useKernel.Checked);
 		}
 
 		private void ProcessAutoFind_Click(MauElement element, MauEventInfo eventInfo)
 		{
 			Console.WriteLine(processAutoFind.Disabled);
-			processAutoFind.Color = Helper.Types.ThemePalette.Warn;
+			processAutoFind.Color = ThemePalette.Warn;
 		}
 
 		#region [ Mau Events ]

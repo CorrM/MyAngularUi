@@ -22,7 +22,6 @@ namespace MAU.Attributes
 			ValueAsStr = value;
 			Parser = EnumParser.String;
 		}
-
 		public MauEnumMember(long value)
 		{
 			ValueAsNum = value;
@@ -43,6 +42,13 @@ namespace MAU.Attributes
 			string name = Enum.GetName(enumType, enumValue);
 			return enumType.GetField(name).GetCustomAttributes<MauEnumMember>(false).Any();
 		}
+		public static bool HasNotSetValue(Type enumType)
+		{
+			// NoSet must to be in any MauProperty value is `Enum`
+			// And also must to be first value in Enum
+			// For sure will equal == 0
+			return Enum.GetNames(enumType)[0] == "NoSet";
+		}
 
 		public object GetValue()
 		{
@@ -53,7 +59,6 @@ namespace MAU.Attributes
 				_ => null
 			};
 		}
-
 		public static object GetValue(Enum enumValue)
 		{
 			Type enumType = enumValue.GetType();

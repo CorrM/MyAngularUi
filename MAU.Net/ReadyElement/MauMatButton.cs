@@ -1,6 +1,6 @@
 ﻿using MAU.Attributes;
 using MAU.Core;
-using MAU.Helper.Types;
+using MAU.Helper.Enums;
 using static MAU.Attributes.MauMethod;
 using static MAU.Attributes.MauProperty;
 using static MAU.Events.MauEventHandlers;
@@ -36,17 +36,5 @@ namespace MAU.ReadyElement
 		#endregion
 
 		public MauMatButton(MauComponent parentComponent, string mauId) : base(parentComponent, mauId) { }
-
-		public void Test()
-		{
-			//MauPropertyType gg = MauPropertyType.ComponentProperty;
-			//object val = MauEnumMember.HasAttribute(gg);
-			//val = MauEnumMember.HasAttribute(Color);
-
-			//if (val == null)
-			//{
-
-			//}
-		}
 	}
 }
