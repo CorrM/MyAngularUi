@@ -73,12 +73,28 @@ namespace MAU.ReadyElement
 
 		#endregion
 
+		#region [ Mau Methods ]
+
+		[MauMethod("close", MauMethodType.ComponentMethod)]
+		public void Close() { }
+
+		[MauMethod("focus", MauMethodType.ComponentMethod)]
+		public void Focus() { }
+
+		[MauMethod("open", MauMethodType.ComponentMethod)]
+		public void Open() { }
+
+		[MauMethod("toggle", MauMethodType.ComponentMethod)]
+		public void Toggle() { }
+
+		#endregion
+
 		public MauMatSelect(MauComponent parentComponent, string mauId) : base(parentComponent, mauId)
 		{
 			Options = new List<string>();
 		}
 
-		#region [ MatSelect Options ]
+		#region [ Options Controlling ]
 
 		public void UpdateOptions()
 		{
@@ -102,17 +118,5 @@ namespace MAU.ReadyElement
 		}
 
 		#endregion
-
-		[MauMethod("close", MauMethodType.ComponentMethod)]
-		public void Close() { }
-
-		[MauMethod("focus", MauMethodType.ComponentMethod)]
-		public void Focus() { }
-
-		[MauMethod("open", MauMethodType.ComponentMethod)]
-		public void Open() { }
-
-		[MauMethod("toggle", MauMethodType.ComponentMethod)]
-		public void Toggle() { }
 	}
 }

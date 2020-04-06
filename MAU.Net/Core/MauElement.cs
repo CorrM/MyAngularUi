@@ -147,13 +147,25 @@ namespace MAU.Core
 			{
 				val = propValue;
 			}
+			else if (valType.IsEnum)
+			{
+				string enumValName = valType.GetFields()
+					.Where(f => MauEnumMember.HasAttribute(f))
+					.Where(f => f.GetCustomAttributes<MauEnumMember>(false).FirstOrDefault().GetValue().Equals(propValue))
+					.FirstOrDefault()?.Name;
+
+				if (string.IsNullOrEmpty(enumValName))
+					throw new Exception($"Enum `{valType.Name}` not have field called `{propValue}`");
+
+				val = Enum.Parse(valType, enumValName);
+			}
 			else
 			{
 				val = propValue == null
 					? Activator.CreateInstance(valType)
 					: Convert.ChangeType(propValue, valType);
 			}
-			
+
 
 			HandledProps[propName].SetValue(this, val);
 			HandleOnSet = true;

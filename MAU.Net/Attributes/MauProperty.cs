@@ -40,24 +40,32 @@ namespace MAU.Attributes
 
 		public override void OnSetValue(LocationInterceptionArgs args)
 		{
-			var holder = (MauElement)args.Instance;
+			base.OnSetValue(args);
 
+			var holder = (MauElement)args.Instance;
+			object value = args.Value;
 			if (!holder.HandleOnSet)
 			{
 				base.OnSetValue(args);
 				return;
 			}
 
+			if (args.Value.GetType().IsEnum)
+			{
+				if (MauEnumMember.HasAttribute((Enum)args.Value))
+				{
+					value = MauEnumMember.GetValue((Enum)args.Value);
+				}
+			}
+
 			var data = new JObject
 			{
 				{"propType", (int)PropType},
 				{"propName", PropertyName},
-				{"propVal", (dynamic)args.Value}
+				{"propVal", (dynamic)value}
 			};
 
 			_ = MyAngularUi.SendRequest(holder.MauId, MyAngularUi.RequestType.SetPropValue, data);
-			base.OnSetValue(args);
 		}
-
 	}
 }

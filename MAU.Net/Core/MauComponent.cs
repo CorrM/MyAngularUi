@@ -18,6 +18,8 @@ namespace MAU.Core
 		public MauComponent()
 		{
 			ComponentName = this.GetType().Name;
+
+			InitElements();
 		}
 
 		public abstract void InitElements();

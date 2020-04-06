@@ -20,7 +20,6 @@ namespace MAU.Example
 
 			// 
 			var setupComp = new SetupComponent();
-			setupComp.InitElements();
 
 			while (true)
 				await Task.Delay(8);
