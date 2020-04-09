@@ -1,5 +1,6 @@
 ﻿using MAU.Attributes;
 using MAU.Core;
+using MAU.Helper.Enums;
 using static MAU.Attributes.MauProperty;
 using static MAU.Events.MauEventHandlers;
 
@@ -18,6 +19,9 @@ namespace MAU.ReadyElement
 
 		[MauProperty("placeholder", MauPropertyType.NativeAttribute)]
 		public string Placeholder { get; set; }
+
+		[MauProperty("autocomplete", MauPropertyType.NativeAttribute)]
+		public OnOff Autocomplete { get; set; }
 
 		[MauProperty("type", MauPropertyType.ComponentProperty)]
 		public string InputType { get; set; }
