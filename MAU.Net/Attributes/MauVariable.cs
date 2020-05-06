@@ -49,12 +49,8 @@ namespace MAU.Attributes
 			var data = new JObject
 			{
 				{ "varName", $"{varPrefix}_{mauVarName}" },
+				{ "varValue", MyAngularUi.ParseMauVar(pInfo.PropertyType, pInfo.GetValue(mauComponentElement)) }
 			};
-
-			if (Utils.IsIEnumerable(pInfo.PropertyType))
-				data.Add("varValue", JArray.FromObject(pInfo.GetValue(mauComponentElement)));
-			else
-				data.Add("varValue", JObject.FromObject(pInfo.GetValue(mauComponentElement)));
 
 			// Send Data
 			_ = MyAngularUi.SendRequest("null", MyAngularUi.RequestType.SetVarValue, data);

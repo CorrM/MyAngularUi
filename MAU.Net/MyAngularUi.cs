@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using WebSocketNet;
 using WebSocketNet.Server;
 using MAU.Core;
+using MAU.Variables;
 using MAU.WebSocket;
 
 namespace MAU
@@ -81,6 +82,7 @@ namespace MAU
 		private static Queue<string> _requestsQueue;
 		private static Dictionary<string, MauElement> _mauElements;
 		private static bool _working;
+		private static Dictionary<Type, MauVarParser<dynamic>> _varParsers;
 
 		#endregion
 
@@ -93,6 +95,26 @@ namespace MAU
 		#endregion
 
 		#region [ Methods ]
+
+		private static void InitVarParser()
+		{
+			_varParsers = typeof(MyAngularUi).Assembly.GetTypes()
+				.Where(t => t.IsClass && t.BaseType != null && t.BaseType.IsGenericType && t.BaseType.GetGenericTypeDefinition() == typeof(MauVarParser<>))
+				.ToDictionary(key => key, val => (MauVarParser<dynamic>)Activator.CreateInstance(val));
+
+		}
+		public static string ParseMauVar(Type varType, object varObj)
+		{
+			MauVarParser<dynamic> parser = !_varParsers.ContainsKey(varType)
+				? _varParsers[typeof(DefaultParser)]
+				: _varParsers[varType];
+
+			return parser.Parse(varObj);
+		}
+		public static string ParseMauVar<T>(T var)
+		{
+			return ParseMauVar(typeof(T), var);
+		}
 
 		public static void Setup(int webSocketPort)
 		{
@@ -112,6 +134,8 @@ namespace MAU
 					await Task.Delay(8);
 				}
 			});
+
+			InitVarParser();
 		}
 		public static void Stop()
 		{

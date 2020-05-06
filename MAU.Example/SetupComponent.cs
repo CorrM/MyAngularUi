@@ -64,8 +64,8 @@ namespace MAU.Example
 			// TargetInfo
 			//
 			targetInfoTbl = new MauTable(this, "TargetInfoTbl");
-			targetInfoTbl.Options.AddRange(new[] { "CorrM-0", "CorrM-1", "CorrM-2" });
-			targetInfoTbl.UpdateOptions();
+			//targetInfoTbl.Options.AddRange(new[] { "CorrM-0", "CorrM-1", "CorrM-2" });
+			//targetInfoTbl.UpdateOptions();
 
 			// Register all MauElements
 			RegisterComponent();
