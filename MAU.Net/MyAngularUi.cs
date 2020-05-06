@@ -57,7 +57,22 @@ namespace MAU
 			/// <summary>
 			/// Call method on front-end side
 			/// </summary>
-			CallMethod = 7
+			CallMethod = 7,
+
+			/// <summary>
+			/// Get style from front-end side
+			/// </summary>
+			GetStyle = 8,
+
+			/// <summary>
+			/// Set style on front-end side
+			/// </summary>
+			SetStyle = 9,
+
+			/// <summary>
+			/// Remove style on front-end side
+			/// </summary>
+			RemoveStyle = 9
 		}
 
 		#region [ Static Fields ]

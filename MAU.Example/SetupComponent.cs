@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using MAU.ReadyElement.Angular;
 
 namespace MAU.Example
 {
@@ -13,11 +14,12 @@ namespace MAU.Example
 	{
 		#region [ Mau Elements ]
 
-		protected MauMatInput processId;
-		protected MauMatButton processAutoFind;
-		protected MauMatCheckBox useKernel;
-		protected MauMatSelect unrealVersion;
-		protected MauMatSelect unrealConfig;
+		private MauMatInput processId;
+		private MauMatButton processAutoFind;
+		private MauMatSlideToggle useKernel;
+		private MauMatSelect unrealVersion;
+		private MauMatSelect unrealConfig;
+		private MauTable targetInfoTbl;
 
 		#endregion
 
@@ -39,7 +41,7 @@ namespace MAU.Example
 			//
 			// UseKernel
 			//
-			useKernel = new MauMatCheckBox(this, "UseKernel");
+			useKernel = new MauMatSlideToggle(this, "UseKernel");
 			useKernel.Change += UseKernel_Change;
 
 			//
@@ -54,11 +56,18 @@ namespace MAU.Example
 			// UEConfig
 			//
 			unrealConfig = new MauMatSelect(this, "UEConfig");
-			unrealConfig.SelectionChange += UnrealConfig_SelectionChange; ;
+			unrealConfig.SelectionChange += UnrealConfig_SelectionChange;
 			unrealConfig.Options.AddRange(new[] { "CorrM-0", "CorrM-1", "CorrM-2" });
 			unrealConfig.UpdateOptions();
 
-			// Regester all MauElements
+			//
+			// TargetInfo
+			//
+			targetInfoTbl = new MauTable(this, "TargetInfoTbl");
+			targetInfoTbl.Options.AddRange(new[] { "CorrM-0", "CorrM-1", "CorrM-2" });
+			targetInfoTbl.UpdateOptions();
+
+			// Register all MauElements
 			RegisterComponent();
 		}
 

@@ -5,7 +5,7 @@ using static MAU.Attributes.MauMethod;
 using static MAU.Attributes.MauProperty;
 using static MAU.Events.MauEventHandlers;
 
-namespace MAU.ReadyElement
+namespace MAU.ReadyElement.Angular
 {
 	public class MatExpansionPanel : MauElement
 	{

@@ -15,10 +15,11 @@ namespace MAU.Core
 
 		#endregion
 
-		public MauComponent()
+		protected MauComponent()
 		{
 			ComponentName = this.GetType().Name;
 
+			// ReSharper disable once VirtualMemberCallInConstructor
 			InitElements();
 		}
 

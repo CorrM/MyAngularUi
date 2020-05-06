@@ -1,15 +1,11 @@
-﻿using MAU.Core;
+﻿using System.Collections.Generic;
 using MAU.Attributes;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+using MAU.Core;
 using static MAU.Attributes.MauProperty;
 using static MAU.Events.MauEventHandlers;
 using static MAU.Attributes.MauMethod;
 
-namespace MAU.ReadyElement
+namespace MAU.ReadyElement.Angular
 {
 	public class MauMatSelect : MauElement
 	{
@@ -100,7 +96,7 @@ namespace MAU.ReadyElement
 		{
 			MauVariable.UpdateVar(this, nameof(Options));
 		}
-		public bool SetOption(string newOption)
+		public bool SelectOption(string newOption)
 		{
 			if (!Options.Contains(newOption))
 				return false;
@@ -108,7 +104,7 @@ namespace MAU.ReadyElement
 			SelectedOption = newOption;
 			return true;
 		}
-		public bool SetOption(int newOptionIndex)
+		public bool SelectOption(int newOptionIndex)
 		{
 			if (Options.Count >= newOptionIndex)
 				return false;

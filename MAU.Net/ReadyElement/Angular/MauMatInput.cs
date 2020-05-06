@@ -4,7 +4,7 @@ using MAU.Helper.Enums;
 using static MAU.Attributes.MauProperty;
 using static MAU.Events.MauEventHandlers;
 
-namespace MAU.ReadyElement
+namespace MAU.ReadyElement.Angular
 {
 	public class MauMatInput : MauElement
 	{

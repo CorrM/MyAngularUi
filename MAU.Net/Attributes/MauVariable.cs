@@ -41,7 +41,7 @@ namespace MAU.Attributes
 			else
 				throw new Exception("'MauVariable' Only valid on ('MauElement', 'MauComponent')");
 
-			// Ui not regester yet (RegisterComponent function not called)
+			// Ui not register yet (RegisterComponent function not called)
 			if (string.IsNullOrWhiteSpace(varPrefix))
 				return;
 
