@@ -63,7 +63,8 @@ namespace MAU.Attributes
 			{
 				{"propType", (int)PropType},
 				{"propName", PropertyName},
-				{"propVal", (dynamic)value}
+				//{"propVal", (dynamic)value}
+				{"propVal", MyAngularUi.ParseMauData(value)}
 			};
 
 			_ = MyAngularUi.SendRequest(holder.MauId, MyAngularUi.RequestType.SetPropValue, data);

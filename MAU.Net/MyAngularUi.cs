@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 using WebSocketNet;
 using WebSocketNet.Server;
 using MAU.Core;
-using MAU.Variables;
+using MAU.DataParser;
 using MAU.WebSocket;
 
 namespace MAU
@@ -82,7 +82,7 @@ namespace MAU
 		private static Queue<string> _requestsQueue;
 		private static Dictionary<string, MauElement> _mauElements;
 		private static bool _working;
-		private static Dictionary<Type, MauVarParser<dynamic>> _varParsers;
+		private static Dictionary<Type, dynamic> _varParsers;
 
 		#endregion
 
@@ -99,21 +99,21 @@ namespace MAU
 		private static void InitVarParser()
 		{
 			_varParsers = typeof(MyAngularUi).Assembly.GetTypes()
-				.Where(t => t.IsClass && t.BaseType != null && t.BaseType.IsGenericType && t.BaseType.GetGenericTypeDefinition() == typeof(MauVarParser<>))
-				.ToDictionary(key => key, val => (MauVarParser<dynamic>)Activator.CreateInstance(val));
-
+				.Where(t => t.IsClass && t.BaseType != null && t.BaseType.IsGenericType && t.BaseType.GetGenericTypeDefinition() == typeof(MauDataParser<>))
+				.Select(val => (dynamic)Activator.CreateInstance(val))
+				.ToDictionary(key => (Type)key.TargetType, val => val);
 		}
-		public static string ParseMauVar(Type varType, object varObj)
+		public static JToken ParseMauData(Type varType, object varObj)
 		{
-			MauVarParser<dynamic> parser = !_varParsers.ContainsKey(varType)
-				? _varParsers[typeof(DefaultParser)]
+			dynamic parser = !_varParsers.ContainsKey(varType)
+				? _varParsers[typeof(object)]
 				: _varParsers[varType];
 
-			return parser.Parse(varObj);
+			return parser.Parse((dynamic)varObj);
 		}
-		public static string ParseMauVar<T>(T var)
+		public static JToken ParseMauData<T>(T var)
 		{
-			return ParseMauVar(typeof(T), var);
+			return ParseMauData(typeof(T), var);
 		}
 
 		public static void Setup(int webSocketPort)

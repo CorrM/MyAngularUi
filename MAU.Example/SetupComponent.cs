@@ -64,6 +64,7 @@ namespace MAU.Example
 			// TargetInfo
 			//
 			targetInfoTbl = new MauTable(this, "TargetInfoTbl");
+			targetInfoTbl.Content.Columns.Add();
 			//targetInfoTbl.Options.AddRange(new[] { "CorrM-0", "CorrM-1", "CorrM-2" });
 			//targetInfoTbl.UpdateOptions();
 

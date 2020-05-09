@@ -49,7 +49,7 @@ namespace MAU.Attributes
 			var data = new JObject
 			{
 				{ "varName", $"{varPrefix}_{mauVarName}" },
-				{ "varValue", MyAngularUi.ParseMauVar(pInfo.PropertyType, pInfo.GetValue(mauComponentElement)) }
+				{ "varValue", MyAngularUi.ParseMauData(pInfo.PropertyType, pInfo.GetValue(mauComponentElement)) }
 			};
 
 			// Send Data
