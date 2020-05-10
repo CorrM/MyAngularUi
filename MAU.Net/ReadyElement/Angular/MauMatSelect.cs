@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using MAU.Attributes;
 using MAU.Core;
+using MAU.Helper.Types;
 using static MAU.Attributes.MauProperty;
 using static MAU.Events.MauEventHandlers;
 using static MAU.Attributes.MauMethod;
@@ -25,7 +26,7 @@ namespace MAU.ReadyElement.Angular
 		#region [ Mau Variable ]
 
 		[MauVariable]
-		public List<string> Options { get; private set; }
+		public MauDataList<string> Options { get; private set; }
 
 		#endregion
 
@@ -87,15 +88,11 @@ namespace MAU.ReadyElement.Angular
 
 		public MauMatSelect(MauComponent parentComponent, string mauId) : base(parentComponent, mauId)
 		{
-			Options = new List<string>();
+			Options = new MauDataList<string>(this, nameof(Options));
 		}
 
 		#region [ Options Controlling ]
 
-		public void UpdateOptions()
-		{
-			MauVariable.UpdateVar(this, nameof(Options));
-		}
 		public bool SelectOption(string newOption)
 		{
 			if (!Options.Contains(newOption))

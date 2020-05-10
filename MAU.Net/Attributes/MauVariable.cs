@@ -33,27 +33,27 @@ namespace MAU.Attributes
 				throw new ArgumentException("Variable not 'MauVariable'", nameof(mauVarName));
 
 			// Get Holder Component
-			string varPrefix;
+			string mauId;
 			if (mauComponentElement.GetType().IsSubclassOf(typeof(MauElement)))
-				varPrefix = ((MauElement)mauComponentElement).MauId;
+				mauId = ((MauElement)mauComponentElement).MauId;
 			else if (mauComponentElement.GetType().IsSubclassOf(typeof(MauElement)))
-				varPrefix = ((MauComponent)mauComponentElement).ComponentName;
+				mauId = ((MauComponent)mauComponentElement).ComponentName;
 			else
 				throw new Exception("'MauVariable' Only valid on ('MauElement', 'MauComponent')");
 
 			// Ui not register yet (RegisterComponent function not called)
-			if (string.IsNullOrWhiteSpace(varPrefix))
+			if (string.IsNullOrWhiteSpace(mauId))
 				return;
 
 			// Get Data
 			var data = new JObject
 			{
-				{ "varName", $"{varPrefix}_{mauVarName}" },
+				{ "varName", mauVarName },
 				{ "varValue", MyAngularUi.ParseMauData(pInfo.PropertyType, pInfo.GetValue(mauComponentElement)) }
 			};
 
 			// Send Data
-			_ = MyAngularUi.SendRequest("null", MyAngularUi.RequestType.SetVarValue, data);
+			_ = MyAngularUi.SendRequest(mauId, MyAngularUi.RequestType.SetVarValue, data);
 		}
 		public static void UpdateVar(MauComponent mauComponent, string mauVarName)
 		{

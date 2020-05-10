@@ -17,6 +17,9 @@ namespace MAU.ReadyElement.Angular
 
 		#region [ Mau Properties ]
 
+		[MauProperty("disabled", MauPropertyType.ComponentProperty)]
+		public bool Disabled { get; set; }
+
 		[MauProperty("placeholder", MauPropertyType.NativeAttribute)]
 		public string Placeholder { get; set; }
 

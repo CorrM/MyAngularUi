@@ -32,7 +32,7 @@ namespace MAU.Core
 				.Select(mauField => (MauElement)mauField.GetValue(this))
 				.ToList();
 
-			// Regester them
+			// Register them
 			foreach (MauElement element in mauElements.Where(e => e != null))
 			{
 				if (MyAngularUi.MauRegistered(element.MauId))

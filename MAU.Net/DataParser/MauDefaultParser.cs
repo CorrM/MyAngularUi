@@ -4,7 +4,7 @@ using Newtonsoft.Json.Linq;
 
 namespace MAU.DataParser
 {
-	public class DefaultParser : MauDataParser<object>
+	public class MauDefaultParser : MauDataParser<object>
 	{
 		public override JToken Parse(object varObj)
 		{
@@ -15,12 +15,15 @@ namespace MAU.DataParser
 
 			try
 			{
-				return JObject.FromObject(varObj);
+				if (varType != typeof(string) && varType != typeof(bool))
+					return JObject.FromObject(varObj);
 			}
-			catch (ArgumentException)
+			catch
 			{
-				return JToken.FromObject(varObj);
+				// ignored
 			}
+
+			return JToken.FromObject(varObj);
 		}
 	}
 }

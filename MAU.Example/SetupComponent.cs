@@ -4,8 +4,10 @@ using MAU.Helper.Enums;
 using MAU.ReadyElement;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
 using System.Threading.Tasks;
+using MAU.Helper.Types;
 using MAU.ReadyElement.Angular;
 
 namespace MAU.Example
@@ -20,6 +22,7 @@ namespace MAU.Example
 		private MauMatSelect unrealVersion;
 		private MauMatSelect unrealConfig;
 		private MauTable targetInfoTbl;
+		private MauMatButton targetLockBtn;
 
 		#endregion
 
@@ -50,7 +53,6 @@ namespace MAU.Example
 			unrealVersion = new MauMatSelect(this, "UEVersion");
 			unrealVersion.SelectionChange += UnrealVersion_SelectionChange;
 			unrealVersion.Options.AddRange(new[] { "CorrM-0", "CorrM-1", "CorrM-2" });
-			unrealVersion.UpdateOptions();
 
 			//
 			// UEConfig
@@ -58,26 +60,40 @@ namespace MAU.Example
 			unrealConfig = new MauMatSelect(this, "UEConfig");
 			unrealConfig.SelectionChange += UnrealConfig_SelectionChange;
 			unrealConfig.Options.AddRange(new[] { "CorrM-0", "CorrM-1", "CorrM-2" });
-			unrealConfig.UpdateOptions();
+
+			//
+			// UEConfig
+			//
+			targetLockBtn = new MauMatButton(this, "TargetLockBtn");
+			targetLockBtn.Click += TargetLockBtn_Click;
 
 			//
 			// TargetInfo
 			//
 			targetInfoTbl = new MauTable(this, "TargetInfoTbl");
-			targetInfoTbl.Content.Columns.Add();
-			//targetInfoTbl.Options.AddRange(new[] { "CorrM-0", "CorrM-1", "CorrM-2" });
-			//targetInfoTbl.UpdateOptions();
+			targetInfoTbl.Content.Columns.Add("");
+			targetInfoTbl.Content.Columns.Add("");
+			targetInfoTbl.Content.Rows.Add(new List<string> { "Window Name", "Bad Name" });
+			targetInfoTbl.Content.Rows.Add(new List<string> { "Process ID", "0x00" });
+			targetInfoTbl.Content.Rows.Add(new List<string> { "Game Arch", "64" });
+			targetInfoTbl.Content.Rows.Add(new List<string> { "Exe Name", "UFT.exe" });
+			targetInfoTbl.Content.Rows.Add(new List<string> { "Modules Count", "12" });
+			targetInfoTbl.Content.Rows.Add(new List<string> { "Unreal Version", "4.24" });
+			targetInfoTbl.Content.Rows.Add(new List<string> { "Anti Cheat", "UnKnown" });
 
 			// Register all MauElements
 			RegisterComponent();
 		}
-
 
 		#region [ Mau Events ]
 
 		private void UnrealConfig_SelectionChange(MauElement element, MauEventInfo eventInfo)
 		{
 			
+		}
+		private void TargetLockBtn_Click(MauElement element, MauEventInfo eventInfo)
+		{
+			processId.Disabled = !processId.Disabled;
 		}
 		private void UseKernel_Change(MauElement element, MauEventInfo eventInfo)
 		{

@@ -5,6 +5,7 @@ using System.Text;
 using MAU.Attributes;
 using MAU.Core;
 using MAU.Helper.Enums;
+using MAU.Helper.Types;
 
 namespace MAU.ReadyElement
 {
@@ -17,7 +18,7 @@ namespace MAU.ReadyElement
 		#region [ Mau Variable ]
 
 		[MauVariable]
-		public DataTable Content { get; }
+		public MauDataTable Content { get; }
 
 		#endregion
 
@@ -27,12 +28,7 @@ namespace MAU.ReadyElement
 
 		public MauTable(MauComponent parentComponent, string mauId) : base(parentComponent, mauId)
 		{
-			Content = new DataTable();
-		}
-
-		public void UpdateTable()
-		{
-			MauVariable.UpdateVar(this, nameof(Content));
+			Content = new MauDataTable(this, nameof(Content));
 		}
 	}
 }
