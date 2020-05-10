@@ -61,19 +61,24 @@ namespace MAU
 			CallMethod = 7,
 
 			/// <summary>
-			/// Get style from front-end side
-			/// </summary>
-			GetStyle = 8,
-
-			/// <summary>
 			/// Set style on front-end side
 			/// </summary>
-			SetStyle = 9,
+			SetStyle = 8,
 
 			/// <summary>
 			/// Remove style on front-end side
 			/// </summary>
-			RemoveStyle = 9
+			RemoveStyle = 9,
+
+			/// <summary>
+			/// Set/Add class on front-end side
+			/// </summary>
+			AddClass = 10,
+
+			/// <summary>
+			/// Remove class on front-end side
+			/// </summary>
+			RemoveClass = 11
 		}
 
 		#region [ Static Fields ]
@@ -219,14 +224,14 @@ namespace MAU
 		{
 			// Decode json
 			JObject jsonRequest = JObject.Parse(e.Data);
-			var jsonData = jsonRequest["data"].Value<JObject>();
 
 			// Get request info
-			string uiId = jsonRequest["mauElementId"].Value<string>();
+			string mauId = jsonRequest["mauElementId"]?.Value<string>();
 			var requestType = (RequestType)jsonRequest["requestType"].Value<int>();
+			var jsonData = jsonRequest["data"].Value<JObject>();
 
 			// Check if ui is registered
-			if (!GetUiElement(uiId, out MauElement uiElement))
+			if (!GetUiElement(mauId, out MauElement uiElement))
 			{
 				// //////////////////////////////////////////////////////////////// Remove comment prefex when finish debug
 				// throw new KeyNotFoundException("UiElement not found.");
@@ -247,7 +252,7 @@ namespace MAU
 					};
 
 					// Send response
-					await Send(uiId, requestType, ret);
+					await Send(mauId, requestType, ret);
 					return;
 
 				case RequestType.EventCallback:
@@ -260,7 +265,19 @@ namespace MAU
 
 				case RequestType.GetPropValue:
 					string propName = jsonData["propName"].Value<string>();
-					string propValue = jsonData["propValue"].Value<string>();
+
+					// ToDo: Use data parser here
+					// Get type of value in .Net side and parse it !!
+					// Try to add propType from front-end side too.
+					string propValue;
+					if (jsonData["propValue"].Type == JTokenType.Object)
+					{
+						propValue = jsonData["propValue"].ToString();
+					}
+					else
+					{
+						propValue = jsonData["propValue"].Value<string>();
+					}
 
 					uiElement.SetPropValue(propName, propValue);
 					return;

@@ -49,12 +49,60 @@ namespace MAU.Core
 		[MauProperty("textContent", MauPropertyType.NativeProperty)]
 		public string TextContent { get; set; }
 
+		[MauProperty("style", MauPropertyType.NativeProperty)]
+		public string Style { get; internal set; }
+
+		[MauProperty("className", MauPropertyType.NativeProperty)]
+		public string ClassName { get; internal set; }
+
 		#endregion
 
 		#region [ UI Events ]
 
 		[MauEvent("click")]
 		public event MauEventHandler Click;
+
+		#endregion
+
+		#region [ UI Methods ]
+
+		public void SetStyle(string styleName, string styleValue)
+		{
+			var data = new JObject
+			{
+				{"styleName", styleName},
+				{"styleValue", styleValue},
+			};
+
+			_ = MyAngularUi.SendRequest(MauId, RequestType.SetStyle, data);
+		}
+		public void RemoveStyle(string styleName)
+		{
+			var data = new JObject
+			{
+				{"styleName", styleName}
+			};
+
+			_ = MyAngularUi.SendRequest(MauId, RequestType.RemoveStyle, data);
+		}
+		public void AddClass(string className)
+		{
+			var data = new JObject
+			{
+				{"className", className}
+			};
+
+			_ = MyAngularUi.SendRequest(MauId, RequestType.AddClass, data);
+		}
+		public void RemoveClass(string className)
+		{
+			var data = new JObject
+			{
+				{"className", className}
+			};
+
+			_ = MyAngularUi.SendRequest(MauId, RequestType.RemoveClass, data);
+		}
 
 		#endregion
 
@@ -100,7 +148,7 @@ namespace MAU.Core
 				: null;
 		}
 
-		public void FireEvent(string eventName, string eventType, JObject eventData)
+		internal void FireEvent(string eventName, string eventType, JObject eventData)
 		{
 			if (!HandledEvents.ContainsKey(eventName))
 				return;
@@ -132,7 +180,7 @@ namespace MAU.Core
 			foreach (var handler in eventDelegate.GetInvocationList())
 				_ = Task.Run(() => handler.Method.Invoke(handler.Target, new object[] { this, new MauEventInfo(eventName, eventType, eventData) }));
 		}
-		public void SetPropValue(string propName, object propValue)
+		internal void SetPropValue(string propName, object propValue)
 		{
 			if (!HandledProps.ContainsKey(propName))
 				return;
@@ -153,14 +201,13 @@ namespace MAU.Core
 					throw new Exception($"NoSet must to be in any MauProperty value is 'Enum', {valType.FullName}");
 
 				string enumValName = valType.GetFields()
-					.Where(f => MauEnumMember.HasAttribute(f))
+					.Where(MauEnumMember.HasAttribute)
 					.Where(f => f.GetCustomAttributes<MauEnumMember>(false).FirstOrDefault().GetValue().Equals(propValue))
 					.FirstOrDefault()?.Name;
 
-				if (string.IsNullOrEmpty(enumValName))
-					val = Enum.ToObject(valType, 0);
-				else
-					val = Enum.Parse(valType, enumValName);
+				val = string.IsNullOrEmpty(enumValName)
+					? Enum.ToObject(valType, 0)
+					: Enum.Parse(valType, enumValName);
 			}
 
 			else
@@ -174,7 +221,7 @@ namespace MAU.Core
 			HandledProps[propName].SetValue(this, val);
 			HandleOnSet = true;
 		}
-		public void GetPropValue(string propName)
+		internal void GetPropValue(string propName)
 		{
 			if (!HandledProps.ContainsKey(propName))
 				return;

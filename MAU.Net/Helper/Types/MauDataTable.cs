@@ -11,7 +11,7 @@ namespace MAU.Helper.Types
 		public string MauDataName { get; }
 		public MauElement Holder { get; }
 
-		public MauDataList<List<string>> Rows { get; }
+		public MauDataList<string[]> Rows { get; }
 		public MauDataList<string> Columns { get; }
 
 		public MauDataTable(MauElement holder, string mauDataName)
@@ -19,10 +19,13 @@ namespace MAU.Helper.Types
 			MauDataName = mauDataName;
 			Holder = holder;
 
-			Rows = new MauDataList<List<string>>(holder, mauDataName);
+			Rows = new MauDataList<string[]>(holder, mauDataName);
 			Columns = new MauDataList<string>(holder, mauDataName);
 		}
 
-		public void UpdateData() { }
+		public void UpdateData()
+		{
+			MauVariable.UpdateVar(Holder, MauDataName);
+		}
 	}
 }

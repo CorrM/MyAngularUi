@@ -32,7 +32,6 @@ namespace MAU.Example
 			// ProcessId
 			//
 			processId = new MauMatInput(this, "ProcessId");
-			processId.InputChange += ProcessId_InputChange;
 			processId.Placeholder = "Game Process ID";
 
 			//
@@ -45,13 +44,11 @@ namespace MAU.Example
 			// UseKernel
 			//
 			useKernel = new MauMatSlideToggle(this, "UseKernel");
-			useKernel.Change += UseKernel_Change;
 
 			//
 			// UEVersion
 			//
 			unrealVersion = new MauMatSelect(this, "UEVersion");
-			unrealVersion.SelectionChange += UnrealVersion_SelectionChange;
 			unrealVersion.Options.AddRange(new[] { "CorrM-0", "CorrM-1", "CorrM-2" });
 
 			//
@@ -71,15 +68,21 @@ namespace MAU.Example
 			// TargetInfo
 			//
 			targetInfoTbl = new MauTable(this, "TargetInfoTbl");
-			targetInfoTbl.Content.Columns.Add("");
-			targetInfoTbl.Content.Columns.Add("");
-			targetInfoTbl.Content.Rows.Add(new List<string> { "Window Name", "Bad Name" });
-			targetInfoTbl.Content.Rows.Add(new List<string> { "Process ID", "0x00" });
-			targetInfoTbl.Content.Rows.Add(new List<string> { "Game Arch", "64" });
-			targetInfoTbl.Content.Rows.Add(new List<string> { "Exe Name", "UFT.exe" });
-			targetInfoTbl.Content.Rows.Add(new List<string> { "Modules Count", "12" });
-			targetInfoTbl.Content.Rows.Add(new List<string> { "Unreal Version", "4.24" });
-			targetInfoTbl.Content.Rows.Add(new List<string> { "Anti Cheat", "UnKnown" });
+			targetInfoTbl.Content.Columns.AddRange(new []
+			{
+				"",
+				""
+			});
+			targetInfoTbl.Content.Rows.AddRange(new[]
+			{
+				new[] { "Window Name", "Bad Name" },
+				new[] { "Process ID", "0x00" },
+				new[] { "Game Arch", "64" },
+				new[] { "Exe Name", "UFT.exe" },
+				new[] { "Modules Count", "12" },
+				new[] { "Unreal Version", "4.24" },
+				new[] { "Anti Cheat", "UnKnown" }
+			});
 
 			// Register all MauElements
 			RegisterComponent();
@@ -95,21 +98,9 @@ namespace MAU.Example
 		{
 			processId.Disabled = !processId.Disabled;
 		}
-		private void UseKernel_Change(MauElement element, MauEventInfo eventInfo)
-		{
-			Console.WriteLine(useKernel.Checked);
-		}
 		private void ProcessAutoFind_Click(MauElement element, MauEventInfo eventInfo)
 		{
 			Console.WriteLine(processAutoFind.Disabled);
-		}
-		private void ProcessId_InputChange(MauElement element, MauEventInfo eventInfo)
-		{
-
-		}
-		private void UnrealVersion_SelectionChange(MauElement element, MauEventInfo eventInfo)
-		{
-			Console.WriteLine(unrealVersion.SelectedOption);
 		}
 
 		#endregion
