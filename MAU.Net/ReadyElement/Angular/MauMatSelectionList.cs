@@ -39,6 +39,9 @@ namespace MAU.ReadyElement.Angular
 		[MauProperty("multiple", MauPropertyType.ComponentProperty)]
 		public bool Multiple { get; set; }
 
+		[MauProperty("_value", MauPropertyType.ComponentProperty)]
+		public List<string> Selected { get; internal set; }
+
 		#endregion
 
 		#region [ Mau Methods ]
@@ -61,20 +64,24 @@ namespace MAU.ReadyElement.Angular
 
 		#region [ Options Controlling ]
 
-		//public bool SelectOption(string newOption)
+		//public bool SelectOption(string[] newOption)
 		//{
-		//	if (!Options.Contains(newOption))
+		//	if (!newOption.All(Options.Contains))
 		//		return false;
 
-		//	SelectedOption = newOption;
+		//	Selected = new List<string>(newOption);
 		//	return true;
 		//}
-		//public bool SelectOption(int newOptionIndex)
+		//public bool SelectOption(int[] newOptionIndex)
 		//{
-		//	if (Options.Count >= newOptionIndex)
+		//	if (newOptionIndex.Any(index => index >= Options.Count))
 		//		return false;
 
-		//	SelectedOption = Options[newOptionIndex];
+		//	var newSelect = new string[newOptionIndex.Length];
+		//	for (int i = 0; i < newSelect.Length; i++)
+		//		newSelect[i] = Options[newOptionIndex[i]];
+
+		//	Selected = new List<string>(newSelect);
 		//	return true;
 		//}
 

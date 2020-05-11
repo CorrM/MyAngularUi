@@ -7,6 +7,39 @@ namespace MAU.DataParser
 {
 	public class MauDefaultParser : MauDataParser<object>
 	{
+		private static object GetJsonArray(JToken array)
+		{
+			JTokenType? arrayType = array.Children().FirstOrDefault()?.Type;
+
+			if (arrayType == null)
+				return array.Values<string>().ToList();
+
+			object retVar;
+			switch (arrayType)
+			{
+				case JTokenType.Object:
+					retVar = array.Values<JObject>().ToList();
+					break;
+				case JTokenType.Integer:
+					retVar = array.Values<int>().ToList();
+					break;
+				case JTokenType.Float:
+					retVar = array.Values<float>().ToList();
+					break;
+				case JTokenType.String:
+					retVar = array.Values<string>().ToList();
+					break;
+				case JTokenType.Boolean:
+					retVar = array.Values<bool>().ToList();
+					break;
+				default:
+					retVar = array.Values<string>().ToList();
+					break;
+			}
+
+			return retVar;
+		}
+
 		public override JToken ParseToFrontEnd(object varObj)
 		{
 			Type varType = varObj.GetType();
@@ -26,7 +59,6 @@ namespace MAU.DataParser
 
 			return JToken.FromObject(varObj);
 		}
-
 		public override object ParseFromFrontEnd(JToken varObj)
 		{
 			object retVar;
@@ -39,7 +71,7 @@ namespace MAU.DataParser
 					retVar = varObj.ToString();
 					break;
 				case JTokenType.Array:
-					retVar = varObj.Values<string>().ToList();
+					retVar = GetJsonArray(varObj);
 					break;
 				case JTokenType.Integer:
 					retVar = varObj.Value<int>();

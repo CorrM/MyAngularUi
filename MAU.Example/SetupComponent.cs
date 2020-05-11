@@ -1,14 +1,9 @@
 ﻿using MAU.Core;
 using MAU.Events;
-using MAU.Helper.Enums;
 using MAU.ReadyElement;
 using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Text;
-using System.Threading.Tasks;
-using MAU.Helper.Types;
 using MAU.ReadyElement.Angular;
+using Newtonsoft.Json.Linq;
 
 namespace MAU.Example
 {
@@ -23,6 +18,7 @@ namespace MAU.Example
 		private MauMatSelect unrealConfig;
 		private MauTable targetInfoTbl;
 		private MauMatButton targetLockBtn;
+		private MauMatSelectionList finderGObjectsList;
 
 		#endregion
 
@@ -60,7 +56,7 @@ namespace MAU.Example
 			unrealConfig.Options.AddRange(new[] { "CorrM-0", "CorrM-1", "CorrM-2" });
 
 			//
-			// UEConfig
+			// TargetLockBtn
 			//
 			targetLockBtn = new MauMatButton(this, "TargetLockBtn");
 			targetLockBtn.Click += TargetLockBtn_Click;
@@ -69,7 +65,7 @@ namespace MAU.Example
 			// TargetInfo
 			//
 			targetInfoTbl = new MauTable(this, "TargetInfoTbl");
-			targetInfoTbl.Content.Columns.AddRange(new []
+			targetInfoTbl.Content.Columns.AddRange(new[]
 			{
 				"",
 				""
@@ -85,8 +81,23 @@ namespace MAU.Example
 				new[] { "Anti Cheat", "UnKnown" }
 			});
 
-			// Register all MauElements
-			RegisterComponent();
+			//
+			// FinderGObjectsList
+			//
+			finderGObjectsList = new MauMatSelectionList(this, "FinderGObjectsList");
+			finderGObjectsList.Click += FinderGObjectsList_Click;
+			finderGObjectsList.SelectionChange += FinderGObjectsList_SelectionChange;
+			finderGObjectsList.Options.AddRange(new[] { "CorrM0", "CorrM1" });
+		}
+
+		private void FinderGObjectsList_SelectionChange(MauElement element, MauEventInfo eventInfo)
+		{
+			var gg = eventInfo.Data["option"]!["_value"]!.Value<string>();
+		}
+
+		private void FinderGObjectsList_Click(MauElement element, MauEventInfo eventInfo)
+		{
+
 		}
 
 		#region [ Mau Events ]
@@ -100,11 +111,11 @@ namespace MAU.Example
 		}
 		private void UnrealConfig_SelectionChange(MauElement element, MauEventInfo eventInfo)
 		{
-			
+
 		}
 		private void TargetLockBtn_Click(MauElement element, MauEventInfo eventInfo)
 		{
-			
+			finderGObjectsList.Disabled = !finderGObjectsList.Disabled;
 		}
 		private void ProcessAutoFind_Click(MauElement element, MauEventInfo eventInfo)
 		{

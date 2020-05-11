@@ -170,7 +170,7 @@ namespace MAU
 					return WebSocket.IsListening;
 
 				WebSocket = new WebSocketServer(Port);
-				WebSocket.AddWebSocketService<MauSockHandler>("/UiHandler");
+				WebSocket.AddWebSocketService<MauSockHandler>("/MauHandler");
 				WebSocket.Start();
 
 				_working = true;
@@ -238,12 +238,12 @@ namespace MAU
 			JObject jsonRequest = JObject.Parse(e.Data);
 
 			// Get request info
-			string mauId = jsonRequest["mauElementId"]?.Value<string>();
-			var requestType = (RequestType)jsonRequest["requestType"].Value<int>();
-			var jsonData = jsonRequest["data"].Value<JObject>();
+			string mauId = jsonRequest["mauElementId"]!.Value<string>();
+			var requestType = (RequestType)jsonRequest["requestType"]!.Value<int>();
+			var jsonData = jsonRequest["data"]!.Value<JObject>();
 
 			// Check if ui is registered
-			if (!GetUiElement(mauId, out MauElement mauElement))
+			if (!GetMauElement(mauId, out MauElement mauElement))
 			{
 				// //////////////////////////////////////////////////////////////// Remove comment prefix when finish debug
 				// throw new KeyNotFoundException("UiElement not found.");
@@ -278,8 +278,10 @@ namespace MAU
 				case RequestType.GetPropValue:
 					string propName = jsonData["propName"]!.Value<string>();
 					Type valType = mauElement.GetPropType(propName);
-					object propValue = ParseMauDataFromFrontEnd(valType, jsonData["propValue"]);
+					//if (valType == null)
+					//	return;
 
+					object propValue = ParseMauDataFromFrontEnd(valType, jsonData["propValue"]);
 					mauElement.SetPropValue(propName, propValue);
 					return;
 
@@ -319,7 +321,7 @@ namespace MAU
 			foreach (MauElement uiElement in element)
 				_mauElements.Add(uiElement.MauId, uiElement);
 		}
-		public static bool GetUiElement(string elementId, out MauElement element)
+		public static bool GetMauElement(string elementId, out MauElement element)
 		{
 			if (_mauElements.ContainsKey(elementId))
 			{

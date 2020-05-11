@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MAU.Core
 {
@@ -21,6 +19,8 @@ namespace MAU.Core
 
 			// ReSharper disable once VirtualMemberCallInConstructor
 			InitElements();
+			// Register all MauElements
+			RegisterComponent();
 		}
 
 		public abstract void InitElements();
