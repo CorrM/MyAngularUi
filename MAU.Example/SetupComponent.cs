@@ -32,6 +32,7 @@ namespace MAU.Example
 			// ProcessId
 			//
 			processId = new MauMatInput(this, "ProcessId");
+			processId.InputChange += ProcessId_InputChange;
 			processId.Placeholder = "Game Process ID";
 
 			//
@@ -90,13 +91,20 @@ namespace MAU.Example
 
 		#region [ Mau Events ]
 
+		private void ProcessId_InputChange(MauElement element, MauEventInfo eventInfo)
+		{
+			if (processId.Value.StartsWith("0x"))
+				processId.SetStyle("color", "red");
+			else
+				processId.RemoveStyle("color");
+		}
 		private void UnrealConfig_SelectionChange(MauElement element, MauEventInfo eventInfo)
 		{
 			
 		}
 		private void TargetLockBtn_Click(MauElement element, MauEventInfo eventInfo)
 		{
-			processId.Disabled = !processId.Disabled;
+			
 		}
 		private void ProcessAutoFind_Click(MauElement element, MauEventInfo eventInfo)
 		{

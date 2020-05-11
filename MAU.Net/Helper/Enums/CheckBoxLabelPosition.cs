@@ -8,7 +8,7 @@ namespace MAU.Helper.Enums
 	public enum CheckBoxLabelPosition
 	{
 		[MauEnumMember("")]
-		NoSet,
+		NotSet,
 
 		[MauEnumMember("before")]
 		Before,

@@ -8,7 +8,7 @@ namespace MAU.Helper.Enums
 	public enum OnOff
 	{
 		[MauEnumMember("")]
-		NoSet,
+		NotSet,
 
 		[MauEnumMember("on")]
 		On,

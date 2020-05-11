@@ -44,10 +44,10 @@ namespace MAU.Attributes
 		}
 		public static bool HasNotSetValue(Type enumType)
 		{
-			// NoSet must to be in any MauProperty value is `Enum`
+			// NotSet must to be in any MauProperty value is `Enum`
 			// And also must to be first value in Enum
 			// For sure will equal == 0
-			return Enum.GetNames(enumType)[0] == "NoSet";
+			return Enum.GetNames(enumType)[0] == "NotSet";
 		}
 
 		public object GetValue()

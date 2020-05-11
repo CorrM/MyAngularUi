@@ -7,7 +7,7 @@ using static MAU.Events.MauEventHandlers;
 
 namespace MAU.ReadyElement.Angular
 {
-	public class MatExpansionPanel : MauElement
+	public class MauMatExpansionPanel : MauElement
 	{
 		#region [ Mau Events ]
 
@@ -60,6 +60,6 @@ namespace MAU.ReadyElement.Angular
 
 		#endregion
 
-		public MatExpansionPanel(MauComponent parentComponent, string mauId) : base(parentComponent, mauId) { }
+		public MauMatExpansionPanel(MauComponent parentComponent, string mauId) : base(parentComponent, mauId) { }
 	}
 }

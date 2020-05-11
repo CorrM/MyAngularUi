@@ -141,13 +141,13 @@ namespace MAU.Core
 				}
 			}
 		}
+
 		internal MauProperty GetUiPropAttribute(string propName)
 		{
 			return HandledProps.ContainsKey(propName)
 				? HandledProps[propName].GetCustomAttribute<MauProperty>()
 				: null;
 		}
-
 		internal void FireEvent(string eventName, string eventType, JObject eventData)
 		{
 			if (!HandledEvents.ContainsKey(eventName))
@@ -180,43 +180,43 @@ namespace MAU.Core
 			foreach (var handler in eventDelegate.GetInvocationList())
 				_ = Task.Run(() => handler.Method.Invoke(handler.Target, new object[] { this, new MauEventInfo(eventName, eventType, eventData) }));
 		}
+		internal Type GetPropType(string propName)
+		{
+			return HandledProps.ContainsKey(propName)
+				? HandledProps[propName].PropertyType
+				: null;
+		}
 		internal void SetPropValue(string propName, object propValue)
 		{
 			if (!HandledProps.ContainsKey(propName))
 				return;
 
 			HandleOnSet = false;
-			Type valType = HandledProps[propName].PropertyType;
+			Type valType = GetPropType(propName);
 
 			// Make valid value
-			object val;
-			if (valType == typeof(string))
-			{
-				val = propValue;
-			}
-
-			else if (valType.IsEnum)
+			object val = propValue;
+			if (valType.IsEnum)
 			{
 				if (!MauEnumMember.HasNotSetValue(valType))
 					throw new Exception($"NoSet must to be in any MauProperty value is 'Enum', {valType.FullName}");
 
 				string enumValName = valType.GetFields()
 					.Where(MauEnumMember.HasAttribute)
-					.Where(f => f.GetCustomAttributes<MauEnumMember>(false).FirstOrDefault().GetValue().Equals(propValue))
-					.FirstOrDefault()?.Name;
+					.FirstOrDefault(f => f.GetCustomAttributes<MauEnumMember>(false).First().GetValue().Equals(propValue))?.Name;
 
 				val = string.IsNullOrEmpty(enumValName)
 					? Enum.ToObject(valType, 0)
 					: Enum.Parse(valType, enumValName);
 			}
 
-			else
-			{
-				val = propValue == null
-					? Activator.CreateInstance(valType)
-					: Convert.ChangeType(propValue, valType);
-			}
-
+			// Now parser handle this section
+			//else
+			//{
+			//	val = propValue == null
+			//		? Activator.CreateInstance(valType)
+			//		: Convert.ChangeType(propValue, valType);
+			//}
 
 			HandledProps[propName].SetValue(this, val);
 			HandleOnSet = true;

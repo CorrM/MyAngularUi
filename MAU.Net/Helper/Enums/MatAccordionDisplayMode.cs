@@ -8,7 +8,7 @@ namespace MAU.Helper.Enums
 	public enum MatAccordionDisplayMode
 	{
 		[MauEnumMember("")]
-		NoSet,
+		NotSet,
 
 		[MauEnumMember("default")]
 		Default,

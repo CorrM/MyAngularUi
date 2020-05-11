@@ -7,6 +7,7 @@ namespace MAU.DataParser
 	{
 		public Type TargetType { get; } = typeof(TVar);
 
-		public abstract JToken Parse(TVar varObj);
+		public abstract JToken ParseToFrontEnd(TVar varObj);
+		public abstract TVar ParseFromFrontEnd(JToken varObj);
 	}
 }

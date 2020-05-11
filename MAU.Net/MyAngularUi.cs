@@ -108,17 +108,29 @@ namespace MAU
 				.Select(val => (dynamic)Activator.CreateInstance(val))
 				.ToDictionary(key => (Type)key.TargetType, val => val);
 		}
-		public static JToken ParseMauData(Type varType, object varObj)
+		public static JToken ParseMauDataToFrontEnd(Type varType, object varObj)
 		{
 			dynamic parser = !_varParsers.ContainsKey(varType)
 				? _varParsers[typeof(object)]
 				: _varParsers[varType];
 
-			return parser.Parse((dynamic)varObj);
+			return parser.ParseToFrontEnd((dynamic)varObj);
 		}
-		public static JToken ParseMauData<T>(T var)
+		public static JToken ParseMauDataToFrontEnd<T>(T var)
 		{
-			return ParseMauData(typeof(T), var);
+			return ParseMauDataToFrontEnd(typeof(T), var);
+		}
+		public static object ParseMauDataFromFrontEnd(Type varType, JToken varObj)
+		{
+			dynamic parser = !_varParsers.ContainsKey(varType)
+				? _varParsers[typeof(object)]
+				: _varParsers[varType];
+
+			return parser.ParseFromFrontEnd((dynamic)varObj);
+		}
+		public static T ParseMauDataFromFrontEnd<T>(JToken var)
+		{
+			return (T)ParseMauDataFromFrontEnd(typeof(T), var);
 		}
 
 		public static void Setup(int webSocketPort)
@@ -211,7 +223,7 @@ namespace MAU
 		{
 			return Send(mauElementId, requestType, data ?? new JObject());
 		}
-		internal static Task<bool> SendTsCode(string mauElementId, string code)
+		internal static Task<bool> ExecuteTsCode(string mauElementId, string code)
 		{
 			var data = new JObject()
 			{
@@ -231,9 +243,9 @@ namespace MAU
 			var jsonData = jsonRequest["data"].Value<JObject>();
 
 			// Check if ui is registered
-			if (!GetUiElement(mauId, out MauElement uiElement))
+			if (!GetUiElement(mauId, out MauElement mauElement))
 			{
-				// //////////////////////////////////////////////////////////////// Remove comment prefex when finish debug
+				// //////////////////////////////////////////////////////////////// Remove comment prefix when finish debug
 				// throw new KeyNotFoundException("UiElement not found.");
 				return;
 			}
@@ -248,7 +260,7 @@ namespace MAU
 				case RequestType.GetEvents:
 					var ret = new JObject
 					{
-						{ "events", new JArray(uiElement.Events) }
+						{ "events", new JArray(mauElement.Events) }
 					};
 
 					// Send response
@@ -256,30 +268,19 @@ namespace MAU
 					return;
 
 				case RequestType.EventCallback:
-					string eventName = jsonData["eventName"].Value<string>();
-					string eventType = jsonData["eventType"].Value<string>();
-					JObject eventData = JObject.Parse(jsonData["data"].Value<string>());
+					string eventName = jsonData["eventName"]!.Value<string>();
+					string eventType = jsonData["eventType"]!.Value<string>();
+					JObject eventData = JObject.Parse(jsonData["data"]!.Value<string>());
 
-					uiElement.FireEvent(eventName, eventType, eventData);
+					mauElement.FireEvent(eventName, eventType, eventData);
 					return;
 
 				case RequestType.GetPropValue:
-					string propName = jsonData["propName"].Value<string>();
+					string propName = jsonData["propName"]!.Value<string>();
+					Type valType = mauElement.GetPropType(propName);
+					object propValue = ParseMauDataFromFrontEnd(valType, jsonData["propValue"]);
 
-					// ToDo: Use data parser here
-					// Get type of value in .Net side and parse it !!
-					// Try to add propType from front-end side too.
-					string propValue;
-					if (jsonData["propValue"].Type == JTokenType.Object)
-					{
-						propValue = jsonData["propValue"].ToString();
-					}
-					else
-					{
-						propValue = jsonData["propValue"].Value<string>();
-					}
-
-					uiElement.SetPropValue(propName, propValue);
+					mauElement.SetPropValue(propName, propValue);
 					return;
 
 				default:
