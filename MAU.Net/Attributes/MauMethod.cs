@@ -33,19 +33,18 @@ namespace MAU.Attributes
 
 		public static bool HasAttribute(MethodInfo methodInfo)
 		{
-			return methodInfo.GetCustomAttributes<MauProperty>(false).Any();
+			return methodInfo.GetCustomAttributes<MauMethod>(false).Any();
 		}
 
 		public override void OnEntry(MethodExecutionArgs args)
 		{
 			var holder = (MauElement)args.Instance;
 
-			if (!MyAngularUi.MauRegistered(holder.MauId))
-				throw new Exception("Regester the mauElement first. And don't call methods before register the mauElement.");
+			if (!MyAngularUi.IsMauRegistered(holder.MauId))
+				throw new Exception("Register MauElement first. And don't call methods before register the MauElement.");
 
 			base.OnEntry(args);
 		}
-
 		public override void OnExit(MethodExecutionArgs args)
 		{
 			var holder = (MauElement)args.Instance;
@@ -58,6 +57,11 @@ namespace MAU.Attributes
 			};
 
 			_ = MyAngularUi.SendRequest(holder.MauId, MyAngularUi.RequestType.CallMethod, data);
+
+			if (((MethodInfo) args.Method).ReturnType == typeof(void))
+				return;
+
+			args.ReturnValue = holder.GetMethodRetValue(MethodName);
 		}
 	}
 }

@@ -22,7 +22,7 @@ namespace MAU.Example
 
 		#endregion
 
-		public override void InitElements()
+		protected override void InitElements()
 		{
 			//
 			// ProcessId
@@ -92,7 +92,7 @@ namespace MAU.Example
 
 		private void FinderGObjectsList_SelectionChange(MauElement element, MauEventInfo eventInfo)
 		{
-			var gg = eventInfo.Data["option"]!["_value"]!.Value<string>();
+			string gg = eventInfo.Data["option"]!["_value"]!.Value<string>();
 		}
 
 		private void FinderGObjectsList_Click(MauElement element, MauEventInfo eventInfo)
@@ -115,7 +115,7 @@ namespace MAU.Example
 		}
 		private void TargetLockBtn_Click(MauElement element, MauEventInfo eventInfo)
 		{
-			finderGObjectsList.Disabled = !finderGObjectsList.Disabled;
+			unrealVersion.Open();
 		}
 		private void ProcessAutoFind_Click(MauElement element, MauEventInfo eventInfo)
 		{
@@ -123,5 +123,6 @@ namespace MAU.Example
 		}
 
 		#endregion
+
 	}
 }

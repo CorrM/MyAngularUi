@@ -103,7 +103,7 @@ namespace MAU.ReadyElement.Angular
 		}
 		public bool SelectOption(int newOptionIndex)
 		{
-			if (Options.Count >= newOptionIndex)
+			if (newOptionIndex >= Options.Count)
 				return false;
 
 			SelectedOption = Options[newOptionIndex];

@@ -49,7 +49,7 @@ namespace MAU.DataParser
 
 			try
 			{
-				if (varType != typeof(string) && varType != typeof(bool))
+				if (varType != typeof(string) && varType != typeof(bool) && varType != typeof(int) && varType != typeof(long))
 					return JObject.FromObject(varObj);
 			}
 			catch

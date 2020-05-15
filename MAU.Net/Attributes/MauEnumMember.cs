@@ -49,6 +49,25 @@ namespace MAU.Attributes
 			// For sure will equal == 0
 			return Enum.GetNames(enumType)[0] == "NotSet";
 		}
+		public static bool GetValidEnumValue(Type valueType, ref object originalValue)
+		{
+			if (!valueType.IsEnum)
+				return false;
+
+			if (!MauEnumMember.HasNotSetValue(valueType))
+				throw new Exception($"'MauEnumMember.NoSet' must to be in any 'Enum' used as 'MauProperty' type or return of 'MauMethod'. {valueType.FullName}");
+
+			object o = originalValue;
+			string enumValName = valueType.GetFields()
+				.Where(MauEnumMember.HasAttribute)
+				.FirstOrDefault(f => f.GetCustomAttributes<MauEnumMember>(false).First().GetValue().Equals(o))?.Name;
+
+			originalValue = string.IsNullOrEmpty(enumValName)
+				? Enum.ToObject(valueType, 0) // Set value as 'MauEnumMember.NoSet'
+				: Enum.Parse(valueType, enumValName);
+
+			return true;
+		}
 
 		public object GetValue()
 		{
