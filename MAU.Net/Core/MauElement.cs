@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using MAU.Attributes;
 using MAU.Events;
@@ -29,7 +30,7 @@ namespace MAU.Core
 		internal readonly Dictionary<string, EventInfo> HandledEvents;
 		internal readonly Dictionary<string, PropertyInfo> HandledProps;
 		internal readonly Dictionary<string, MethodInfo> HandledMethods;
-		internal readonly Dictionary<string, object> MethodsRetValues;
+		internal readonly Dictionary<int, object> MethodsRetValues;
 
 		#endregion
 
@@ -118,7 +119,7 @@ namespace MAU.Core
 			HandledEvents = new Dictionary<string, EventInfo>();
 			HandledProps = new Dictionary<string, PropertyInfo>();
 			HandledMethods = new Dictionary<string, MethodInfo>();
-			MethodsRetValues = new Dictionary<string, object>();
+			MethodsRetValues = new Dictionary<int, object>();
 
 			InitElements();
 		}
@@ -244,22 +245,32 @@ namespace MAU.Core
 			_ = MyAngularUi.SendRequest(MauId, RequestType.GetPropValue, data);
 		}
 
-		internal void SetMethodRetValue(string methodName, JToken methodRetValueJson)
+		internal void SetMethodRetValue(int callMethodRequestId, string methodName, JToken methodRetValueJson)
 		{
 			if (!HandledMethods.ContainsKey(methodName))
 				return;
 
 			Type methodRetType = GetMethodReturnType(methodName);
+			if (methodRetType == typeof(void))
+				return;
+
 			object methodRet = ParseMauDataFromFrontEnd(methodRetType, methodRetValueJson);
 
 			// Make valid enum value
 			MauEnumMember.GetValidEnumValue(methodRetType, ref methodRet);
 
-			// HandledMethods[methodName].SetValue(this, val);
+			MethodsRetValues.Add(callMethodRequestId, methodRet);
 		}
-		internal object GetMethodRetValue(string methodName)
+		internal object GetMethodRetValue(int callMethodRequestId)
 		{
-			return new object();
+			while (!MethodsRetValues.ContainsKey(callMethodRequestId))
+				Thread.Sleep(1);
+
+			// Get and remove data
+			object ret = MethodsRetValues[callMethodRequestId];
+			MethodsRetValues.Remove(callMethodRequestId);
+
+			return ret;
 		}
 	}
 }

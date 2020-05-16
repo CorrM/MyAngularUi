@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace MAU.Attributes
 {
@@ -56,12 +57,12 @@ namespace MAU.Attributes
 				{"methodArgs", JArray.FromObject(args.Arguments.ToArray())}
 			};
 
-			_ = MyAngularUi.SendRequest(holder.MauId, MyAngularUi.RequestType.CallMethod, data);
+			MyAngularUi.RequestState request = MyAngularUi.SendRequest(holder.MauId, MyAngularUi.RequestType.CallMethod, data).Result;
 
 			if (((MethodInfo) args.Method).ReturnType == typeof(void))
 				return;
 
-			args.ReturnValue = holder.GetMethodRetValue(MethodName);
+			args.ReturnValue = holder.GetMethodRetValue(request.RequestId);
 		}
 	}
 }
