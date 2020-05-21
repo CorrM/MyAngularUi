@@ -169,6 +169,7 @@ namespace MAU.Core
 				}
 			}
 		}
+
 		internal void FireEvent(string eventName, string eventType, JObject eventData)
 		{
 			if (!HandledEvents.ContainsKey(eventName))

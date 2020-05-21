@@ -128,9 +128,9 @@ namespace MAU
 
 		#endregion
 
-		#region [ Static Fields ]
+		#region [ Private Fields ]
 
-		private static Thread _mainTimer;
+		private static Timer _mainTimer;
 		private static Queue<string> _requestsQueue;
 		private static Dictionary<string, MauElement> _mauElements;
 		private static bool _working;
@@ -138,7 +138,7 @@ namespace MAU
 
 		#endregion
 
-		#region [ Public Static Props ]
+		#region [ Public Props ]
 
 		public static WebSocketServer WebSocket { get; private set; }
 		public static int Port { get; private set; }
@@ -146,7 +146,19 @@ namespace MAU
 
 		#endregion
 
+		internal static Task<RequestState> ExecuteTsCode(string mauElementId, string code)
+		{
+			var data = new JObject()
+			{
+				{ "code", code }
+			};
+
+			return SendRequest(mauElementId, RequestType.ExecuteCode, data);
+		}
+
 		#region [ Methods ]
+
+		#region [ Parser ]
 
 		private static void InitParsers()
 		{
@@ -180,6 +192,10 @@ namespace MAU
 			return (T)ParseMauDataFromFrontEnd(typeof(T), var);
 		}
 
+		#endregion
+
+		#region [ Mau ]
+
 		/// <summary>
 		/// Init MyAngularUi
 		/// </summary>
@@ -194,14 +210,7 @@ namespace MAU
 
 			_mauElements = new Dictionary<string, MauElement>();
 			_requestsQueue = new Queue<string>();
-			_mainTimer = new Thread(async () =>
-			{
-				while (_working)
-				{
-					await TimerHandler();
-					await Task.Delay(8);
-				}
-			});
+			_mainTimer = new Timer(TimerHandler, null, 0, 8);
 
 			InitParsers();
 		}
@@ -225,7 +234,6 @@ namespace MAU
 				WebSocket.Start();
 
 				_working = true;
-				_mainTimer.Start();
 
 				return WebSocket.IsListening;
 			});
@@ -239,6 +247,19 @@ namespace MAU
 			Init = false;
 			WebSocket?.Stop();
 		}
+
+		/// <summary>
+		/// When angular disconnect, this function will sync
+		/// all [ Element, Events, Props, Vars ] with angular again
+		/// </summary>
+		private static async Task ReSyncMauInfo()
+		{
+
+		}
+
+		#endregion
+
+		#region [ WebSocket ]
 
 		/// <summary>
 		/// Send raw-string to front-end side
@@ -310,15 +331,6 @@ namespace MAU
 			return SendResponse(requestId, mauElementId, requestType, data ?? new JObject());
 		}
 
-		internal static Task<RequestState> ExecuteTsCode(string mauElementId, string code)
-		{
-			var data = new JObject()
-			{
-				{ "code", code }
-			};
-
-			return SendRequest(mauElementId, RequestType.ExecuteCode, data);
-		}
 		internal static async Task OnMessage(MessageEventArgs e)
 		{
 			// Decode json
@@ -385,13 +397,23 @@ namespace MAU
 					throw new ArgumentOutOfRangeException();
 			}
 		}
-
+		internal static async Task OnOpen()
+		{
+			await ReSyncMauInfo();
+		}
+		internal static async Task OnClose(CloseEventArgs e)
+		{
+			await Task.Delay(0);
+		}
 		#endregion
 
-		#region [ MauHandler ]
+		#region [ Helper ]
 
-		private static async Task TimerHandler()
+		private static async void TimerHandler(object o)
 		{
+			if (!_working)
+				return;
+
 			// Handle request queue
 			if (_requestsQueue.Count > 0)
 			{
@@ -428,6 +450,8 @@ namespace MAU
 			element = null;
 			return false;
 		}
+
+		#endregion
 
 		#endregion
 	}

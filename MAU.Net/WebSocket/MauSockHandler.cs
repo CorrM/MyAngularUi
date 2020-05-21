@@ -22,13 +22,8 @@ namespace MAU.WebSocket
 			return true;
 		}
 
-		protected override void OnOpen()
-		{
-			Debug.WriteLine("OPENED");
-		}
-		protected override void OnMessage(MessageEventArgs e)
-		{
-			_ = MyAngularUi.OnMessage(e);
-		}
+		protected override void OnOpen() => _ = MyAngularUi.OnOpen();
+		protected override void OnMessage(MessageEventArgs e) => _ = MyAngularUi.OnMessage(e);
+		protected override void OnClose(CloseEventArgs e) => _ = MyAngularUi.OnClose(e);
 	}
 }
