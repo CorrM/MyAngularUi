@@ -68,7 +68,9 @@ namespace MAU.Attributes
 		{
 			// Set value first, so i can reflect it in `UpdateVarBase`
 			base.OnSetValue(args);
-			UpdateVarBase(args.Instance, args.LocationName);
+
+			if (MyAngularUi.Connected)
+				UpdateVarBase(args.Instance, args.LocationName);
 		}
 	}
 }

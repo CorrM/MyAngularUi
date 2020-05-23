@@ -27,15 +27,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Fleck" Version="1.1.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="PostSharp" Version="6.6.7" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="WebSocketNet">
-      <HintPath>..\..\WebSocket.Net\WebSocketNet\bin\Debug\netstandard2.0\WebSocketNet.dll</HintPath>
-    </Reference>
   </ItemGroup>
 
 </Project>

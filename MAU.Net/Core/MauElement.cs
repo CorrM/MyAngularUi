@@ -36,7 +36,9 @@ namespace MAU.Core
 
 		#region [ Public Proparties ]
 
-		public IReadOnlyCollection<string> Events => HandledEvents.Keys.ToList();
+		public IReadOnlyCollection<string> Events => HandledEvents.Keys.ToList().AsReadOnly();
+		public IReadOnlyCollection<string> Props => HandledProps.Keys.ToList().AsReadOnly();
+		public IReadOnlyCollection<string> Methods => HandledMethods.Keys.ToList().AsReadOnly();
 		public string MauId { get; }
 
 		#endregion
@@ -88,6 +90,7 @@ namespace MAU.Core
 
 			_ = MyAngularUi.SendRequest(MauId, RequestType.RemoveStyle, data);
 		}
+
 		public void AddClass(string className)
 		{
 			var data = new JObject
@@ -216,6 +219,20 @@ namespace MAU.Core
 				: null;
 		}
 
+		internal void GetPropValue(string propName)
+		{
+			if (!HandledProps.ContainsKey(propName))
+				return;
+
+			MauProperty mauPropertyAttr = GetMauPropAttribute(propName);
+			var data = new JObject
+			{
+				{"propName", propName},
+				{"propType", (int)mauPropertyAttr.PropType}
+			};
+
+			_ = MyAngularUi.SendRequest(MauId, RequestType.GetPropValue, data);
+		}
 		internal void SetPropValue(string propName, JToken propValueJson)
 		{
 			if (!HandledProps.ContainsKey(propName))
@@ -230,20 +247,6 @@ namespace MAU.Core
 
 			HandledProps[propName].SetValue(this, propValue);
 			HandleOnSet = true;
-		}
-		internal void GetPropValue(string propName)
-		{
-			if (!HandledProps.ContainsKey(propName))
-				return;
-
-			MauProperty mauPropertyAttr = GetMauPropAttribute(propName);
-			var data = new JObject
-			{
-				{"propName", propName},
-				{"propType", (int)mauPropertyAttr.PropType}
-			};
-
-			_ = MyAngularUi.SendRequest(MauId, RequestType.GetPropValue, data);
 		}
 
 		internal void SetMethodRetValue(int callMethodRequestId, string methodName, JToken methodRetValueJson)

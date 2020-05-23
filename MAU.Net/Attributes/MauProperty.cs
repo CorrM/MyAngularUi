@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PostSharp.Aspects;
@@ -37,36 +38,44 @@ namespace MAU.Attributes
 		{
 			return propertyInfo.GetCustomAttributes<MauProperty>(false).Any();
 		}
+		internal static async Task<MyAngularUi.RequestState> SendMauProp(MauElement holder, string mauPropName, object mauPropValue, MauPropertyType mauPropType)
+		{
+			object value = mauPropValue;
+			if (value.GetType().IsEnum)
+			{
+				if (!MauEnumMember.HasNotSetValue(value.GetType()))
+					throw new Exception($"NotSet must to be in any MauProperty value is 'Enum', {value.GetType().FullName}");
+
+				if (MauEnumMember.HasAttribute((Enum)value))
+					value = MauEnumMember.GetValue((Enum)value);
+			}
+
+			var data = new JObject
+			{
+				{"propType", (int)mauPropType},
+				{"propName", mauPropName},
+				{"propVal", MyAngularUi.ParseMauDataToFrontEnd(value)}
+			};
+
+			return await MyAngularUi.SendRequest(holder.MauId, MyAngularUi.RequestType.SetPropValue, data);
+		}
 
 		public override void OnSetValue(LocationInterceptionArgs args)
 		{
+			// Set value first, so i can reflect it
 			base.OnSetValue(args);
 
+			if (!MyAngularUi.Connected)
+				return;
+
 			var holder = (MauElement)args.Instance;
-			object value = args.Value;
 			if (!holder.HandleOnSet)
 			{
 				base.OnSetValue(args);
 				return;
 			}
 
-			if (args.Value.GetType().IsEnum)
-			{
-				if (!MauEnumMember.HasNotSetValue(args.Value.GetType()))
-					throw new Exception($"NoSet must to be in any MauProperty value is 'Enum', {args.Value.GetType().FullName}");
-
-				if (MauEnumMember.HasAttribute((Enum)args.Value))
-					value = MauEnumMember.GetValue((Enum)args.Value);
-			}
-
-			var data = new JObject
-			{
-				{"propType", (int)PropType},
-				{"propName", PropertyName},
-				{"propVal", MyAngularUi.ParseMauDataToFrontEnd(value)}
-			};
-
-			_ = MyAngularUi.SendRequest(holder.MauId, MyAngularUi.RequestType.SetPropValue, data);
+			_ = SendMauProp(holder, PropertyName, args.Value, PropType);
 		}
 	}
 }

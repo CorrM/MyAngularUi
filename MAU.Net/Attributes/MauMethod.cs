@@ -39,17 +39,25 @@ namespace MAU.Attributes
 
 		public override void OnEntry(MethodExecutionArgs args)
 		{
-			var holder = (MauElement)args.Instance;
+			if (MyAngularUi.Connected)
+			{
+				var holder = (MauElement)args.Instance;
 
-			if (!MyAngularUi.IsMauRegistered(holder.MauId))
-				throw new Exception("Register MauElement first. And don't call methods before register the MauElement.");
+				if (!MyAngularUi.IsMauRegistered(holder.MauId))
+					throw new Exception("Register MauElement first. And don't call methods before register the MauElement.");
+			}
 
 			base.OnEntry(args);
 		}
 		public override void OnExit(MethodExecutionArgs args)
 		{
-			var holder = (MauElement)args.Instance;
+			if (!MyAngularUi.Connected)
+			{
+				base.OnExit(args);
+				return;
+			}
 
+			var holder = (MauElement)args.Instance;
 			var data = new JObject
 			{
 				{"methodType", (int)MethodType},
@@ -58,7 +66,6 @@ namespace MAU.Attributes
 			};
 
 			MyAngularUi.RequestState request = MyAngularUi.SendRequest(holder.MauId, MyAngularUi.RequestType.CallMethod, data).Result;
-
 			if (((MethodInfo) args.Method).ReturnType == typeof(void))
 				return;
 

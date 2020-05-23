@@ -3,12 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using MAU.Attributes;
 using Newtonsoft.Json;
-using WebSocketNet;
-using WebSocketNet.Server;
 using MAU.Core;
 using MAU.DataParser;
 using MAU.WebSocket;
@@ -130,17 +130,15 @@ namespace MAU
 
 		#region [ Private Fields ]
 
-		private static Timer _mainTimer;
-		private static Queue<string> _requestsQueue;
 		private static Dictionary<string, MauElement> _mauElements;
-		private static bool _working;
 		private static Dictionary<Type, dynamic> _varParsers;
 
 		#endregion
 
 		#region [ Public Props ]
 
-		public static WebSocketServer WebSocket { get; private set; }
+		public static bool Connected { get; private set; }
+		public static MauWebSocketServer WebSocket { get; private set; }
 		public static int Port { get; private set; }
 		public static bool Init { get; private set; }
 
@@ -209,8 +207,6 @@ namespace MAU
 			Port = webSocketPort;
 
 			_mauElements = new Dictionary<string, MauElement>();
-			_requestsQueue = new Queue<string>();
-			_mainTimer = new Timer(TimerHandler, null, 0, 8);
 
 			InitParsers();
 		}
@@ -219,24 +215,16 @@ namespace MAU
 		/// Start MyAngularUi
 		/// </summary>
 		/// <returns>If start correctly return true</returns>
-		public static Task<bool> Start()
+		public static bool Start()
 		{
-			return Task.Run(() =>
-			{
-				if (!Init)
-					return false;
+			if (!Init)
+				return false;
 
-				if (WebSocket != null)
-					return WebSocket.IsListening;
+			WebSocket = new MauWebSocketServer(Port);
+			//WebSocket.AddWebSocketService<MauSockHandler>("/MauHandler");
+			WebSocket.Start();
 
-				WebSocket = new WebSocketServer(Port);
-				WebSocket.AddWebSocketService<MauSockHandler>("/MauHandler");
-				WebSocket.Start();
-
-				_working = true;
-
-				return WebSocket.IsListening;
-			});
+			return WebSocket.IsListening;
 		}
 
 		/// <summary>
@@ -244,8 +232,7 @@ namespace MAU
 		/// </summary>
 		public static void Stop()
 		{
-			Init = false;
-			WebSocket?.Stop();
+			WebSocket?.Dispose();
 		}
 
 		/// <summary>
@@ -254,7 +241,21 @@ namespace MAU
 		/// </summary>
 		private static async Task ReSyncMauInfo()
 		{
+			var tasks = new List<Task>();
+			foreach ((string _, MauElement mauElement) in _mauElements)
+			{
+				// Props
+				foreach ((string propName, PropertyInfo propInfo) in mauElement.HandledProps)
+				{
+					MauProperty mauProp = mauElement.GetMauPropAttribute(propName);
+					object propVal = propInfo.GetValue(mauElement);
 
+					if (propVal != null)
+						tasks.Add(MauProperty.SendMauProp(mauElement, mauProp.PropertyName, propVal, mauProp.PropType));
+				}
+			}
+
+			await Task.WhenAll(tasks.ToArray());
 		}
 
 		#endregion
@@ -270,16 +271,13 @@ namespace MAU
 		{
 			return Task.Run(() =>
 			{
-				if (string.IsNullOrWhiteSpace(dataToSend))
+				if (string.IsNullOrWhiteSpace(dataToSend) || !Connected)
 					return false;
 
 				if (!Init)
 					throw new NullReferenceException("Call 'Setup` Function First.");
 
-				if (MauSockHandler.Instance == null)
-					return false;
-
-				bool sendState = MauSockHandler.Instance.Send(dataToSend);
+				bool sendState = true; // WebSocket.Send(dataToSend);
 				return sendState;
 			});
 		}
@@ -307,13 +305,10 @@ namespace MAU
 			bool sendState = await Send(dataToSend);
 
 			if (sendState)
+			{
 				Debug.WriteLine($"Send > {dataToSend}");
-
-			// Queue this request to send when connect again
-			if (!sendState && !string.IsNullOrWhiteSpace(dataToSend))
-				_requestsQueue.Enqueue(dataToSend);
-
-			Debug.WriteLine("===============");
+				Debug.WriteLine("===============");
+			}
 
 			return new RequestState() { RequestId = requestId, SuccessSend = sendState };
 		}
@@ -331,8 +326,9 @@ namespace MAU
 			return SendResponse(requestId, mauElementId, requestType, data ?? new JObject());
 		}
 
-		internal static async Task OnMessage(MessageEventArgs e)
+		internal static async Task OnMessage(string e)
 		{
+			/*
 			// Decode json
 			JObject jsonRequest = JObject.Parse(e.Data);
 
@@ -396,32 +392,21 @@ namespace MAU
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
+			*/
 		}
 		internal static async Task OnOpen()
 		{
 			await ReSyncMauInfo();
+			Connected = true;
 		}
-		internal static async Task OnClose(CloseEventArgs e)
+		internal static async Task OnClose(TcpClient e)
 		{
-			await Task.Delay(0);
+			Connected = false;
 		}
 		#endregion
 
 		#region [ Helper ]
 
-		private static async void TimerHandler(object o)
-		{
-			if (!_working)
-				return;
-
-			// Handle request queue
-			if (_requestsQueue.Count > 0)
-			{
-				string dataToSend = _requestsQueue.Peek();
-				if (await Send(dataToSend))
-					_requestsQueue.Dequeue();
-			}
-		}
 		internal static bool IsMauRegistered(string mauId)
 		{
 			return _mauElements.ContainsKey(mauId);
