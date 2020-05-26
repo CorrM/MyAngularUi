@@ -43,7 +43,7 @@ namespace MAU.Attributes
 			{
 				var holder = (MauElement)args.Instance;
 
-				if (!MyAngularUi.IsMauRegistered(holder.MauId))
+				if (!MyAngularUi.IsElementRegistered(holder.MauId))
 					throw new Exception("Register MauElement first. And don't call methods before register the MauElement.");
 			}
 

@@ -27,6 +27,8 @@ namespace MAU.Attributes
 
 		public string PropertyName { get; private set; }
 		public MauPropertyType PropType { get; private set; }
+		public bool Important { get; set; }
+		public bool ReadOnly { get; set; }
 
 		public MauProperty(string propertyName, MauPropertyType propType)
 		{
@@ -38,9 +40,14 @@ namespace MAU.Attributes
 		{
 			return propertyInfo.GetCustomAttributes<MauProperty>(false).Any();
 		}
-		internal static async Task<MyAngularUi.RequestState> SendMauProp(MauElement holder, string mauPropName, object mauPropValue, MauPropertyType mauPropType)
+		internal static async Task<MyAngularUi.RequestState> SendMauProp(MauElement holder, string mauPropName)
 		{
-			object value = mauPropValue;
+			MauProperty mauProp = holder.GetMauPropAttribute(mauPropName);
+			object value = holder.HandledProps[mauPropName].Holder.GetValue(holder);
+
+			if (value == null)
+				return default;
+
 			if (value.GetType().IsEnum)
 			{
 				if (!MauEnumMember.HasNotSetValue(value.GetType()))
@@ -52,7 +59,7 @@ namespace MAU.Attributes
 
 			var data = new JObject
 			{
-				{"propType", (int)mauPropType},
+				{"propType", (int)mauProp.PropType},
 				{"propName", mauPropName},
 				{"propVal", MyAngularUi.ParseMauDataToFrontEnd(value)}
 			};
@@ -69,13 +76,15 @@ namespace MAU.Attributes
 				return;
 
 			var holder = (MauElement)args.Instance;
-			if (!holder.HandleOnSet)
-			{
-				base.OnSetValue(args);
+			if (!holder.HandledProps[PropertyName].Value) // HandleOnSet .?
 				return;
-			}
 
-			_ = SendMauProp(holder, PropertyName, args.Value, PropType);
+			// if it's set from angular side then will not hit this part
+			// because of 'HandleOnSet' will be 'false'
+			if (ReadOnly)
+				throw new Exception($"This prop '{holder.MauId}.{PropertyName}' is 'ReadOnly'.");
+
+			_ = SendMauProp(holder, PropertyName);
 		}
 	}
 }

@@ -13,9 +13,9 @@ namespace MAU.Core
 
 		#endregion
 
-		protected MauComponent()
+		protected MauComponent(string componentName)
 		{
-			ComponentName = this.GetType().Name;
+			ComponentName = componentName;
 
 			// ReSharper disable once VirtualMemberCallInConstructor
 			InitElements();
@@ -35,10 +35,10 @@ namespace MAU.Core
 			// Register them
 			foreach (MauElement element in mauElements.Where(e => e != null))
 			{
-				if (MyAngularUi.IsMauRegistered(element.MauId))
+				if (MyAngularUi.IsElementRegistered(element.MauId))
 					throw new Exception("MauElement with same mauId was registered.");
 
-				MyAngularUi.RegisterMau(element);
+				MyAngularUi.RegisterElement(element);
 			}
 		}
 	}

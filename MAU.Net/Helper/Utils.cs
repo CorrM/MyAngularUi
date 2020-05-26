@@ -1,11 +1,21 @@
-﻿using MAU.Attributes;
-using System;
-using System.Collections.Generic;
-using System.Linq.Expressions;
-using System.Text;
+﻿using System;
+using System.Diagnostics;
 
-namespace MAU
+namespace MAU.Helper
 {
+	[DebuggerDisplay("{" + nameof(Value) + "}")]
+	public class BoolHolder<T>
+	{
+		public T Holder { get; set; }
+		public bool Value { get; set; }
+
+		public BoolHolder(T holder, bool value)
+		{
+			Holder = holder;
+			Value = value;
+		}
+	}
+
 	public static class Utils
 	{
 		private static readonly Random Randomizer = new Random();

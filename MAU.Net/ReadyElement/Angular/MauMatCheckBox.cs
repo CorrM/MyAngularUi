@@ -51,7 +51,7 @@ namespace MAU.ReadyElement.Angular
 		[MauProperty("value", MauPropertyType.ComponentProperty)]
 		public string Value { get; set; }
 
-		[MauProperty("inputId", MauPropertyType.ComponentProperty)]
+		[MauProperty("inputId", MauPropertyType.ComponentProperty, ReadOnly = true)]
 		public string InputId { get; set; }
 
 		#endregion

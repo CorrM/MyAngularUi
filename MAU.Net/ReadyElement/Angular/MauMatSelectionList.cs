@@ -36,9 +36,6 @@ namespace MAU.ReadyElement.Angular
 		[MauProperty("disabled", MauPropertyType.ComponentProperty)]
 		public bool Disabled { get; set; }
 
-		[MauProperty("multiple", MauPropertyType.ComponentProperty)]
-		public bool Multiple { get; set; }
-
 		[MauProperty("_value", MauPropertyType.ComponentProperty)]
 		public List<string> Selected { get; internal set; }
 

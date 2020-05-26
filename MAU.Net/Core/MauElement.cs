@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using MAU.Attributes;
 using MAU.Events;
+using MAU.Helper;
 using Newtonsoft.Json.Linq;
-using static MAU.Attributes.MauProperty;
 using static MAU.Events.MauEventHandlers;
 using static MAU.MyAngularUi;
 
@@ -15,12 +16,9 @@ namespace MAU.Core
 {
 	public abstract class MauElement
 	{
+
 		#region [ Internal Props ]
 
-		/// <summary>
-		/// Not fire <see cref="MauProperty.OnSetValue"/> when set value fetched from front-end side
-		/// </summary>
-		internal bool HandleOnSet { get; set; } = true;
 		internal MauComponent ParentComponent { get; }
 
 		#endregion
@@ -28,9 +26,9 @@ namespace MAU.Core
 		#region [ Internal Fields ]
 
 		internal readonly Dictionary<string, EventInfo> HandledEvents;
-		internal readonly Dictionary<string, PropertyInfo> HandledProps;
+		internal readonly Dictionary<string, BoolHolder<PropertyInfo>> HandledProps; // bool for handleOnSet
+		internal readonly Dictionary<string, PropertyInfo> HandledVars;
 		internal readonly Dictionary<string, MethodInfo> HandledMethods;
-		internal readonly Dictionary<int, object> MethodsRetValues;
 
 		#endregion
 
@@ -38,6 +36,7 @@ namespace MAU.Core
 
 		public IReadOnlyCollection<string> Events => HandledEvents.Keys.ToList().AsReadOnly();
 		public IReadOnlyCollection<string> Props => HandledProps.Keys.ToList().AsReadOnly();
+		public IReadOnlyCollection<string> Vars => HandledVars.Keys.ToList().AsReadOnly();
 		public IReadOnlyCollection<string> Methods => HandledMethods.Keys.ToList().AsReadOnly();
 		public string MauId { get; }
 
@@ -54,10 +53,10 @@ namespace MAU.Core
 		//[MauProperty("textContent", MauPropertyType.NativeProperty)]
 		//public string TextContent { get; set; }
 
-		[MauProperty("style", MauPropertyType.NativeProperty)]
+		[MauProperty("style", MauProperty.MauPropertyType.NativeProperty, ReadOnly = true)]
 		public string Style { get; internal set; }
 
-		[MauProperty("className", MauPropertyType.NativeProperty)]
+		[MauProperty("className", MauProperty.MauPropertyType.NativeProperty, ReadOnly = true)]
 		public string ClassName { get; internal set; }
 
 		#endregion
@@ -114,15 +113,15 @@ namespace MAU.Core
 
 		protected MauElement(MauComponent parentComponent, string mauId)
 		{
-			if (MyAngularUi.IsMauRegistered(mauId))
+			if (MyAngularUi.IsElementRegistered(mauId))
 				throw new ArgumentOutOfRangeException(nameof(mauId), "MauElement with same mauId was registered.");
 
 			ParentComponent = parentComponent;
 			MauId = mauId;
 			HandledEvents = new Dictionary<string, EventInfo>();
-			HandledProps = new Dictionary<string, PropertyInfo>();
+			HandledProps = new Dictionary<string, BoolHolder<PropertyInfo>>();
+			HandledVars = new Dictionary<string, PropertyInfo>();
 			HandledMethods = new Dictionary<string, MethodInfo>();
-			MethodsRetValues = new Dictionary<int, object>();
 
 			InitElements();
 		}
@@ -130,7 +129,7 @@ namespace MAU.Core
 		internal MauProperty GetMauPropAttribute(string propName)
 		{
 			return HandledProps.ContainsKey(propName)
-				? HandledProps[propName].GetCustomAttribute<MauProperty>()
+				? HandledProps[propName].Holder.GetCustomAttribute<MauProperty>(false)
 				: null;
 		}
 		internal MauMethod GetMauMethodAttribute(string methodName)
@@ -158,7 +157,16 @@ namespace MAU.Core
 				foreach (PropertyInfo propertyInfo in propertyInfos.Where(MauProperty.HasAttribute))
 				{
 					var attr = propertyInfo.GetCustomAttribute<MauProperty>();
-					HandledProps.Add(attr.PropertyName, propertyInfo);
+					HandledProps.Add(attr.PropertyName, new BoolHolder<PropertyInfo>(propertyInfo, true));
+				}
+			}
+
+			// Vars
+			{
+				PropertyInfo[] varInfos = this.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+				foreach (PropertyInfo varInfo in varInfos.Where(MauVariable.HasAttribute))
+				{
+					HandledVars.Add(varInfo.Name, varInfo);
 				}
 			}
 
@@ -205,11 +213,20 @@ namespace MAU.Core
 			foreach (Delegate handler in eventDelegate.GetInvocationList())
 				_ = Task.Run(() => handler.Method.Invoke(handler.Target, new object[] { this, new MauEventInfo(eventName, eventType, eventData) }));
 		}
+		internal Dictionary<string, BoolHolder<PropertyInfo>> GetValidToSetHandledProps()
+		{
+			Dictionary<string, BoolHolder<PropertyInfo>> elementProps = this.HandledProps
+				.Where(x => !this.GetMauPropAttribute(x.Key).ReadOnly)
+				.OrderBy(x => this.GetMauPropAttribute(x.Key).Important)
+				.ToDictionary(x => x.Key, x => x.Value);
+
+			return elementProps;
+		}
 
 		internal Type GetPropType(string propName)
 		{
 			return HandledProps.ContainsKey(propName)
-				? HandledProps[propName].PropertyType
+				? HandledProps[propName].Holder.PropertyType
 				: null;
 		}
 		internal Type GetMethodReturnType(string methodName)
@@ -238,15 +255,15 @@ namespace MAU.Core
 			if (!HandledProps.ContainsKey(propName))
 				return;
 
-			HandleOnSet = false;
 			Type propValType = GetPropType(propName);
 			object propValue = ParseMauDataFromFrontEnd(propValType, propValueJson);
 
 			// Make valid enum value
 			MauEnumMember.GetValidEnumValue(propValType, ref propValue);
 
-			HandledProps[propName].SetValue(this, propValue);
-			HandleOnSet = true;
+			HandledProps[propName].Value = false;
+			HandledProps[propName].Holder.SetValue(this, propValue);
+			HandledProps[propName].Value = true;
 		}
 
 		internal void SetMethodRetValue(int callMethodRequestId, string methodName, JToken methodRetValueJson)
@@ -263,16 +280,15 @@ namespace MAU.Core
 			// Make valid enum value
 			MauEnumMember.GetValidEnumValue(methodRetType, ref methodRet);
 
-			MethodsRetValues.Add(callMethodRequestId, methodRet);
+			MyAngularUi.OrdersResponse.TryAdd(callMethodRequestId, methodRet);
 		}
 		internal object GetMethodRetValue(int callMethodRequestId)
 		{
-			while (!MethodsRetValues.ContainsKey(callMethodRequestId))
+			while (!MyAngularUi.OrdersResponse.ContainsKey(callMethodRequestId))
 				Thread.Sleep(1);
 
 			// Get and remove data
-			object ret = MethodsRetValues[callMethodRequestId];
-			MethodsRetValues.Remove(callMethodRequestId);
+			MyAngularUi.OrdersResponse.TryRemove(callMethodRequestId, out object ret);
 
 			return ret;
 		}

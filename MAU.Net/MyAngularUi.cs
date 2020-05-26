@@ -1,16 +1,16 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net.Sockets;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using MAU.Attributes;
 using Newtonsoft.Json;
 using MAU.Core;
 using MAU.DataParser;
+using MAU.Helper;
 using MAU.WebSocket;
 
 namespace MAU
@@ -135,10 +135,16 @@ namespace MAU
 
 		#endregion
 
+		#region [ Internal Props ]
+
+		internal static ConcurrentDictionary<int, object> OrdersResponse { get; private set; }
+
+		#endregion
+
 		#region [ Public Props ]
 
 		public static bool Connected { get; private set; }
-		public static MauWebSocketServer WebSocket { get; private set; }
+		public static MauWebSocket WebSocket { get; private set; }
 		public static int Port { get; private set; }
 		public static bool Init { get; private set; }
 
@@ -207,6 +213,7 @@ namespace MAU
 			Port = webSocketPort;
 
 			_mauElements = new Dictionary<string, MauElement>();
+			OrdersResponse = new ConcurrentDictionary<int, object>();
 
 			InitParsers();
 		}
@@ -220,11 +227,13 @@ namespace MAU
 			if (!Init)
 				return false;
 
-			WebSocket = new MauWebSocketServer(Port);
-			//WebSocket.AddWebSocketService<MauSockHandler>("/MauHandler");
+			WebSocket = new MauWebSocket(Port);
+			WebSocket.OnOpen += () => Task.Run(OnOpen);
+			WebSocket.OnClose += () => Task.Run(OnClose);
+			WebSocket.OnMessage += (message) => Task.Run(() => OnMessage(message));
 			WebSocket.Start();
 
-			return WebSocket.IsListening;
+			return true;
 		}
 
 		/// <summary>
@@ -241,21 +250,16 @@ namespace MAU
 		/// </summary>
 		private static async Task ReSyncMauInfo()
 		{
-			var tasks = new List<Task>();
 			foreach ((string _, MauElement mauElement) in _mauElements)
 			{
+				// Vars [ Must be first ]
+				foreach ((string varName, PropertyInfo _) in mauElement.HandledVars)
+					await MauVariable.SendMauVariable(mauElement, varName).ConfigureAwait(false);
+
 				// Props
-				foreach ((string propName, PropertyInfo propInfo) in mauElement.HandledProps)
-				{
-					MauProperty mauProp = mauElement.GetMauPropAttribute(propName);
-					object propVal = propInfo.GetValue(mauElement);
-
-					if (propVal != null)
-						tasks.Add(MauProperty.SendMauProp(mauElement, mauProp.PropertyName, propVal, mauProp.PropType));
-				}
+				foreach ((string propName, BoolHolder<PropertyInfo> _) in mauElement.GetValidToSetHandledProps())
+					await MauProperty.SendMauProp(mauElement, propName).ConfigureAwait(false);
 			}
-
-			await Task.WhenAll(tasks.ToArray());
 		}
 
 		#endregion
@@ -267,19 +271,15 @@ namespace MAU
 		/// </summary>
 		/// <param name="dataToSend"></param>
 		/// <returns></returns>
-		private static Task<bool> Send(string dataToSend)
+		private static async Task<bool> Send(string dataToSend)
 		{
-			return Task.Run(() =>
-			{
-				if (string.IsNullOrWhiteSpace(dataToSend) || !Connected)
-					return false;
+			if (!Init)
+				throw new NullReferenceException("Call 'Setup` Function First.");
 
-				if (!Init)
-					throw new NullReferenceException("Call 'Setup` Function First.");
+			if (string.IsNullOrWhiteSpace(dataToSend) || !Connected)
+				return false;
 
-				bool sendState = true; // WebSocket.Send(dataToSend);
-				return sendState;
-			});
+			return await WebSocket.Send(dataToSend);
 		}
 
 		/// <summary>
@@ -326,11 +326,11 @@ namespace MAU
 			return SendResponse(requestId, mauElementId, requestType, data ?? new JObject());
 		}
 
-		internal static async Task OnMessage(string e)
+		internal static async Task OnMessage(string message)
 		{
-			/*
 			// Decode json
-			JObject jsonRequest = JObject.Parse(e.Data);
+			JObject jsonRequest = JObject.Parse(message);
+			Debug.WriteLine($"Recv > {message}");
 
 			// Get request info
 			var response = new ResponseInfo()
@@ -348,8 +348,6 @@ namespace MAU
 				// throw new KeyNotFoundException("MauElement not found.");
 				return;
 			}
-
-			Debug.WriteLine($"Recv > {e.Data}");
 
 			// Process
 			switch (response.RequestType)
@@ -392,14 +390,13 @@ namespace MAU
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
-			*/
 		}
-		internal static async Task OnOpen()
+		internal static void OnOpen()
 		{
-			await ReSyncMauInfo();
 			Connected = true;
+			ReSyncMauInfo().GetAwaiter().GetResult();
 		}
-		internal static async Task OnClose(TcpClient e)
+		internal static void OnClose()
 		{
 			Connected = false;
 		}
@@ -407,22 +404,22 @@ namespace MAU
 
 		#region [ Helper ]
 
-		internal static bool IsMauRegistered(string mauId)
+		internal static bool IsElementRegistered(string mauId)
 		{
 			return _mauElements.ContainsKey(mauId);
 		}
-		internal static void RegisterMau(MauElement element)
+		internal static void RegisterElement(MauElement mauElement)
 		{
-			_mauElements.Add(element.MauId, element);
+			_mauElements.Add(mauElement.MauId, mauElement);
 
-			// Request value from angular
-			foreach ((string propName, PropertyInfo _) in element.HandledProps.Select(x => (x.Key, x.Value)))
-				element.GetPropValue(propName);
+			// Request value from angular side
+			foreach ((string propName, BoolHolder<PropertyInfo> _) in mauElement.GetValidToSetHandledProps())
+				mauElement.GetPropValue(propName);
 		}
-		internal static void RegisterMau(IEnumerable<MauElement> element)
+		internal static void RegisterElement(IEnumerable<MauElement> element)
 		{
 			foreach (MauElement uiElement in element)
-				_mauElements.Add(uiElement.MauId, uiElement);
+				RegisterElement(uiElement);
 		}
 		internal static bool GetMauElement(string elementId, out MauElement element)
 		{

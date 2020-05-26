@@ -38,14 +38,11 @@ namespace MAU.ReadyElement.Angular
 		[MauProperty("disableRipple", MauPropertyType.ComponentProperty)]
 		public bool DisableRipple { get; set; }
 
-		[MauProperty("disabled", MauPropertyType.ComponentProperty)]
+		[MauProperty("disabled", MauPropertyType.ComponentProperty, Important = true)]
 		public bool Disabled { get; set; }
 
 		[MauProperty("id", MauPropertyType.ComponentProperty)]
 		public string Id { get; set; }
-
-		[MauProperty("multiple", MauPropertyType.ComponentProperty)]
-		public bool Multiple { get; set; }
 
 		[MauProperty("placeholder", MauPropertyType.ComponentProperty)]
 		public string Placeholder { get; set; }
