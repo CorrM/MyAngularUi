@@ -56,13 +56,13 @@ namespace MAU.ReadyElement.Angular
 		[MauProperty("value", MauPropertyType.ComponentProperty)]
 		public string SelectedOption { get; private set; }
 
-		[MauProperty("empty", MauPropertyType.ComponentProperty)]
+		[MauProperty("empty", MauPropertyType.ComponentProperty, ReadOnly = true)]
 		public bool Empty { get; set; }
 
-		[MauProperty("focused", MauPropertyType.ComponentProperty)]
+		[MauProperty("focused", MauPropertyType.ComponentProperty, ReadOnly = true)]
 		public bool Focused { get; set; }
 
-		[MauProperty("panelOpen", MauPropertyType.ComponentProperty)]
+		[MauProperty("panelOpen", MauPropertyType.ComponentProperty, ReadOnly = true)]
 		public bool PanelOpen { get; set; }
 
 		#endregion

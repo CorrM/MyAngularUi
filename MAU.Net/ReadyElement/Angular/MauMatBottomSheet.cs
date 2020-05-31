@@ -19,7 +19,7 @@ namespace MAU.ReadyElement.Angular
 				{ "methodArgs", new JArray() }
 			};
 
-			_ = MyAngularUi.SendRequest("null", RequestType.ServiceMethodCall, data);
+			MyAngularUi.SendRequest("null", RequestType.ServiceMethodCall, data).GetAwaiter().GetResult();
 		}
 	}
 }

@@ -86,7 +86,9 @@ namespace MAU.Attributes
 			if (instance == null)
 				return null;
 
-			return instance.Parser == EnumParser.Number ? (object)instance.ValueAsNum : (object)instance.ValueAsStr;
+			return instance.Parser == EnumParser.Number
+				? (object)instance.ValueAsNum
+				: (object)instance.ValueAsStr;
 		}
 	}
 }

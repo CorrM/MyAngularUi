@@ -43,31 +43,46 @@ namespace MAU.Attributes
 		internal static async Task<MyAngularUi.RequestState> SendMauProp(MauElement holder, string mauPropName)
 		{
 			MauProperty mauProp = holder.GetMauPropAttribute(mauPropName);
-			object value = holder.HandledProps[mauPropName].Holder.GetValue(holder);
+			Type propType = holder.HandledProps[mauPropName].Holder.PropertyType;
+			object propValue = holder.HandledProps[mauPropName].Holder.GetValue(holder);
 
-			if (value == null)
-				return default;
-
-			if (value.GetType().IsEnum)
+			if (propType.IsEnum)
 			{
-				if (!MauEnumMember.HasNotSetValue(value.GetType()))
-					throw new Exception($"NotSet must to be in any MauProperty value is 'Enum', {value.GetType().FullName}");
+				if (!MauEnumMember.HasNotSetValue(propValue.GetType()))
+					throw new Exception($"NotSet must to be in any MauProperty value is 'Enum', {propValue.GetType().FullName}");
 
-				if (MauEnumMember.HasAttribute((Enum)value))
-					value = MauEnumMember.GetValue((Enum)value);
+				if (MauEnumMember.HasAttribute((Enum)propValue))
+					propValue = MauEnumMember.GetValue((Enum)propValue);
+
+				// If it's NotSet just ignore so the angular value will be set,
+				// Angular value will be in .Net side, so the value will be correct here.
+				// E.g: Color prop if it's NotSet in .Net then use and don't change
+				// Angular value.
+				switch (propValue)
+				{
+					case int _:
+					case long propValNum when propValNum == 0:
+					case string propValStr when string.IsNullOrWhiteSpace(propValStr):
+						await holder.GetPropValue(mauPropName);
+						return default;
+				}
+			}
+			else if (propValue == null && propType == typeof(string))
+			{
+				propValue = string.Empty;
 			}
 
 			var data = new JObject
 			{
 				{"propType", (int)mauProp.PropType},
 				{"propName", mauPropName},
-				{"propVal", MyAngularUi.ParseMauDataToFrontEnd(value)}
+				{"propVal", MyAngularUi.ParseMauDataToFrontEnd(propValue)}
 			};
 
 			return await MyAngularUi.SendRequest(holder.MauId, MyAngularUi.RequestType.SetPropValue, data);
 		}
 
-		public override void OnSetValue(LocationInterceptionArgs args)
+		public override async void OnSetValue(LocationInterceptionArgs args)
 		{
 			// Set value first, so i can reflect it
 			base.OnSetValue(args);
@@ -84,7 +99,7 @@ namespace MAU.Attributes
 			if (ReadOnly)
 				throw new Exception($"This prop '{holder.MauId}.{PropertyName}' is 'ReadOnly'.");
 
-			_ = SendMauProp(holder, PropertyName);
+			await SendMauProp(holder, PropertyName);
 		}
 	}
 }

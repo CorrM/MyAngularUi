@@ -123,7 +123,12 @@ namespace MAU
 			/// <summary>
 			/// Call method in one of `MauAccessibleServices` on front-end side
 			/// </summary>
-			ServiceMethodCall = 13
+			ServiceMethodCall = 13,
+
+			/// <summary>
+			/// Tell angular side all elements are ready [Props, Vars and etc]
+			/// </summary>
+			DotNetReady = 14
 		}
 
 		#endregion
@@ -138,6 +143,7 @@ namespace MAU
 		#region [ Internal Props ]
 
 		internal static ConcurrentDictionary<int, object> OrdersResponse { get; private set; }
+		internal static List<MauComponent> RegisteredComponents { get; private set; }
 
 		#endregion
 
@@ -214,6 +220,7 @@ namespace MAU
 
 			_mauElements = new Dictionary<string, MauElement>();
 			OrdersResponse = new ConcurrentDictionary<int, object>();
+			RegisteredComponents = new List<MauComponent>();
 
 			InitParsers();
 		}
@@ -248,18 +255,21 @@ namespace MAU
 		/// When angular disconnect, this function will sync
 		/// all [ Element, Events, Props, Vars ] with angular again
 		/// </summary>
-		private static async Task ReSyncMauInfo()
+		private static async Task ReSyncMauElements()
 		{
 			foreach ((string _, MauElement mauElement) in _mauElements)
 			{
 				// Vars [ Must be first ]
 				foreach ((string varName, PropertyInfo _) in mauElement.HandledVars)
-					await MauVariable.SendMauVariable(mauElement, varName).ConfigureAwait(false);
+					await MauVariable.SendMauVariable(mauElement, varName);
 
 				// Props
 				foreach ((string propName, BoolHolder<PropertyInfo> _) in mauElement.GetValidToSetHandledProps())
-					await MauProperty.SendMauProp(mauElement, propName).ConfigureAwait(false);
+					await MauProperty.SendMauProp(mauElement, propName);
 			}
+
+			if (_mauElements.Count > 0)
+				await SendRequest(string.Empty, RequestType.DotNetReady, null);
 		}
 
 		#endregion
@@ -394,12 +404,13 @@ namespace MAU
 		internal static void OnOpen()
 		{
 			Connected = true;
-			ReSyncMauInfo().GetAwaiter().GetResult();
+			ReSyncMauElements().GetAwaiter().GetResult();
 		}
 		internal static void OnClose()
 		{
 			Connected = false;
 		}
+
 		#endregion
 
 		#region [ Helper ]
@@ -407,19 +418,6 @@ namespace MAU
 		internal static bool IsElementRegistered(string mauId)
 		{
 			return _mauElements.ContainsKey(mauId);
-		}
-		internal static void RegisterElement(MauElement mauElement)
-		{
-			_mauElements.Add(mauElement.MauId, mauElement);
-
-			// Request value from angular side
-			foreach ((string propName, BoolHolder<PropertyInfo> _) in mauElement.GetValidToSetHandledProps())
-				mauElement.GetPropValue(propName);
-		}
-		internal static void RegisterElement(IEnumerable<MauElement> element)
-		{
-			foreach (MauElement uiElement in element)
-				RegisterElement(uiElement);
 		}
 		internal static bool GetMauElement(string elementId, out MauElement element)
 		{
@@ -431,6 +429,28 @@ namespace MAU
 
 			element = null;
 			return false;
+		}
+		public static IReadOnlyCollection<MauComponent> GetAllComponents()
+		{
+			return RegisteredComponents.AsReadOnly();
+		}
+		public static void RegisterComponents(MauComponent mauComponent)
+		{
+			RegisteredComponents.Add(mauComponent);
+		}
+
+		internal static async Task RegisterElement(MauElement mauElement)
+		{
+			_mauElements.Add(mauElement.MauId, mauElement);
+
+			// Request value from angular side
+			foreach ((string propName, BoolHolder<PropertyInfo> _) in mauElement.GetValidToSetHandledProps())
+				await mauElement.GetPropValue(propName);
+		}
+		internal static async Task RegisterElement(IEnumerable<MauElement> element)
+		{
+			foreach (MauElement uiElement in element)
+				await RegisterElement(uiElement);
 		}
 
 		#endregion

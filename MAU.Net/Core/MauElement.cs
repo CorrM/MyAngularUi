@@ -16,7 +16,6 @@ namespace MAU.Core
 {
 	public abstract class MauElement
 	{
-
 		#region [ Internal Props ]
 
 		internal MauComponent ParentComponent { get; }
@@ -70,7 +69,7 @@ namespace MAU.Core
 
 		#region [ UI Methods ]
 
-		public void SetStyle(string styleName, string styleValue)
+		public async Task SetStyle(string styleName, string styleValue)
 		{
 			var data = new JObject
 			{
@@ -78,35 +77,35 @@ namespace MAU.Core
 				{"styleValue", styleValue},
 			};
 
-			_ = MyAngularUi.SendRequest(MauId, RequestType.SetStyle, data);
+			await MyAngularUi.SendRequest(MauId, RequestType.SetStyle, data);
 		}
-		public void RemoveStyle(string styleName)
+		public async Task RemoveStyle(string styleName)
 		{
 			var data = new JObject
 			{
 				{"styleName", styleName}
 			};
 
-			_ = MyAngularUi.SendRequest(MauId, RequestType.RemoveStyle, data);
+			await MyAngularUi.SendRequest(MauId, RequestType.RemoveStyle, data);
 		}
 
-		public void AddClass(string className)
+		public async Task AddClass(string className)
 		{
 			var data = new JObject
 			{
 				{"className", className}
 			};
 
-			_ = MyAngularUi.SendRequest(MauId, RequestType.AddClass, data);
+			await MyAngularUi.SendRequest(MauId, RequestType.AddClass, data);
 		}
-		public void RemoveClass(string className)
+		public async Task RemoveClass(string className)
 		{
 			var data = new JObject
 			{
 				{"className", className}
 			};
 
-			_ = MyAngularUi.SendRequest(MauId, RequestType.RemoveClass, data);
+			await MyAngularUi.SendRequest(MauId, RequestType.RemoveClass, data);
 		}
 
 		#endregion
@@ -211,7 +210,7 @@ namespace MAU.Core
 
 			// Invoke all subscribers
 			foreach (Delegate handler in eventDelegate.GetInvocationList())
-				_ = Task.Run(() => handler.Method.Invoke(handler.Target, new object[] { this, new MauEventInfo(eventName, eventType, eventData) }));
+				Task.Run(() => handler.Method.Invoke(handler.Target, new object[] { this, new MauEventInfo(eventName, eventType, eventData) }));
 		}
 		internal Dictionary<string, BoolHolder<PropertyInfo>> GetValidToSetHandledProps()
 		{
@@ -236,7 +235,7 @@ namespace MAU.Core
 				: null;
 		}
 
-		internal void GetPropValue(string propName)
+		internal async Task GetPropValue(string propName)
 		{
 			if (!HandledProps.ContainsKey(propName))
 				return;
@@ -248,7 +247,7 @@ namespace MAU.Core
 				{"propType", (int)mauPropertyAttr.PropType}
 			};
 
-			_ = MyAngularUi.SendRequest(MauId, RequestType.GetPropValue, data);
+			await MyAngularUi.SendRequest(MauId, RequestType.GetPropValue, data);
 		}
 		internal void SetPropValue(string propName, JToken propValueJson)
 		{

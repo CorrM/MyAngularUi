@@ -2,11 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using static MAU.MyAngularUi;
 
 namespace MAU.Core
 {
 	public abstract class MauComponent
 	{
+		#region [ Internal Props ]
+
+		internal bool AngularSent { get; private set; }
+
+		#endregion
+
 		#region [ Public Props ]
 
 		public string ComponentName { get; }
@@ -20,11 +27,14 @@ namespace MAU.Core
 			// ReSharper disable once VirtualMemberCallInConstructor
 			InitElements();
 			// Register all MauElements
-			RegisterComponents();
+			RegisterElements();
+			// Register this MauComponent, it's just for .Net side
+			MyAngularUi.RegisterComponents(this);
 		}
 
 		protected abstract void InitElements();
-		private void RegisterComponents()
+
+		private void RegisterElements()
 		{
 			// Get all mauElement
 			List<MauElement> mauElements = this.GetType().GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
@@ -40,6 +50,13 @@ namespace MAU.Core
 
 				MyAngularUi.RegisterElement(element);
 			}
+
+			AngularSent = true;
+
+			// If all components are sent there data to angular side so,
+			// Alert angular .Net is Ready
+			if (MyAngularUi.GetAllComponents().All(c => c.AngularSent))
+				MyAngularUi.SendRequest(string.Empty, RequestType.DotNetReady, null).GetAwaiter().GetResult();
 		}
 	}
 }
