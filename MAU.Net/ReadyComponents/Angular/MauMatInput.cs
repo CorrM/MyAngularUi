@@ -4,9 +4,9 @@ using MAU.Helper.Enums;
 using static MAU.Attributes.MauProperty;
 using static MAU.Events.MauEventHandlers;
 
-namespace MAU.ReadyElement.Angular
+namespace MAU.ReadyComponents.Angular
 {
-	public class MauMatInput : MauElement
+	public class MauMatInput : MauComponent
 	{
 		#region [ Mau Events ]
 
@@ -37,6 +37,6 @@ namespace MAU.ReadyElement.Angular
 
 		#endregion
 
-		public MauMatInput(MauComponent parentComponent, string mauId) : base(parentComponent, mauId) { }
+		public MauMatInput(string mauId) : base(mauId) { }
 	}
 }

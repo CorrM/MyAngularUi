@@ -7,9 +7,9 @@ using static MAU.Attributes.MauProperty;
 using static MAU.Events.MauEventHandlers;
 using static MAU.Attributes.MauMethod;
 
-namespace MAU.ReadyElement.Angular
+namespace MAU.ReadyComponents.Angular
 {
-	public class MauMatSelectionList : MauElement
+	public class MauMatSelectionList : MauComponent
 	{
 		#region [ Mau Events ]
 
@@ -54,7 +54,7 @@ namespace MAU.ReadyElement.Angular
 
 		#endregion
 
-		public MauMatSelectionList(MauComponent parentComponent, string mauId) : base(parentComponent, mauId)
+		public MauMatSelectionList(string mauId) : base(mauId)
 		{
 			Options = new MauDataList<string>(this, nameof(Options));
 		}

@@ -5,9 +5,9 @@ using static MAU.Attributes.MauMethod;
 using static MAU.Attributes.MauProperty;
 using static MAU.Events.MauEventHandlers;
 
-namespace MAU.ReadyElement.Angular
+namespace MAU.ReadyComponents.Angular
 {
-	public class MauMatCheckBox : MauElement
+	public class MauMatCheckBox : MauComponent
 	{
 		#region [ Mau Events ]
 
@@ -66,6 +66,6 @@ namespace MAU.ReadyElement.Angular
 
 		#endregion
 
-		public MauMatCheckBox(MauComponent parentComponent, string mauId) : base(parentComponent, mauId) { }
+		public MauMatCheckBox(string mauId) : base(mauId) { }
 	}
 }

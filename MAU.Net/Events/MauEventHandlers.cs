@@ -7,6 +7,6 @@ namespace MAU.Events
 {
 	public class MauEventHandlers
 	{
-		public delegate void MauEventHandler(MauElement element, MauEventInfo eventInfo);
+		public delegate void MauEventHandler(MauComponent component, MauEventInfo eventInfo);
 	}
 }

@@ -9,12 +9,12 @@ namespace MAU.Helper.Types
 	public class MauDataTable : IMauDataType
 	{
 		public string MauDataName { get; }
-		public MauElement Holder { get; }
+		public MauComponent Holder { get; }
 
 		public MauDataList<string[]> Rows { get; }
 		public MauDataList<string> Columns { get; }
 
-		public MauDataTable(MauElement holder, string mauDataName)
+		public MauDataTable(MauComponent holder, string mauDataName)
 		{
 			MauDataName = mauDataName;
 			Holder = holder;

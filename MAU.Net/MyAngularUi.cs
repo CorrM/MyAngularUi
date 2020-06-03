@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using MAU.Attributes;
 using Newtonsoft.Json;
@@ -127,7 +128,7 @@ namespace MAU
 			ServiceMethodCall = 13,
 
 			/// <summary>
-			/// Tell angular side all elements are ready [Props, Vars and etc]
+			/// Tell angular side all components are ready [Props, Vars and etc]
 			/// </summary>
 			DotNetReady = 14
 		}
@@ -137,13 +138,13 @@ namespace MAU
 		#region [ Private Fields ]
 
 		private static Dictionary<string, MauComponent> _mauComponents;
-		private static Dictionary<string, MauElement> _mauElements;
 		private static Dictionary<Type, dynamic> _varParsers;
 
 		#endregion
 
 		#region [ Internal Props ]
 
+		internal static MauApp AppInstance { get; private set; }
 		internal static ConcurrentDictionary<int, object> OrdersResponse { get; private set; }
 
 		#endregion
@@ -157,14 +158,14 @@ namespace MAU
 
 		#endregion
 
-		internal static Task<RequestState> ExecuteTsCode(string mauElementId, string code)
+		internal static Task<RequestState> ExecuteTsCode(string mauComponentId, string code)
 		{
 			var data = new JObject()
 			{
 				{ "code", code }
 			};
 
-			return SendRequest(mauElementId, RequestType.ExecuteCode, data);
+			return SendRequest(mauComponentId, RequestType.ExecuteCode, data);
 		}
 
 		#region [ Methods ]
@@ -219,9 +220,8 @@ namespace MAU
 			Init = true;
 			Port = webSocketPort;
 
-			_mauElements = new Dictionary<string, MauElement>();
-			OrdersResponse = new ConcurrentDictionary<int, object>();
 			_mauComponents = new Dictionary<string, MauComponent>();
+			OrdersResponse = new ConcurrentDictionary<int, object>();
 
 			InitParsers();
 		}
@@ -230,10 +230,12 @@ namespace MAU
 		/// Start MyAngularUi
 		/// </summary>
 		/// <returns>If start correctly return true</returns>
-		public static bool Start()
+		public static async Task Start(MauApp appInstance)
 		{
 			if (!Init)
-				return false;
+				return;
+
+			AppInstance = appInstance;
 
 			WebSocket = new MauWebSocket(Port);
 			WebSocket.OnOpen += () => Task.Run(OnOpen);
@@ -241,7 +243,8 @@ namespace MAU
 			WebSocket.OnMessage += (message) => Task.Run(() => OnMessage(message));
 			WebSocket.Start();
 
-			return true;
+			while (true)
+				await Task.Delay(8);
 		}
 
 		/// <summary>
@@ -254,22 +257,22 @@ namespace MAU
 
 		/// <summary>
 		/// When angular disconnect, this function will sync
-		/// all [ Element, Events, Props, Vars ] with angular again
+		/// all [ Components, Events, Props, Vars ] with angular again
 		/// </summary>
-		private static async Task ReSyncMauElements()
+		private static async Task ReSyncMauComponents()
 		{
-			foreach ((string _, MauElement mauElement) in _mauElements)
+			foreach ((string _, MauComponent mauComponent) in _mauComponents)
 			{
 				// Vars [ Must be first ]
-				foreach ((string varName, PropertyInfo _) in mauElement.HandledVars)
-					await MauVariable.SendMauVariable(mauElement, varName);
+				foreach ((string varName, PropertyInfo _) in mauComponent.HandledVars)
+					await MauVariable.SendMauVariable(mauComponent, varName);
 
 				// Props
-				foreach ((string propName, BoolHolder<PropertyInfo> _) in mauElement.GetValidToSetHandledProps())
-					await MauProperty.SendMauProp(mauElement, propName);
+				foreach ((string propName, BoolHolder<PropertyInfo> _) in mauComponent.GetValidToSetHandledProps())
+					await MauProperty.SendMauProp(mauComponent, propName);
 			}
 
-			if (_mauElements.Count > 0)
+			if (_mauComponents.Count > 0)
 				await SendRequest(string.Empty, RequestType.DotNetReady, null);
 		}
 
@@ -298,17 +301,17 @@ namespace MAU
 		/// Just set the same requestId from front-end request
 		/// </summary>
 		/// <param name="requestId">front-end request id</param>
-		/// <param name="mauElementId">MauId of your target</param>
+		/// <param name="mauComponentId">MauId of your target</param>
 		/// <param name="requestType">Type of request</param>
 		/// <param name="data">Request data</param>
 		/// <returns>Information about request state</returns>
-		internal static async Task<RequestState> SendResponse(int requestId, string mauElementId, RequestType requestType, JObject data)
+		internal static async Task<RequestState> SendResponse(int requestId, string mauComponentId, RequestType requestType, JObject data)
 		{
 			var dSend = new JObject
 			{
 				{ "requestId", requestId },
 				{ "requestType", (int)requestType },
-				{ "mauElementId", mauElementId },
+				{ "mauComponentId", mauComponentId },
 				{ "data", data }
 			};
 
@@ -327,14 +330,14 @@ namespace MAU
 		/// <summary>
 		/// Use to send new request to front-end side
 		/// </summary>
-		/// <param name="mauElementId">MauId of your target</param>
+		/// <param name="mauComponentId">MauId of your target</param>
 		/// <param name="requestType">Type of request</param>
 		/// <param name="data">Request Data</param>
 		/// <returns></returns>
-		internal static Task<RequestState> SendRequest(string mauElementId, RequestType requestType, JObject data)
+		internal static Task<RequestState> SendRequest(string mauComponentId, RequestType requestType, JObject data)
 		{
 			int requestId = Utils.RandomInt(1, 100000);
-			return SendResponse(requestId, mauElementId, requestType, data ?? new JObject());
+			return SendResponse(requestId, mauComponentId, requestType, data ?? new JObject());
 		}
 
 		internal static async Task OnMessage(string message)
@@ -347,16 +350,16 @@ namespace MAU
 			var response = new ResponseInfo()
 			{
 				RequestId = jsonRequest["requestId"]!.Value<int>(),
-				MauId = jsonRequest["mauElementId"]!.Value<string>(),
+				MauId = jsonRequest["mauComponentId"]!.Value<string>(),
 				RequestType = (RequestType)jsonRequest["requestType"]!.Value<int>(),
 				Data = jsonRequest["data"]!.Value<JObject>()
 			};
 
-			// Check if MauElement is registered, And get it
-			if (!GetMauElement(response.MauId, out MauElement mauElement))
+			// Check if MauComponent is registered, And get it
+			if (!GetMauComponent(response.MauId, out MauComponent mauComponent))
 			{
 				////////////////////////////////////////////////////////////////////////// Remove when finish Debug
-				// throw new KeyNotFoundException("MauElement not found.");
+				// throw new KeyNotFoundException("MauComponent not found.");
 				return;
 			}
 
@@ -369,7 +372,7 @@ namespace MAU
 				case RequestType.GetEvents:
 					var ret = new JObject
 					{
-						{ "events", new JArray(mauElement.Events) }
+						{ "events", new JArray(mauComponent.Events) }
 					};
 
 					// Send response
@@ -381,21 +384,21 @@ namespace MAU
 					string eventType = response.Data["eventType"]!.Value<string>();
 					JObject eventData = JObject.Parse(response.Data["data"]!.Value<string>());
 
-					mauElement.FireEvent(eventName, eventType, eventData);
+					mauComponent.FireEvent(eventName, eventType, eventData);
 					break;
 
 				case RequestType.GetPropValue:
 					string propName = response.Data["propName"]!.Value<string>();
 					JToken propValType = response.Data["propValue"];
 
-					mauElement.SetPropValue(propName, propValType);
+					mauComponent.SetPropValue(propName, propValType);
 					break;
 
 				case RequestType.ReceiveMethod:
 					string methodName = response.Data["methodName"]!.Value<string>();
 					JToken methodRet = response.Data["methodRet"];
 
-					mauElement.SetMethodRetValue(response.RequestId, methodName, methodRet);
+					mauComponent.SetMethodRetValue(response.RequestId, methodName, methodRet);
 					break;
 
 				default:
@@ -405,7 +408,7 @@ namespace MAU
 		internal static void OnOpen()
 		{
 			Connected = true;
-			ReSyncMauElements().GetAwaiter().GetResult();
+			ReSyncMauComponents().GetAwaiter().GetResult();
 		}
 		internal static void OnClose()
 		{
@@ -416,42 +419,39 @@ namespace MAU
 
 		#region [ Helper ]
 
-		internal static bool IsElementRegistered(string mauId)
+		internal static bool IsComponentRegistered(string mauComponentId)
 		{
-			return _mauElements.ContainsKey(mauId);
+			return _mauComponents.ContainsKey(mauComponentId);
 		}
-		internal static bool GetMauElement(string elementId, out MauElement element)
+		internal static bool GetMauComponent(string mauComponentId, out MauComponent component)
 		{
-			if (_mauElements.ContainsKey(elementId))
+			if (_mauComponents.ContainsKey(mauComponentId))
 			{
-				element = _mauElements[elementId];
+				component = _mauComponents[mauComponentId];
 				return true;
 			}
 
-			element = null;
+			component = null;
 			return false;
 		}
-		public static IReadOnlyDictionary<string, MauComponent> GetAllComponents()
+		internal static async Task RegisterComponent(MauComponent mauComponent)
 		{
-			return new ReadOnlyDictionary<string, MauComponent>(_mauComponents);
-		}
-		public static void RegisterComponent(MauComponent mauComponent)
-		{
-			_mauComponents.Add(mauComponent.ComponentName, mauComponent);
-		}
-
-		internal static async Task RegisterElement(MauElement mauElement)
-		{
-			_mauElements.Add(mauElement.MauId, mauElement);
+			_mauComponents.Add(mauComponent.MauId, mauComponent);
 
 			// Request value from angular side
-			foreach ((string propName, BoolHolder<PropertyInfo> _) in mauElement.GetValidToSetHandledProps())
-				await mauElement.GetPropValue(propName);
+			foreach ((string propName, BoolHolder<PropertyInfo> _) in mauComponent.GetValidToSetHandledProps())
+				await mauComponent.GetPropValue(propName);
+
+			mauComponent.AngularSent = true;
 		}
-		internal static async Task RegisterElement(IEnumerable<MauElement> element)
+		internal static async Task RegisterComponent(IEnumerable<MauComponent> mauComponents)
 		{
-			foreach (MauElement uiElement in element)
-				await RegisterElement(uiElement);
+			foreach (MauComponent mauComponent in mauComponents)
+				await RegisterComponent(mauComponent);
+		}
+		internal static IReadOnlyDictionary<string, MauComponent> GetAllComponents()
+		{
+			return new ReadOnlyDictionary<string, MauComponent>(_mauComponents);
 		}
 
 		#endregion

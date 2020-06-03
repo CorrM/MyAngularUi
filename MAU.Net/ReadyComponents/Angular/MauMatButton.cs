@@ -4,9 +4,9 @@ using MAU.Helper.Enums;
 using static MAU.Attributes.MauMethod;
 using static MAU.Attributes.MauProperty;
 
-namespace MAU.ReadyElement.Angular
+namespace MAU.ReadyComponents.Angular
 {
-	public class MauMatButton : MauElement
+	public class MauMatButton : MauComponent
 	{
 		#region [ Mau Properties ]
 
@@ -34,6 +34,6 @@ namespace MAU.ReadyElement.Angular
 
 		#endregion
 
-		public MauMatButton(MauComponent parentComponent, string mauId) : base(parentComponent, mauId) { }
+		public MauMatButton(string mauId) : base(mauId) { }
 	}
 }

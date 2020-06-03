@@ -5,9 +5,9 @@ using static MAU.Attributes.MauMethod;
 using static MAU.Attributes.MauProperty;
 using static MAU.Events.MauEventHandlers;
 
-namespace MAU.ReadyElement.Angular
+namespace MAU.ReadyComponents.Angular
 {
-	public class MauMatSlideToggle : MauElement
+	public class MauMatSlideToggle : MauComponent
 	{
 		#region [ Mau Events ]
 
@@ -60,6 +60,6 @@ namespace MAU.ReadyElement.Angular
 
 		#endregion
 
-		public MauMatSlideToggle(MauComponent parentComponent, string mauId) : base(parentComponent, mauId) { }
+		public MauMatSlideToggle(string mauId) : base(mauId) { }
 	}
 }

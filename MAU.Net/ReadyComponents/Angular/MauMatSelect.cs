@@ -1,14 +1,13 @@
-﻿using System.Collections.Generic;
-using MAU.Attributes;
+﻿using MAU.Attributes;
 using MAU.Core;
 using MAU.Helper.Types;
 using static MAU.Attributes.MauProperty;
 using static MAU.Events.MauEventHandlers;
 using static MAU.Attributes.MauMethod;
 
-namespace MAU.ReadyElement.Angular
+namespace MAU.ReadyComponents.Angular
 {
-	public class MauMatSelect : MauElement
+	public class MauMatSelect : MauComponent
 	{
 		#region [ Mau Events ]
 
@@ -83,7 +82,7 @@ namespace MAU.ReadyElement.Angular
 
 		#endregion
 
-		public MauMatSelect(MauComponent parentComponent, string mauId) : base(parentComponent, mauId)
+		public MauMatSelect(string mauId) : base(mauId)
 		{
 			Options = new MauDataList<string>(this, nameof(Options));
 		}

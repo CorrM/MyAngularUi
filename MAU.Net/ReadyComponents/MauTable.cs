@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Text;
-using MAU.Attributes;
+﻿using MAU.Attributes;
 using MAU.Core;
-using MAU.Helper.Enums;
 using MAU.Helper.Types;
 
-namespace MAU.ReadyElement
+namespace MAU.ReadyComponents
 {
-	public class MauTable : MauElement
+	public class MauTable : MauComponent
 	{
 		#region [ Mau Properties ]
 
@@ -26,7 +21,7 @@ namespace MAU.ReadyElement
 
 		#endregion
 
-		public MauTable(MauComponent parentComponent, string mauId) : base(parentComponent, mauId)
+		public MauTable(string mauId) : base(mauId)
 		{
 			Content = new MauDataTable(this, nameof(Content));
 		}

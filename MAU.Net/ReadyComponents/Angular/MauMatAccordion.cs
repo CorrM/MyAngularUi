@@ -4,9 +4,9 @@ using MAU.Helper.Enums;
 using static MAU.Attributes.MauMethod;
 using static MAU.Attributes.MauProperty;
 
-namespace MAU.ReadyElement.Angular
+namespace MAU.ReadyComponents.Angular
 {
-	public class MauMatAccordion : MauElement
+	public class MauMatAccordion : MauComponent
 	{
 		#region [ Mau Properties ]
 
@@ -34,6 +34,6 @@ namespace MAU.ReadyElement.Angular
 
 		#endregion
 
-		public MauMatAccordion(MauComponent parentComponent, string mauId) : base(parentComponent, mauId) { }
+		public MauMatAccordion(string mauId) : base(mauId) { }
 	}
 }

@@ -41,10 +41,10 @@ namespace MAU.Attributes
 		{
 			if (MyAngularUi.Connected)
 			{
-				var holder = (MauElement)args.Instance;
+				var holder = (MauComponent)args.Instance;
 
-				if (!MyAngularUi.IsElementRegistered(holder.MauId))
-					throw new Exception("Register MauElement first. And don't call methods before register the MauElement.");
+				if (!MyAngularUi.IsComponentRegistered(holder.MauId))
+					throw new Exception("Register MauComponent first. And don't call methods before register the MauComponent.");
 			}
 
 			base.OnEntry(args);
@@ -57,7 +57,7 @@ namespace MAU.Attributes
 				return;
 			}
 
-			var holder = (MauElement)args.Instance;
+			var holder = (MauComponent)args.Instance;
 			var data = new JObject
 			{
 				{"methodType", (int)MethodType},

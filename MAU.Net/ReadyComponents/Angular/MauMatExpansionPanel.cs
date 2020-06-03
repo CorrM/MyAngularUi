@@ -5,9 +5,9 @@ using static MAU.Attributes.MauMethod;
 using static MAU.Attributes.MauProperty;
 using static MAU.Events.MauEventHandlers;
 
-namespace MAU.ReadyElement.Angular
+namespace MAU.ReadyComponents.Angular
 {
-	public class MauMatExpansionPanel : MauElement
+	public class MauMatExpansionPanel : MauComponent
 	{
 		#region [ Mau Events ]
 
@@ -60,6 +60,6 @@ namespace MAU.ReadyElement.Angular
 
 		#endregion
 
-		public MauMatExpansionPanel(MauComponent parentComponent, string mauId) : base(parentComponent, mauId) { }
+		public MauMatExpansionPanel(string mauId) : base(mauId) { }
 	}
 }

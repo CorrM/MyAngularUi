@@ -40,7 +40,7 @@ namespace MAU.Attributes
 		{
 			return propertyInfo.GetCustomAttributes<MauProperty>(false).Any();
 		}
-		internal static async Task<MyAngularUi.RequestState> SendMauProp(MauElement holder, string mauPropName)
+		internal static async Task<MyAngularUi.RequestState> SendMauProp(MauComponent holder, string mauPropName)
 		{
 			MauProperty mauProp = holder.GetMauPropAttribute(mauPropName);
 			Type propType = holder.HandledProps[mauPropName].Holder.PropertyType;
@@ -90,7 +90,7 @@ namespace MAU.Attributes
 			if (!MyAngularUi.Connected)
 				return;
 
-			var holder = (MauElement)args.Instance;
+			var holder = (MauComponent)args.Instance;
 			if (!holder.HandledProps[PropertyName].Value) // HandleOnSet .?
 				return;
 

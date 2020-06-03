@@ -9,9 +9,9 @@ namespace MAU.Helper.Types
 	public class MauDataList<T> : List<T>, IMauDataType
 	{
 		public string MauDataName { get; }
-		public MauElement Holder { get; }
+		public MauComponent Holder { get; }
 
-		public MauDataList(MauElement holder, string mauDataName)
+		public MauDataList(MauComponent holder, string mauDataName)
 		{
 			MauDataName = mauDataName;
 			Holder = holder;
