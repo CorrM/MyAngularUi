@@ -24,12 +24,12 @@ namespace MAU.Core
 		{
 			ComponentName = componentName;
 
+			// Register this MauComponent
+			MyAngularUi.RegisterComponent(this);
 			// ReSharper disable once VirtualMemberCallInConstructor
 			InitElements();
 			// Register all MauElements
 			RegisterElements();
-			// Register this MauComponent, it's just for .Net side
-			MyAngularUi.RegisterComponents(this);
 		}
 
 		protected abstract void InitElements();
@@ -48,14 +48,14 @@ namespace MAU.Core
 				if (MyAngularUi.IsElementRegistered(element.MauId))
 					throw new Exception("MauElement with same mauId was registered.");
 
-				MyAngularUi.RegisterElement(element);
+				MyAngularUi.RegisterElement(element).GetAwaiter().GetResult();
 			}
 
 			AngularSent = true;
 
 			// If all components are sent there data to angular side so,
 			// Alert angular .Net is Ready
-			if (MyAngularUi.GetAllComponents().All(c => c.AngularSent))
+			if (MyAngularUi.GetAllComponents().All(c => c.Value.AngularSent))
 				MyAngularUi.SendRequest(string.Empty, RequestType.DotNetReady, null).GetAwaiter().GetResult();
 		}
 	}

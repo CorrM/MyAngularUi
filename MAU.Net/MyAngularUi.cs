@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -135,6 +136,7 @@ namespace MAU
 
 		#region [ Private Fields ]
 
+		private static Dictionary<string, MauComponent> _mauComponents;
 		private static Dictionary<string, MauElement> _mauElements;
 		private static Dictionary<Type, dynamic> _varParsers;
 
@@ -143,7 +145,6 @@ namespace MAU
 		#region [ Internal Props ]
 
 		internal static ConcurrentDictionary<int, object> OrdersResponse { get; private set; }
-		internal static List<MauComponent> RegisteredComponents { get; private set; }
 
 		#endregion
 
@@ -220,7 +221,7 @@ namespace MAU
 
 			_mauElements = new Dictionary<string, MauElement>();
 			OrdersResponse = new ConcurrentDictionary<int, object>();
-			RegisteredComponents = new List<MauComponent>();
+			_mauComponents = new Dictionary<string, MauComponent>();
 
 			InitParsers();
 		}
@@ -430,13 +431,13 @@ namespace MAU
 			element = null;
 			return false;
 		}
-		public static IReadOnlyCollection<MauComponent> GetAllComponents()
+		public static IReadOnlyDictionary<string, MauComponent> GetAllComponents()
 		{
-			return RegisteredComponents.AsReadOnly();
+			return new ReadOnlyDictionary<string, MauComponent>(_mauComponents);
 		}
-		public static void RegisterComponents(MauComponent mauComponent)
+		public static void RegisterComponent(MauComponent mauComponent)
 		{
-			RegisteredComponents.Add(mauComponent);
+			_mauComponents.Add(mauComponent.ComponentName, mauComponent);
 		}
 
 		internal static async Task RegisterElement(MauElement mauElement)
