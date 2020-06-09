@@ -53,7 +53,7 @@ namespace MAU.ReadyComponents.Angular
 		public long TypeaheadDebounceInterval { get; set; }
 
 		[MauProperty("value", MauPropertyType.ComponentProperty)]
-		public string SelectedOption { get; private set; }
+		public string SelectedItem { get; private set; }
 
 		[MauProperty("empty", MauPropertyType.ComponentProperty, ReadOnly = true)]
 		public bool Empty { get; set; }
@@ -94,7 +94,7 @@ namespace MAU.ReadyComponents.Angular
 			if (!Options.Contains(newOption))
 				return false;
 
-			SelectedOption = newOption;
+			SelectedItem = newOption;
 			return true;
 		}
 		public bool SelectOption(int newOptionIndex)
@@ -102,7 +102,7 @@ namespace MAU.ReadyComponents.Angular
 			if (newOptionIndex >= Options.Count)
 				return false;
 
-			SelectedOption = Options[newOptionIndex];
+			SelectedItem = Options[newOptionIndex];
 			return true;
 		}
 

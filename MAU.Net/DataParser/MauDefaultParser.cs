@@ -45,6 +45,7 @@ namespace MAU.DataParser
 		{
 			Type varType = varObj.GetType();
 
+			// ToDo: Try to get data in IEnumerable and pass it to parser
 			if (Utils.IsIEnumerable(varType))
 				return JArray.FromObject(varObj);
 

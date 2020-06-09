@@ -19,7 +19,7 @@ namespace MAU.Helper.Types
 
 		public void UpdateData()
 		{
-			MauVariable.UpdateVar(Holder, MauDataName);
+			MauVariable.UpdateVar(Holder, MauDataName).GetAwaiter().GetResult();
 		}
 
 		public new void Add(T item)

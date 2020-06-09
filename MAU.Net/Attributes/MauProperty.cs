@@ -1,15 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using PostSharp.Aspects;
 using PostSharp.Extensibility;
 using PostSharp.Serialization;
 using MAU.Core;
+using static MAU.Events.MauEventHandlers;
 
 namespace MAU.Attributes
 {
@@ -45,8 +43,13 @@ namespace MAU.Attributes
 			MauProperty mauProp = holder.GetMauPropAttribute(mauPropName);
 			Type propType = holder.HandledProps[mauPropName].Holder.PropertyType;
 			object propValue = holder.HandledProps[mauPropName].Holder.GetValue(holder);
+			bool bypass = false;
 
-			if (propType.IsEnum)
+			if (mauProp.ReadOnly)
+			{
+				bypass = true;
+			}
+			else if (propType.IsEnum)
 			{
 				if (!MauEnumMember.HasNotSetValue(propValue.GetType()))
 					throw new Exception($"NotSet must to be in any MauProperty value is 'Enum', {propValue.GetType().FullName}");
@@ -63,13 +66,20 @@ namespace MAU.Attributes
 					case int _:
 					case long propValNum when propValNum == 0:
 					case string propValStr when string.IsNullOrWhiteSpace(propValStr):
-						await holder.GetPropValue(mauPropName);
-						return default;
+						bypass = true;
+						break;
 				}
 			}
 			else if (propValue == null && propType == typeof(string))
 			{
-				propValue = string.Empty;
+				// null not same as empty string
+				bypass = true;
+			}
+
+			if (bypass)
+			{
+				await holder.GetPropValue(mauPropName);
+				return default;
 			}
 
 			var data = new JObject
@@ -84,13 +94,17 @@ namespace MAU.Attributes
 
 		public override async void OnSetValue(LocationInterceptionArgs args)
 		{
+			var holder = (MauComponent)args.Instance;
+			MethodInfo callBackMethod = holder.GetType().GetMethod($"{args.LocationName}OnSet", BindingFlags.NonPublic | BindingFlags.Static);
+			object curValue = args.GetCurrentValue();
+
 			// Set value first, so i can reflect it
 			base.OnSetValue(args);
 
-			if (!MyAngularUi.Connected)
-				return;
+			// 
+			if (callBackMethod != null && !args.Value.Equals(curValue))
+				callBackMethod.Invoke(null, new object[] { holder });
 
-			var holder = (MauComponent)args.Instance;
 			if (!holder.HandledProps[PropertyName].Value) // HandleOnSet .?
 				return;
 

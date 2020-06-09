@@ -1,6 +1,8 @@
 ﻿using MAU.Attributes;
 using MAU.Core;
+using MAU.Events;
 using MAU.Helper.Enums;
+using Newtonsoft.Json.Linq;
 using static MAU.Attributes.MauProperty;
 using static MAU.Events.MauEventHandlers;
 
@@ -12,6 +14,8 @@ namespace MAU.ReadyComponents.Angular
 
 		[MauEvent("input")]
 		public event MauEventHandler InputChange;
+
+		public event MauEventHandler ValueChange;
 
 		#endregion
 
@@ -38,5 +42,14 @@ namespace MAU.ReadyComponents.Angular
 		#endregion
 
 		public MauMatInput(string mauId) : base(mauId) { }
+
+		/// <summary>
+		/// Auto called function, called when <see cref="Value"/> changed
+		/// </summary>
+		/// <param name="mauComponent">Instance of the property.</param>
+		private static void ValueOnSet(MauComponent mauComponent)
+		{
+			((MauMatInput) mauComponent).ValueChange?.Invoke(mauComponent, new MauEventInfo("ValueChange", "ValueChange", new JObject()));
+		}
 	}
 }

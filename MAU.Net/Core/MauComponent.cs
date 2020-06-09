@@ -65,6 +65,9 @@ namespace MAU.Core
 		[MauEvent("click")]
 		public event MauEventHandler Click;
 
+		[MauEvent("dblclick")]
+		public event MauEventHandler DoubleClick;
+
 		#endregion
 
 		#region [ UI Methods ]
@@ -214,7 +217,7 @@ namespace MAU.Core
 		internal Dictionary<string, BoolHolder<PropertyInfo>> GetValidToSetHandledProps()
 		{
 			Dictionary<string, BoolHolder<PropertyInfo>> componentsProps = this.HandledProps
-				.Where(x => !this.GetMauPropAttribute(x.Key).ReadOnly)
+				//.Where(x => !this.GetMauPropAttribute(x.Key).ReadOnly)
 				.OrderBy(x => this.GetMauPropAttribute(x.Key).Important)
 				.ToDictionary(x => x.Key, x => x.Value);
 
@@ -259,9 +262,13 @@ namespace MAU.Core
 			// Make valid enum value
 			MauEnumMember.GetValidEnumValue(propValType, ref propValue);
 
-			HandledProps[propName].Value = false;
-			HandledProps[propName].Holder.SetValue(this, propValue);
-			HandledProps[propName].Value = true;
+			// Deadlock will not happen because of 'HandledProps[propName].Value' (HandleOnSet)
+			lock (HandledProps[propName])
+			{
+				HandledProps[propName].Value = false;
+				HandledProps[propName].Holder.SetValue(this, propValue);
+				HandledProps[propName].Value = true;
+			}
 		}
 
 		internal void SetMethodRetValue(int callMethodRequestId, string methodName, JToken methodRetValueJson)
