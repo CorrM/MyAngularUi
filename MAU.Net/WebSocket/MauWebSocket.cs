@@ -47,7 +47,15 @@ namespace MAU.WebSocket
 			if (WebSock == null || !WebSock.IsAvailable)
 				return false;
 
-			await WebSock.Send(data);
+			try
+			{
+				await WebSock.Send(data);
+			}
+			catch (NullReferenceException)
+			{
+				return false;
+			}
+
 			return true;
 		}
 
