@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <RootNamespace>MAU</RootNamespace>
-    <AssemblyName>MAU</AssemblyName>
+    <AssemblyName>MyAngularUi</AssemblyName>
     <LangVersion>latest</LangVersion>
     <PackageId>MyAngularUi</PackageId>
     <Authors>CorrM</Authors>

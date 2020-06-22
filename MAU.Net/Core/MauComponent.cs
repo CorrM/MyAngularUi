@@ -72,7 +72,7 @@ namespace MAU.Core
 
 		#region [ UI Methods ]
 
-		public async Task SetStyle(string styleName, string styleValue)
+		public void SetStyle(string styleName, string styleValue)
 		{
 			var data = new JObject
 			{
@@ -80,35 +80,35 @@ namespace MAU.Core
 				{"styleValue", styleValue},
 			};
 
-			await MyAngularUi.SendRequest(MauId, RequestType.SetStyle, data);
+			MyAngularUi.SendRequest(MauId, RequestType.SetStyle, data);
 		}
-		public async Task RemoveStyle(string styleName)
+		public void RemoveStyle(string styleName)
 		{
 			var data = new JObject
 			{
 				{"styleName", styleName}
 			};
 
-			await MyAngularUi.SendRequest(MauId, RequestType.RemoveStyle, data);
+			MyAngularUi.SendRequest(MauId, RequestType.RemoveStyle, data);
 		}
 
-		public async Task AddClass(string className)
+		public void AddClass(string className)
 		{
 			var data = new JObject
 			{
 				{"className", className}
 			};
 
-			await MyAngularUi.SendRequest(MauId, RequestType.AddClass, data);
+			MyAngularUi.SendRequest(MauId, RequestType.AddClass, data);
 		}
-		public async Task RemoveClass(string className)
+		public void RemoveClass(string className)
 		{
 			var data = new JObject
 			{
 				{"className", className}
 			};
 
-			await MyAngularUi.SendRequest(MauId, RequestType.RemoveClass, data);
+			MyAngularUi.SendRequest(MauId, RequestType.RemoveClass, data);
 		}
 
 		#endregion
@@ -237,7 +237,7 @@ namespace MAU.Core
 				: null;
 		}
 
-		internal async Task GetPropValue(string propName)
+		internal void GetPropValue(string propName)
 		{
 			if (!HandledProps.ContainsKey(propName))
 				return;
@@ -249,7 +249,7 @@ namespace MAU.Core
 				{"propType", (int)mauPropertyAttr.PropType}
 			};
 
-			await MyAngularUi.SendRequest(MauId, RequestType.GetPropValue, data);
+			MyAngularUi.SendRequest(MauId, RequestType.GetPropValue, data);
 		}
 		internal void SetPropValue(string propName, JToken propValueJson)
 		{

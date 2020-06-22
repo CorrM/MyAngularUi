@@ -27,18 +27,18 @@ namespace MAU.Core
 				.ToList();
 
 			// Register components
-			foreach (MauComponent mauComponent in mauComponents.Where(e => e != null))
+			mauComponents.Where(e => e != null).AsParallel().ForAll(mauComponent =>
 			{
 				if (MyAngularUi.IsComponentRegistered(mauComponent.MauId))
 					throw new Exception("MauComponent with same mauId was registered.");
 
-				MyAngularUi.RegisterComponent(mauComponent).GetAwaiter().GetResult();
-			}
+				MyAngularUi.RegisterComponent(mauComponent);
+			});
 
 			// If all components are sent there data to angular side so,
 			// Alert angular .Net is Ready
 			if (MyAngularUi.GetAllComponents().All(c => c.Value.AngularSent))
-				MyAngularUi.SendRequest(string.Empty, RequestType.DotNetReady, null).GetAwaiter().GetResult();
+				MyAngularUi.SendRequest(string.Empty, RequestType.DotNetReady, null);
 		}
 	}
 }

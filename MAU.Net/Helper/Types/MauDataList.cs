@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using MAU.Attributes;
 using MAU.Core;
 
@@ -19,7 +18,7 @@ namespace MAU.Helper.Types
 
 		public void UpdateData()
 		{
-			MauVariable.UpdateVar(Holder, MauDataName).GetAwaiter().GetResult();
+			MauVariable.UpdateVar(Holder, MauDataName);
 		}
 
 		public new void Add(T item)

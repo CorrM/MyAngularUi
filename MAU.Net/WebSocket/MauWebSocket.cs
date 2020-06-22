@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Fleck;
 
@@ -49,7 +47,11 @@ namespace MAU.WebSocket
 
 			try
 			{
-				await WebSock.Send(data);
+				Task sendR = WebSock.Send(data);
+				if (sendR == null)
+					return false;
+
+				await sendR;
 			}
 			catch (NullReferenceException)
 			{

@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using PostSharp.Aspects;
 using PostSharp.Extensibility;
 using PostSharp.Serialization;
 using MAU.Core;
-using static MAU.Events.MauEventHandlers;
 
 namespace MAU.Attributes
 {
@@ -38,7 +36,7 @@ namespace MAU.Attributes
 		{
 			return propertyInfo.GetCustomAttributes<MauProperty>(false).Any();
 		}
-		internal static async Task<MyAngularUi.RequestState> SendMauProp(MauComponent holder, string mauPropName)
+		internal static MyAngularUi.RequestState SendMauProp(MauComponent holder, string mauPropName)
 		{
 			MauProperty mauProp = holder.GetMauPropAttribute(mauPropName);
 			Type propType = holder.HandledProps[mauPropName].Holder.PropertyType;
@@ -78,7 +76,7 @@ namespace MAU.Attributes
 
 			if (bypass)
 			{
-				await holder.GetPropValue(mauPropName);
+				holder.GetPropValue(mauPropName);
 				return default;
 			}
 
@@ -89,19 +87,19 @@ namespace MAU.Attributes
 				{"propVal", MyAngularUi.ParseMauDataToFrontEnd(propValue)}
 			};
 
-			return await MyAngularUi.SendRequest(holder.MauId, MyAngularUi.RequestType.SetPropValue, data);
+			return MyAngularUi.SendRequest(holder.MauId, MyAngularUi.RequestType.SetPropValue, data);
 		}
 
-		public override async void OnSetValue(LocationInterceptionArgs args)
+		public override void OnSetValue(LocationInterceptionArgs args)
 		{
 			var holder = (MauComponent)args.Instance;
-			MethodInfo callBackMethod = holder.GetType().GetMethod($"{args.LocationName}OnSet", BindingFlags.NonPublic | BindingFlags.Static);
 			object curValue = args.GetCurrentValue();
 
 			// Set value first, so i can reflect it
 			base.OnSetValue(args);
 
 			// 
+			MethodInfo callBackMethod = holder.GetType().GetMethod($"{args.LocationName}OnSet", BindingFlags.NonPublic | BindingFlags.Static);
 			if (callBackMethod != null && !args.Value.Equals(curValue))
 				callBackMethod.Invoke(null, new object[] { holder });
 
@@ -113,7 +111,7 @@ namespace MAU.Attributes
 			if (ReadOnly)
 				throw new Exception($"This prop '{holder.MauId}.{PropertyName}' is 'ReadOnly'.");
 
-			await SendMauProp(holder, PropertyName);
+			SendMauProp(holder, PropertyName);
 		}
 	}
 }

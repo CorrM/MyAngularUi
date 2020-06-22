@@ -4,11 +4,8 @@ using PostSharp.Aspects;
 using PostSharp.Extensibility;
 using PostSharp.Serialization;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MAU.Attributes
 {
@@ -65,7 +62,7 @@ namespace MAU.Attributes
 				{"methodArgs", JArray.FromObject(args.Arguments.ToArray())}
 			};
 
-			MyAngularUi.RequestState request = MyAngularUi.SendRequest(holder.MauId, MyAngularUi.RequestType.CallMethod, data).Result;
+			MyAngularUi.RequestState request = MyAngularUi.SendRequest(holder.MauId, MyAngularUi.RequestType.CallMethod, data);
 			if (((MethodInfo) args.Method).ReturnType == typeof(void))
 				return;
 
