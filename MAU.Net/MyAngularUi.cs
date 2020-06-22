@@ -192,7 +192,7 @@ namespace MAU
 		internal static object ParseMauDataFromFrontEnd(Type varType, JToken varObj)
 		{
 			dynamic parser = !_varParsers.ContainsKey(varType)
-				? _varParsers[typeof(object)]
+				? _varParsers[typeof(object)] // MauDefaultParser
 				: _varParsers[varType];
 
 			return parser.ParseFromFrontEnd((dynamic)varObj);
@@ -261,10 +261,6 @@ namespace MAU
 		{
 			foreach ((string _, MauComponent mauComponent) in _mauComponents)
 			{
-				if (mauComponent.MauId == "EngineConfigUEVersion")
-				{
-
-				}
 				// Vars [ Must be first ]
 				foreach ((string varName, PropertyInfo _) in mauComponent.HandledVars)
 					MauVariable.SendMauVariable(mauComponent, varName);
