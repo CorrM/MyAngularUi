@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Reflection;
+using MAU.Core;
+using Newtonsoft.Json.Linq;
 
 namespace MAU.Attributes
 {
@@ -17,6 +19,17 @@ namespace MAU.Attributes
 		public static bool HasAttribute(EventInfo eventInfo)
 		{
 			return eventInfo.GetCustomAttributes(typeof(MauEvent), false).Any();
+		}
+
+		internal static MyAngularUi.RequestState SendMauEvents(MauComponent holder)
+		{
+			var ret = new JObject
+			{
+				{ "events", new JArray(holder.Events) }
+			};
+
+			// Send response
+			return MyAngularUi.SendRequest(holder.MauId, MyAngularUi.RequestType.SetEvents, ret);
 		}
 	}
 }

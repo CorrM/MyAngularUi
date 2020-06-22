@@ -61,10 +61,9 @@ namespace MAU
 			None = 0,
 
 			/// <summary>
-			/// Angular request to know what events,
-			/// handled in dotnet
+			/// Tell angular what events handled in dotnet
 			/// </summary>
-			GetEvents = 1,
+			SetEvents = 1,
 
 			/// <summary>
 			/// Angular fire event
@@ -262,6 +261,10 @@ namespace MAU
 		{
 			foreach ((string _, MauComponent mauComponent) in _mauComponents)
 			{
+				if (mauComponent.MauId == "EngineConfigUEVersion")
+				{
+
+				}
 				// Vars [ Must be first ]
 				foreach ((string varName, PropertyInfo _) in mauComponent.HandledVars)
 					MauVariable.SendMauVariable(mauComponent, varName);
@@ -269,6 +272,9 @@ namespace MAU
 				// Props
 				foreach ((string propName, BoolHolder<PropertyInfo> _) in mauComponent.GetValidToSetHandledProps())
 					MauProperty.SendMauProp(mauComponent, propName);
+
+				// Events
+				MauEvent.SendMauEvents(mauComponent);
 			}
 
 			if (_mauComponents.Count > 0)
@@ -366,16 +372,6 @@ namespace MAU
 			switch (response.RequestType)
 			{
 				case RequestType.None:
-					break;
-
-				case RequestType.GetEvents:
-					var ret = new JObject
-					{
-						{ "events", new JArray(mauComponent.Events) }
-					};
-
-					// Send response
-					SendRequest(response.MauId, response.RequestType, ret);
 					break;
 
 				case RequestType.EventCallback:

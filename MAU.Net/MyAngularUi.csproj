@@ -16,8 +16,9 @@
     <RepositoryUrl>https://github.com/CorrM/MyAngularUi.Net</RepositoryUrl>
     <RepositoryType>GUI</RepositoryType>
     <PackageTags>CorrM, MyAngularUi, IslamNofl</PackageTags>
-    <Version>1.1.1</Version>
-    <FileVersion>1.1.1.0</FileVersion>
+    <Version>1.1.2</Version>
+    <FileVersion>1.1.2.0</FileVersion>
+    <AssemblyVersion>1.1.2.0</AssemblyVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
