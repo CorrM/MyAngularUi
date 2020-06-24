@@ -7,10 +7,6 @@ export class MauUtils {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    public static async Sleep(ms: number): Promise<void> {
-        return new Promise(resolve => setTimeout(resolve, ms));
-    }
-
     public static IsNonEmptyString(str: string): boolean {
         return str && str.trim().length > 0;
     }

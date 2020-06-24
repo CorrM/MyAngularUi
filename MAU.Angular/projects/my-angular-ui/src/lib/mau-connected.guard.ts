@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, Router } from '@angular/router';
+import { CanActivate, ActivatedRouteSnapshot, Router } from '@angular/router';
 import { MyAngularUiService } from './mau.service';
 
 @Injectable({
@@ -9,7 +9,7 @@ export class MauConnectedGuard implements CanActivate {
 
     constructor(private router: Router, private mau: MyAngularUiService) {}
 
-    public canActivate(next: ActivatedRouteSnapshot, state: RouterStateSnapshot): boolean {
+    public canActivate(next: ActivatedRouteSnapshot): boolean {
         if (!this.mau.IsConnected()) {
             let url = next.data.connectUrl as Array<string>;
             this.router.navigate(url);

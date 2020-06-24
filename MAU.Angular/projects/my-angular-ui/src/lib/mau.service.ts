@@ -1,4 +1,4 @@
-import { Injectable, ElementRef, Injector, EventEmitter, Renderer2, RendererFactory2 } from '@angular/core';
+import { Injectable, ElementRef, Injector, EventEmitter, RendererFactory2, Renderer2 } from '@angular/core';
 import { MyAngularUiWebSocket, RequestType, MauRequestInfo } from './mau-web-socket';
 import { MauUtils } from './mau-utils';
 
@@ -61,12 +61,12 @@ export class MyAngularUiService {
 
     constructor(
         private injector: Injector,
-        private rendererFactory: RendererFactory2
+        private rFactory: RendererFactory2
     ) {
         AppInjector = this.injector;
 
         this._working = true;
-        this._renderer = rendererFactory.createRenderer(null, null);
+        this._renderer = rFactory.createRenderer(null, null);
         this.OnConnect = new EventEmitter();
         this.OnDisConnect = new EventEmitter();
         this.OnDotNetReady = new EventEmitter();
