@@ -144,7 +144,7 @@ namespace MAU
 
 		internal static Assembly AppAssembly { get; private set; }
 		internal static ConcurrentDictionary<int, object> OrdersResponse { get; private set; }
-		internal static Dictionary<string, MauParentComponent> MauParents { get; private set; }
+		internal static Dictionary<string, object> MauContainers { get; private set; }
 
 		#endregion
 
@@ -220,7 +220,7 @@ namespace MAU
 			AppAssembly = assembly;
 			_mauComponents = new ConcurrentDictionary<string, MauComponent>();
 			OrdersResponse = new ConcurrentDictionary<int, object>();
-			MauParents = new Dictionary<string, MauParentComponent>();
+			MauContainers = new Dictionary<string, object>();
 
 			InitParsers();
 			BootStrapMau();
@@ -448,23 +448,30 @@ namespace MAU
 		private static void BootStrapMau()
 		{
 			// Create instance of all 'MauParentComponent'
-			foreach (Type item in AppAssembly.GetTypes().Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(MauParentComponent))))
+			foreach (Type item in AppAssembly.GetTypes().Where(t => !t.IsAbstract && MauContainer.HasAttribute(t)))
 			{
-				if (!MauParents.TryAdd(item.FullName, (MauParentComponent)Activator.CreateInstance(item)))
-					throw new Exception($"Can't register MauParentComponent '{item.FullName}'.");
+				if (!item.IsSealed)
+					throw new Exception($"MauContainer must be 'Sealed', '{item.FullName}'.");
+
+				if (!MauContainers.TryAdd(item.FullName, Activator.CreateInstance(item)))
+					throw new Exception($"Can't register MauContainer '{item.FullName}'.");
 			}
 		}
 		internal static IReadOnlyDictionary<string, MauComponent> GetAllComponents()
 		{
 			return new ReadOnlyDictionary<string, MauComponent>(_mauComponents);
 		}
-		public static T GetParentComponent<T>() where T : MauParentComponent
+		public static T GetMauContainer<T>() where T : class
 		{
+			Type t = typeof(T);
+			if (!MauContainer.HasAttribute(t))
+				throw new Exception($"'{t.FullName}' not a MauContainer.");
+
 			string compName = typeof(T).FullName;
-			if (!MauParents.ContainsKey(compName))
+			if (!MauContainers.ContainsKey(compName))
 				return null;
 
-			return (T)MauParents[compName];
+			return (T)MauContainers[compName];
 		}
 
 		#endregion
