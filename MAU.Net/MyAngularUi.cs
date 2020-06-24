@@ -144,6 +144,7 @@ namespace MAU
 
 		internal static Assembly AppAssembly { get; private set; }
 		internal static ConcurrentDictionary<int, object> OrdersResponse { get; private set; }
+		internal static Dictionary<string, MauParentComponent> MauParents { get; private set; }
 
 		#endregion
 
@@ -219,6 +220,7 @@ namespace MAU
 			AppAssembly = assembly;
 			_mauComponents = new ConcurrentDictionary<string, MauComponent>();
 			OrdersResponse = new ConcurrentDictionary<int, object>();
+			MauParents = new Dictionary<string, MauParentComponent>();
 
 			InitParsers();
 			BootStrapMau();
@@ -446,13 +448,23 @@ namespace MAU
 		private static void BootStrapMau()
 		{
 			// Create instance of all 'MauParentComponent'
-			var gg = AppAssembly.GetTypes().Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(MauParentComponent))).ToList();
-			foreach (Type item in gg)
-				Activator.CreateInstance(item);
+			foreach (Type item in AppAssembly.GetTypes().Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(MauParentComponent))))
+			{
+				if (!MauParents.TryAdd(item.FullName, (MauParentComponent)Activator.CreateInstance(item)))
+					throw new Exception($"Can't register MauParentComponent '{item.FullName}'.");
+			}
 		}
 		internal static IReadOnlyDictionary<string, MauComponent> GetAllComponents()
 		{
 			return new ReadOnlyDictionary<string, MauComponent>(_mauComponents);
+		}
+		public static T GetParentComponent<T>() where T : MauParentComponent
+		{
+			string compName = typeof(T).FullName;
+			if (!MauParents.ContainsKey(compName))
+				return null;
+
+			return (T)MauParents[compName];
 		}
 
 		#endregion
