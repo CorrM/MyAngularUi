@@ -18,7 +18,7 @@ namespace MAU.Core
 	{
 		#region [ Internal Props ]
 
-		internal bool AngularSent { get; set; }
+
 
 		#endregion
 
@@ -113,20 +113,6 @@ namespace MAU.Core
 
 		#endregion
 
-		protected MauComponent(string mauId)
-		{
-			if (MyAngularUi.IsComponentRegistered(mauId))
-				throw new ArgumentOutOfRangeException(nameof(mauId), "MauComponent with same mauId was registered.");
-
-			MauId = mauId;
-			HandledEvents = new Dictionary<string, EventInfo>();
-			HandledProps = new Dictionary<string, BoolHolder<PropertyInfo>>();
-			HandledVars = new Dictionary<string, PropertyInfo>();
-			HandledMethods = new Dictionary<string, MethodInfo>();
-
-			InitComponents();
-		}
-
 		internal MauProperty GetMauPropAttribute(string propName)
 		{
 			return HandledProps.ContainsKey(propName)
@@ -139,8 +125,34 @@ namespace MAU.Core
 				? HandledMethods[methodName].GetCustomAttribute<MauMethod>()
 				: null;
 		}
+		internal Type GetPropType(string propName)
+		{
+			return HandledProps.ContainsKey(propName)
+				? HandledProps[propName].Holder.PropertyType
+				: null;
+		}
+		internal Type GetMethodReturnType(string methodName)
+		{
+			return HandledMethods.ContainsKey(methodName)
+				? HandledMethods[methodName].ReturnType
+				: null;
+		}
 
-		private void InitComponents()
+		protected MauComponent(string mauId)
+		{
+			if (MyAngularUi.IsComponentRegistered(mauId))
+				throw new ArgumentOutOfRangeException(nameof(mauId), "MauComponent with same mauId was registered.");
+
+			MauId = mauId;
+			HandledEvents = new Dictionary<string, EventInfo>();
+			HandledProps = new Dictionary<string, BoolHolder<PropertyInfo>>();
+			HandledVars = new Dictionary<string, PropertyInfo>();
+			HandledMethods = new Dictionary<string, MethodInfo>();
+
+			Init();
+		}
+
+		private void Init()
 		{
 			// Events
 			{
@@ -166,9 +178,7 @@ namespace MAU.Core
 			{
 				PropertyInfo[] varInfos = this.GetType().GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 				foreach (PropertyInfo varInfo in varInfos.Where(MauVariable.HasAttribute))
-				{
 					HandledVars.Add(varInfo.Name, varInfo);
-				}
 			}
 
 			// Methods
@@ -180,6 +190,8 @@ namespace MAU.Core
 					HandledMethods.Add(attr.MethodName, methodInfo);
 				}
 			}
+
+			RegisterComponent(this);
 		}
 
 		internal void FireEvent(string eventName, string eventType, JObject eventData)
@@ -222,19 +234,6 @@ namespace MAU.Core
 				.ToDictionary(x => x.Key, x => x.Value);
 
 			return componentsProps;
-		}
-
-		internal Type GetPropType(string propName)
-		{
-			return HandledProps.ContainsKey(propName)
-				? HandledProps[propName].Holder.PropertyType
-				: null;
-		}
-		internal Type GetMethodReturnType(string methodName)
-		{
-			return HandledMethods.ContainsKey(methodName)
-				? HandledMethods[methodName].ReturnType
-				: null;
 		}
 
 		internal void GetPropValue(string propName)

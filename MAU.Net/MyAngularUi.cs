@@ -142,7 +142,7 @@ namespace MAU
 
 		#region [ Internal Props ]
 
-		internal static MauApp AppInstance { get; private set; }
+		internal static Assembly AppAssembly { get; private set; }
 		internal static ConcurrentDictionary<int, object> OrdersResponse { get; private set; }
 
 		#endregion
@@ -210,31 +210,30 @@ namespace MAU
 		/// Init MyAngularUi
 		/// </summary>
 		/// <param name="webSocketPort">Port to use for communication</param>
-		public static void Setup(int webSocketPort)
+		public static void Setup(Assembly assembly)
 		{
 			if (Init)
 				return;
-
 			Init = true;
-			Port = webSocketPort;
 
+			AppAssembly = assembly;
 			_mauComponents = new ConcurrentDictionary<string, MauComponent>();
 			OrdersResponse = new ConcurrentDictionary<int, object>();
 
 			InitParsers();
+			BootStrapMau();
 		}
 
 		/// <summary>
 		/// Start MyAngularUi
 		/// </summary>
 		/// <returns>If start correctly return true</returns>
-		public static async Task Start(MauApp appInstance)
+		public static async Task Start(int webSocketPort = 2911)
 		{
 			if (!Init)
 				return;
 
-			AppInstance = appInstance;
-
+			Port = webSocketPort;
 			WebSocket = new MauWebSocket(Port);
 			WebSocket.OnOpen += () => Task.Run(OnOpen);
 			WebSocket.OnClose += () => Task.Run(OnClose);
@@ -274,7 +273,7 @@ namespace MAU
 			}
 
 			if (_mauComponents.Count > 0)
-				SendRequest(string.Empty, RequestType.DotNetReady, null);
+				SendRequest(string.Empty, RequestType.DotNetReady);
 		}
 
 		#endregion
@@ -339,6 +338,10 @@ namespace MAU
 		{
 			int requestId = Utils.RandomInt(1, 100000);
 			return SendResponse(requestId, mauComponentId, requestType, data ?? new JObject());
+		}
+		internal static RequestState SendRequest(string mauComponentId, RequestType requestType)
+		{
+			return SendRequest(mauComponentId, requestType, null);
 		}
 
 		internal static void OnMessage(string message)
@@ -427,13 +430,25 @@ namespace MAU
 		}
 		internal static void RegisterComponent(MauComponent mauComponent)
 		{
+			if (string.IsNullOrWhiteSpace(mauComponent.MauId))
+				return;
+
+			// Register itself
+			if (MyAngularUi.IsComponentRegistered(mauComponent.MauId))
+				throw new Exception("MauComponent with same mauId was registered.");
+
 			_mauComponents.TryAdd(mauComponent.MauId, mauComponent);
 
 			// Request value from angular side
 			foreach ((string propName, BoolHolder<PropertyInfo> _) in mauComponent.GetValidToSetHandledProps())
 				mauComponent.GetPropValue(propName);
-
-			mauComponent.AngularSent = true;
+		}
+		private static void BootStrapMau()
+		{
+			// Create instance of all 'MauParentComponent'
+			var gg = AppAssembly.GetTypes().Where(t => !t.IsAbstract && t.IsSubclassOf(typeof(MauParentComponent))).ToList();
+			foreach (Type item in gg)
+				Activator.CreateInstance(item);
 		}
 		internal static IReadOnlyDictionary<string, MauComponent> GetAllComponents()
 		{

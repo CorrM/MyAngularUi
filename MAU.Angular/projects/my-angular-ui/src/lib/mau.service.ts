@@ -121,7 +121,7 @@ export class MyAngularUiService {
         });
     }
 
-    public Start(ip: string, port: number): void {
+    public Start(ip: string, port: number = 2911): void {
         if (this._webSock.IsRunning) {
             return;
         }

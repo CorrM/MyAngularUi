@@ -16,7 +16,7 @@ namespace MAU.ReadyComponents.Angular
 				{ "methodArgs", new JArray() }
 			};
 
-			MyAngularUi.SendRequest("null", RequestType.ServiceMethodCall, data);
+			MyAngularUi.SendRequest(string.Empty, RequestType.ServiceMethodCall, data);
 		}
 	}
 }
