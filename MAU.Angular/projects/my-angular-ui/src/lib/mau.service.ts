@@ -2,6 +2,7 @@ import { Injectable, ElementRef, Injector, EventEmitter, RendererFactory2, Rende
 import { MyAngularUiWebSocket, RequestType, MauRequestInfo } from './mau-web-socket';
 import { MauUtils } from './mau-utils';
 
+
 export let AppInjector: Injector;
 
 export interface MauComponentProp {
@@ -348,12 +349,12 @@ export class MyAngularUiService {
             mauComponent.HandledEvents.set(eventName, true);
 
             // Access event as property
-            let compEvent: EventEmitter<any> = mauComponent.Component[eventName];
+            const eventProp: any = mauComponent.Component[eventName];
 
             // * Set subscribe to EventEmitter, that's for some custom components
             // * Like Angular Matiral components (MatSelect, ...)
-            if (compEvent !== undefined && typeof compEvent !== "function") {
-                compEvent.subscribe({
+            if (eventProp !== undefined && typeof eventProp !== "function") {
+                eventProp.subscribe({
                     next: (event: MessageEvent) => {
                         this.FireEvent(mauComponent, eventName, event);
                     }
