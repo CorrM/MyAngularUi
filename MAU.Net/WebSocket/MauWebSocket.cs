@@ -61,6 +61,11 @@ namespace MAU.WebSocket
 			return true;
 		}
 
+		public bool IsConnected()
+		{
+			return WebSock != null && WebSock.IsAvailable;
+		}
+
 		public void Dispose()
 		{
 			_wsServer?.Dispose();

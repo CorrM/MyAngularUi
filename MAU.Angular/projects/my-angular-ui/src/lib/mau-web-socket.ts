@@ -18,7 +18,8 @@ export enum RequestType {
     AddClass = 11,
     RemoveClass = 12,
     ServiceMethodCall = 13,
-    DotNetReady = 14
+    DotNetReady = 14,
+    CustomData = 15
 }
 
 export interface MauRequestInfo {
@@ -32,10 +33,6 @@ export interface WebSocketOnMessageCallback {
     (message: any): void;
 }
 
-export interface WebSocketSendCheckCallback {
-    (mauComponent: MauComponent): boolean;
-}
-
 export class MyAngularUiWebSocket {
 
     private _url: string;
@@ -44,7 +41,6 @@ export class MyAngularUiWebSocket {
     private _thisArg: any;
 
     public OnMessageCB: WebSocketOnMessageCallback;
-    public SendCheckCB: WebSocketSendCheckCallback;
 
     public IsRunning: boolean = false;
     public IsConnected: boolean = false;
@@ -61,8 +57,8 @@ export class MyAngularUiWebSocket {
     }
 
     public Start(url: string, reconnectTime: number): boolean {
-        if (this.OnMessageCB === undefined || this.SendCheckCB === undefined) {
-            throw "'OnMessageCB and SendCheckCB' must assign";
+        if (this.OnMessageCB === undefined) {
+            throw "'OnMessageCB' must assign";
         }
         if (this.IsRunning) {
             return false;
@@ -116,7 +112,7 @@ export class MyAngularUiWebSocket {
             console.log(`SendData Can't send to closed socket.`);
             return false;
         }
-        if (!this._wsSubject || !this.SendCheckCB(mauComponent)) {
+        if (!this._wsSubject) {
             return false;
         }
 
@@ -124,7 +120,7 @@ export class MyAngularUiWebSocket {
         this._wsSubject.next({
             requestId: requestId,
             requestType: requestType,
-            mauComponentId: mauComponent.Id,
+            mauComponentId: mauComponent?.Id ?? "",
             data: !data ? {} : data
         });
         return true;

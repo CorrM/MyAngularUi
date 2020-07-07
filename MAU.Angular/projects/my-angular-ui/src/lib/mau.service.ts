@@ -50,6 +50,8 @@ export class MyAngularUiService {
     public OnConnect: EventEmitter<void>;
     public OnDisConnect: EventEmitter<void>;
     public OnDotNetReady: EventEmitter<void>;
+    public OnCustomData: EventEmitter<any>;
+
     public IP: string;
     public Port: number;
 
@@ -115,13 +117,13 @@ export class MyAngularUiService {
         this.OnConnect = new EventEmitter();
         this.OnDisConnect = new EventEmitter();
         this.OnDotNetReady = new EventEmitter();
+        this.OnCustomData = new EventEmitter();
 
         this.MauComponents = new Map<string, MauComponent>();
         this._mauVariables = new Map<string, any>();
 
         this._webSock = new MyAngularUiWebSocket(this);
         this._webSock.OnMessageCB = this.OnMessage;
-        this._webSock.SendCheckCB = (mauComponent) => this.MauComponents.has(mauComponent.Id);
         this._webSock.OnConnect.subscribe(() => this.OnConnectCallback());
         this._webSock.OnDisConnect.subscribe(() => this.OnDisConnectCallback());
 
@@ -172,6 +174,14 @@ export class MyAngularUiService {
 
     private OnDisConnectCallback(): void {
         this.OnDisConnect.emit();
+    }
+
+    public SendCustomData(data: any): boolean {
+        if (!this.IsConnected()) {
+            return false;
+        }
+
+        return this._webSock.SendRequest(null, RequestType.CustomData, data);
     }
 
     public SetElement(mauComponent: MauComponent): void {
@@ -280,6 +290,13 @@ export class MyAngularUiService {
 
             case RequestType.ServiceMethodCall:
                 this.ServiceMethodCall(request.Data["serviceName"], request.Data["methodName"], request.Data["methodArgs"]);
+                break;
+
+            case RequestType.CustomData:
+                new Promise((resolve, reject) => {
+                    this.OnCustomData.emit(request.Data);
+                    return resolve();
+                });
                 break;
 
             default:

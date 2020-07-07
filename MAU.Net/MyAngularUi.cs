@@ -128,7 +128,12 @@ namespace MAU
 			/// <summary>
 			/// Tell angular side all components are ready [Props, Vars and etc]
 			/// </summary>
-			DotNetReady = 14
+			DotNetReady = 14,
+
+			/// <summary>
+			/// Get/Send data from/to angular
+			/// </summary>
+			CustomData = 15
 		}
 
 		#endregion
@@ -149,6 +154,9 @@ namespace MAU
 		#endregion
 
 		#region [ Public Props ]
+
+		public delegate void CustomData(JObject data);
+		public static event CustomData OnCustomData;
 
 		public static bool Connected { get; private set; }
 		public static MauWebSocket WebSocket { get; private set; }
@@ -346,6 +354,13 @@ namespace MAU
 			return SendRequest(mauComponentId, requestType, null);
 		}
 
+		public static bool SendCustomData(JObject data)
+		{
+			if (!WebSocket.IsConnected())
+				return false;
+
+			return SendRequest(null, RequestType.CustomData, data).SuccessSend;
+		}
 		internal static void OnMessage(string message)
 		{
 			// Decode json
@@ -361,20 +376,21 @@ namespace MAU
 				Data = jsonRequest["data"]!.Value<JObject>()
 			};
 
-			// Check if MauComponent is registered, And get it
-			if (!GetMauComponent(response.MauId, out MauComponent mauComponent))
-			{
-				////////////////////////////////////////////////////////////////////////// Remove when finish Debug
-				// throw new KeyNotFoundException("MauComponent not found.");
-				return;
-			}
-
-			// Process
+			// ! for request not need [MauComponent], ex: just need 'RequestType' and 'Data'.
 			switch (response.RequestType)
 			{
-				case RequestType.None:
+				case RequestType.CustomData:
+					Task.Run(() => OnCustomData?.Invoke(response.Data));
 					break;
+			}
 
+			// Check if MauComponent is registered, And get it
+			if (!GetMauComponent(response.MauId, out MauComponent mauComponent))
+				return;
+
+			// ! for request need [MauComponent].
+			switch (response.RequestType)
+			{
 				case RequestType.EventCallback:
 					string eventName = response.Data["eventName"]!.Value<string>();
 					string eventType = response.Data["eventType"]!.Value<string>();
