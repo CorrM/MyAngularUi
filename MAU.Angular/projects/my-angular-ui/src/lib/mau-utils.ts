@@ -1,4 +1,4 @@
-
+import * as equal from 'fast-deep-equal/es6'
 
 export class MauUtils {
     public static readonly SelectorName: string = "mauid";
@@ -9,6 +9,10 @@ export class MauUtils {
 
     public static IsNonEmptyString(str: string): boolean {
         return str && str.trim().length > 0;
+    }
+
+    public static DeepEqual(a: any, b: any): boolean {
+        return equal(a, b);
     }
 
     // Thanks to => https://stackoverflow.com/a/58416333/3351489

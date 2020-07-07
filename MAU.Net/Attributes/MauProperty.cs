@@ -84,7 +84,7 @@ namespace MAU.Attributes
 			{
 				{"propType", (int)mauProp.PropType},
 				{"propName", mauPropName},
-				{"propVal", MyAngularUi.ParseMauDataToFrontEnd(propValue)}
+				{"propVal", MyAngularUi.ParseMauDataToFrontEnd(propType, propValue)}
 			};
 
 			return MyAngularUi.SendRequest(holder.MauId, MyAngularUi.RequestType.SetPropValue, data);
@@ -100,7 +100,7 @@ namespace MAU.Attributes
 
 			// 
 			MethodInfo callBackMethod = holder.GetType().GetMethod($"{args.LocationName}OnSet", BindingFlags.NonPublic | BindingFlags.Static);
-			if (callBackMethod != null && !args.Value.Equals(curValue))
+			if (callBackMethod != null && args.Value != null && !args.Value.Equals(curValue))
 				callBackMethod.Invoke(null, new object[] { holder });
 
 			if (!holder.HandledProps[PropertyName].Value) // HandleOnSet .?

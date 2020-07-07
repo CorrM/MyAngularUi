@@ -22,10 +22,7 @@ export class MauElementDirective implements OnInit, OnDestroy {
         if (container instanceof HTMLElement) {
             return container;
         }
-
-        let containerName = container.constructor.name;
-        let componentName = containerName.split("_")[1];
-        return container.find((x: any) => x && x.constructor.name == componentName);
+        return container[8];
     }
 
     public ngOnInit(): void {

@@ -1,7 +1,7 @@
 import { Injectable, ElementRef, Injector, EventEmitter, RendererFactory2, Renderer2 } from '@angular/core';
 import { MyAngularUiWebSocket, RequestType, MauRequestInfo } from './mau-web-socket';
 import { MauUtils } from './mau-utils';
-
+import { async } from 'rxjs/internal/scheduler/async';
 
 export let AppInjector: Injector;
 
@@ -44,7 +44,6 @@ export class MyAngularUiService {
     private _webSock: MyAngularUiWebSocket;
     private _mauVariables: Map<string, any>;
     private _renderer: Renderer2;
-    private _propIntervalId: number;
     private _working: boolean;
     private _dotNetReady: boolean;
 
@@ -59,6 +58,51 @@ export class MyAngularUiService {
     public MauAccessibleServices: ReadonlyMap<string, any> = new Map([
         // ["MatBottomSheet", MatBottomSheet]
     ]);
+
+    private MutationObserverCallBack(mutations: MutationRecord[]): void {
+        mutations.forEach(async (mutation: MutationRecord) => {
+            if (mutation.type == "attributes") {
+                const mauComponentId: string = (<HTMLElement>mutation.target).getAttribute(MauUtils.SelectorName);
+                const mauComponent: MauComponent = this.MauComponents.get(mauComponentId);
+                const attribute: string = mutation.attributeName;
+
+                if (mauComponent && mauComponent.HandledProps.has(attribute)) {
+                    const propInfo = mauComponent.HandledProps.get(attribute);
+                    if (!propInfo.Listen) {
+                        this.GetProp(0, mauComponent, MauPropertyType.NativeAttribute, attribute);
+                    }
+                }
+            }
+        });
+    }
+
+    private async PropertyPollingCallBack(): Promise<void> {
+        return new Promise((resolve, reject) => {
+            if (!this.IsConnected()) {
+                return resolve();
+            }
+
+            // Check every `PollingHandledProp` it's value changed
+            this.MauComponents.forEach((mauComponent) => {
+                mauComponent.HandledProps.forEach((propInfo) => {
+                    if (!propInfo || !propInfo.NeedToPolling || !propInfo.Listen) {
+                        return resolve();
+                    }
+
+                    // Get value without send data to .Net Side
+                    const propNewVal: any = this.GetProp(0, mauComponent, propInfo.Type, propInfo.Name, false);
+                    if (!MauUtils.DeepEqual(propNewVal, propInfo.Value)) {
+                        propInfo.Value = propNewVal;
+
+                        // Send new value to .Net Side
+                        this.GetProp(0, mauComponent, propInfo.Type, propInfo.Name, true);
+                    }
+                });
+            });
+
+            return resolve();
+        });
+    }
 
     constructor(
         private injector: Injector,
@@ -85,43 +129,6 @@ export class MyAngularUiService {
         this.Mutation = new MutationObserver((mutations) => this.MutationObserverCallBack(mutations));
     }
 
-    private MutationObserverCallBack(mutations: MutationRecord[]): void {
-        mutations.forEach((mutation: MutationRecord) => {
-            if (mutation.type == "attributes") {
-                const mauComponentId: string = (<HTMLElement>mutation.target).getAttribute(MauUtils.SelectorName);
-                const mauComponent: MauComponent = this.MauComponents.get(mauComponentId);
-                const attribute: string = mutation.attributeName;
-
-                if (mauComponent && mauComponent.HandledProps.has(attribute)) {
-                    const propInfo = mauComponent.HandledProps.get(attribute);
-                    if (!propInfo.Listen) {
-                        this.GetProp(0, mauComponent, MauPropertyType.NativeAttribute, attribute);
-                    }
-                }
-            }
-        });
-    }
-
-    private PropertyPollingCallBack(): void {
-        // Check every `PollingHandledProp` it's value changed
-        this.MauComponents.forEach((mauComponent) => {
-            mauComponent.HandledProps.forEach((propInfo) => {
-                if (!propInfo || !propInfo.NeedToPolling || !propInfo.Listen) {
-                    return;
-                }
-
-                // Get value without send data to .Net Side
-                let propNewVal: any = this.GetProp(0, mauComponent, propInfo.Type, propInfo.Name, false);
-                if (propNewVal !== propInfo.Value) {
-                    propInfo.Value = propNewVal;
-
-                    // Send new value to .Net Side
-                    this.GetProp(0, mauComponent, propInfo.Type, propInfo.Name, true);
-                }
-            });
-        });
-    }
-
     public Start(ip: string, port: number = 2911): void {
         if (this._webSock.IsRunning) {
             return;
@@ -131,14 +138,15 @@ export class MyAngularUiService {
         this.Port = port;
 
         this._webSock.Start(`ws://${this.IP}:${this.Port}/MauHandler`, MyAngularUiService._reConnectTimeout);
-        this._propIntervalId = setInterval(() => this.PropertyPollingCallBack(), 4) as any;
+        setTimeout(async () => {
+            await this.PropertyPollingCallBack();
+            setTimeout(async () => await this.PropertyPollingCallBack(), 0);
+        }, 0);
     }
 
     public Stop(): void {
         this._webSock.Stop();
         this.Mutation.disconnect();
-
-        clearInterval(this._propIntervalId);
     }
 
     public IsConnected(): boolean {
@@ -223,7 +231,6 @@ export class MyAngularUiService {
             return;
         }
 
-        console.log(msg);
         MyAngularUiService._wasConnected = true;
 
         // Handle response
@@ -258,10 +265,6 @@ export class MyAngularUiService {
                 }
                 break;
 
-            case RequestType.SetEvents:
-                this.SetEventHandler(request.MauComponent, request.Data["events"]);
-                break;
-
             case RequestType.SetVarValue:
                 this.SetVar(request.MauComponent.Id + MyAngularUiService._varSpliter + request.Data["varName"], request.Data["varValue"]);
                 break;
@@ -289,6 +292,10 @@ export class MyAngularUiService {
         }
 
         switch (request.RequestType) {
+            case RequestType.SetEvents:
+                this.SetEventHandler(request.MauComponent, request.Data["events"]);
+                break;
+
             case RequestType.GetPropValue:
                 this.GetProp(request.RequestId, request.MauComponent, request.Data["propType"], request.Data["propName"]);
                 break;
@@ -322,15 +329,15 @@ export class MyAngularUiService {
         }
     }
 
-    private FireEvent(mauComponent: MauComponent, eventName: string, event: Event): void {
-        // * `setTimeout` to give `PropertyPollingCallBack` time to send any changed
-        // * Prop value if it's effected by this event
-        setTimeout(() => {
-            let eName: string = event?.type ? event.type : eventName;
-            let eType: string = event?.constructor.name ? event?.constructor.name : eName;
+    private async FireEvent(mauComponent: MauComponent, eventName: string, event: Event): Promise<void> {
+        // * call `PropertyPollingCallBack`, so if the event affected by the event
+        // * then changed properties will sent before event
+        await this.PropertyPollingCallBack();
 
-            this._webSock.SendEventCallback(mauComponent, eName, eType, MauUtils.ObjectToJson(event));
-        }, 20);
+        let eName: string = event?.type ? event.type : eventName;
+        let eType: string = event?.constructor.name ? event?.constructor.name : eName;
+
+        this._webSock.SendEventCallback(mauComponent, eName, eType, MauUtils.ObjectToJson(event));
     }
 
     private SetEventHandler(mauComponent: MauComponent, events: string[]) {
@@ -371,7 +378,7 @@ export class MyAngularUiService {
 
     private GetProp(requestId: number, mauComponent: MauComponent, propType: MauPropertyType, propName: string, wsSend: boolean = true): any {
         if (!mauComponent) {
-            return;
+            return null;
         }
 
         let propHandled: boolean = mauComponent.HandledProps.has(propName);
