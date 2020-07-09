@@ -15,7 +15,6 @@ matrix:
           - "MAU.Angular/node_modules"
       before_install:
         - cd "MAU.Angular"
-        - pwd
       install:
         - npm uninstall typescript --no-save
         - npm ci
