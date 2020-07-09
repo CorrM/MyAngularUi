@@ -12,9 +12,10 @@ matrix:
         - "10"
       cache:
         directories:
-          - "node_modules"
+          - "MAU.Angular/node_modules"
       before_install:
         - cd "MAU.Angular"
+        - pwd
       install:
         - npm uninstall typescript --no-save
         - npm ci
