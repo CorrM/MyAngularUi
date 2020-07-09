@@ -16,6 +16,7 @@ matrix:
             - ./node_modules
             
         install:
+          - npm uninstall typescript --no-save
           - npm install
           
         script:
