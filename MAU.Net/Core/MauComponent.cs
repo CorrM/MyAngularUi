@@ -18,8 +18,6 @@ namespace MAU.Core
 	{
 		#region [ Internal Props ]
 
-
-
 		#endregion
 
 		#region [ Internal Fields ]
@@ -33,10 +31,10 @@ namespace MAU.Core
 
 		#region [ Public Proparties ]
 
-		public IReadOnlyCollection<string> Events => HandledEvents.Keys.ToList().AsReadOnly();
-		public IReadOnlyCollection<string> Props => HandledProps.Keys.ToList().AsReadOnly();
-		public IReadOnlyCollection<string> Vars => HandledVars.Keys.ToList().AsReadOnly();
-		public IReadOnlyCollection<string> Methods => HandledMethods.Keys.ToList().AsReadOnly();
+		public IReadOnlyCollection<string> MauEvents => HandledEvents.Keys.ToList().AsReadOnly();
+		public IReadOnlyCollection<string> MauProps => HandledProps.Keys.ToList().AsReadOnly();
+		public IReadOnlyCollection<string> MauVars => HandledVars.Keys.ToList().AsReadOnly();
+		public IReadOnlyCollection<string> MauMethods => HandledMethods.Keys.ToList().AsReadOnly();
 		public string MauId { get; }
 
 		#endregion

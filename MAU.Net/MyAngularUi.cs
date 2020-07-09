@@ -328,12 +328,6 @@ namespace MAU
 			string dataToSend = dSend.ToString(Formatting.None);
 			bool sendState = Send(dataToSend);
 
-			if (sendState)
-			{
-				Debug.WriteLine($"Send > {dataToSend}");
-				Debug.WriteLine("===============");
-			}
-
 			return new RequestState() { RequestId = requestId, SuccessSend = sendState };
 		}
 
@@ -365,7 +359,6 @@ namespace MAU
 		{
 			// Decode json
 			JObject jsonRequest = JObject.Parse(message);
-			Debug.WriteLine($"Recv > {message}");
 
 			// Get request info
 			var response = new ResponseInfo()

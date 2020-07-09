@@ -25,7 +25,7 @@ namespace MAU.Attributes
 		{
 			var ret = new JObject
 			{
-				{ "events", new JArray(holder.Events) }
+				{ "events", new JArray(holder.MauEvents) }
 			};
 
 			// Send response
