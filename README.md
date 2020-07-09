@@ -1,1 +1,1 @@
-# MyAngularUi.Net
+# MyAngularUi
