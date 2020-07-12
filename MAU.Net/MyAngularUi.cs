@@ -155,7 +155,7 @@ namespace MAU
 
 		#region [ Public Props ]
 
-		public delegate void CustomData(JObject data);
+		public delegate void CustomData(string id, JObject data);
 		public static event CustomData OnCustomData;
 
 		public static bool Connected { get; private set; }
@@ -348,12 +348,18 @@ namespace MAU
 			return SendRequest(mauComponentId, requestType, null);
 		}
 
-		public static bool SendCustomData(JObject data)
+		public static bool SendCustomData(string id, JObject data)
 		{
 			if (!WebSocket.IsConnected())
 				return false;
 
-			return SendRequest(null, RequestType.CustomData, data).SuccessSend;
+			var ddata = new JObject
+			{
+				{ "id", id },
+				{ "data", data }
+			};
+
+			return SendRequest(null, RequestType.CustomData, ddata).SuccessSend;
 		}
 		internal static void OnMessage(string message)
 		{
@@ -373,7 +379,7 @@ namespace MAU
 			switch (response.RequestType)
 			{
 				case RequestType.CustomData:
-					Task.Run(() => OnCustomData?.Invoke(response.Data));
+					Task.Run(() => OnCustomData?.Invoke(response.Data["id"].Value<string>(), response.Data["data"].Value<JObject>()));
 					break;
 			}
 

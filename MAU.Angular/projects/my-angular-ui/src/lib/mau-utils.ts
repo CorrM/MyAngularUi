@@ -1,5 +1,4 @@
-import * as fastEqual_ from 'fast-deep-equal/es6'
-const fastEqual = fastEqual_;
+import equal from 'fast-deep-equal/es6'
 
 export class MauUtils {
     public static readonly SelectorName: string = "mauid";
@@ -13,7 +12,7 @@ export class MauUtils {
     }
 
     public static DeepEqual(a: any, b: any): boolean {
-        return fastEqual(a, b);
+        return equal(a, b);
     }
 
     // Thanks to => https://stackoverflow.com/a/58416333/3351489

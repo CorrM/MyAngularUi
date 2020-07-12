@@ -1,7 +1,6 @@
 import { Injectable, ElementRef, Injector, EventEmitter, RendererFactory2, Renderer2 } from '@angular/core';
 import { MyAngularUiWebSocket, RequestType, MauRequestInfo } from './mau-web-socket';
 import { MauUtils } from './mau-utils';
-import { async } from 'rxjs/internal/scheduler/async';
 
 export let AppInjector: Injector;
 
@@ -176,12 +175,12 @@ export class MyAngularUiService {
         this.OnDisConnect.emit();
     }
 
-    public SendCustomData(data: any): boolean {
+    public SendCustomData(id: string, data: any): boolean {
         if (!this.IsConnected()) {
             return false;
         }
 
-        return this._webSock.SendRequest(null, RequestType.CustomData, data);
+        return this._webSock.SendRequest(null, RequestType.CustomData, { id: id, data: data });
     }
 
     public SetElement(mauComponent: MauComponent): void {
@@ -294,7 +293,7 @@ export class MyAngularUiService {
 
             case RequestType.CustomData:
                 new Promise((resolve, reject) => {
-                    this.OnCustomData.emit(request.Data);
+                    this.OnCustomData.emit({ id: request.Data["id"], data: request.Data["data"] });
                     return resolve();
                 });
                 break;
