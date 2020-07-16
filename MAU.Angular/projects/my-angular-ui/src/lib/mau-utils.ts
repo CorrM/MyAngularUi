@@ -37,14 +37,13 @@ export class MauUtils {
                     // specify which properties you want to see from the node
                     value = { id: (value as any).id };
                 }
+                else if (value instanceof Window) {
+                    value = 'Window';
+                }
+                else if (value instanceof Object) {
+                    value = this.ObjectToJson(value, maxDepth, depth + 1, false);
+                }
             }
-            else if (value instanceof Window) {
-                value = 'Window';
-            }
-            else if (value instanceof Object) {
-                value = this.ObjectToJson(value, maxDepth, depth + 1, false);
-            }
-
             obj[key] = value;
         }
 
