@@ -31,17 +31,19 @@ export class MauUtils {
 
         const obj = {};
         for (const key in object) {
-            let value = object[key];
-            if (value instanceof Node) {
-                // specify which properties you want to see from the node
-                value = { id: (value as any).id };
+            if (object.hasOwnProperty(key)) {
+                let value = object[key];
+                if (value instanceof Node) {
+                    // specify which properties you want to see from the node
+                    value = { id: (value as any).id };
+                }
             }
             else if (value instanceof Window) {
                 value = 'Window';
- }
+            }
             else if (value instanceof Object) {
                 value = this.ObjectToJson(value, maxDepth, depth + 1, false);
- }
+            }
 
             obj[key] = value;
         }
