@@ -55,13 +55,13 @@ namespace MAU.ReadyComponents.Angular
 		[MauProperty("value", MauPropertyType.ComponentProperty)]
 		public string SelectedItem { get; private set; }
 
-		[MauProperty("empty", MauPropertyType.ComponentProperty, ReadOnly = true)]
+		[MauProperty("empty", MauPropertyType.ComponentProperty, PropStatus = MauPropertyStatus.ReadOnly)]
 		public bool Empty { get; set; }
 
-		[MauProperty("focused", MauPropertyType.ComponentProperty, ReadOnly = true)]
+		[MauProperty("focused", MauPropertyType.ComponentProperty, PropStatus = MauPropertyStatus.ReadOnly)]
 		public bool Focused { get; set; }
 
-		[MauProperty("panelOpen", MauPropertyType.ComponentProperty, ReadOnly = true)]
+		[MauProperty("panelOpen", MauPropertyType.ComponentProperty, PropStatus = MauPropertyStatus.ReadOnly)]
 		public bool PanelOpen { get; set; }
 
 		#endregion

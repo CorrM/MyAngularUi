@@ -36,8 +36,11 @@ export class MauElementDirective implements OnInit, OnDestroy {
     }
 
     public ngOnDestroy(): void {
-        this.mau.GetElement(this.ElementId).HandledProps.forEach((prop: MauComponentProp, propName: string) => {
+        this.mau.GetElement(this.ElementId).HandledProps.forEach((prop: MauComponentProp) => {
             prop.Listen = false;
         });
+
+        this.mau.GetElement(this.ElementId).Component = null;
+        this.mau.GetElement(this.ElementId).Native = null;
     }
 }

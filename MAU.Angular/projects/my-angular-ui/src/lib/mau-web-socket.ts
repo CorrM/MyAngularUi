@@ -17,9 +17,8 @@ export enum RequestType {
     RemoveStyle = 10,
     AddClass = 11,
     RemoveClass = 12,
-    ServiceMethodCall = 13,
-    DotNetReady = 14,
-    CustomData = 15
+    DotNetReady = 13,
+    CustomData = 14
 }
 
 export interface MauRequestInfo {

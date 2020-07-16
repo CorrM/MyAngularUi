@@ -121,19 +121,14 @@ namespace MAU
 			RemoveClass = 12,
 
 			/// <summary>
-			/// Call method in one of `MauAccessibleServices` on front-end side
-			/// </summary>
-			ServiceMethodCall = 13,
-
-			/// <summary>
 			/// Tell angular side all components are ready [Props, Vars and etc]
 			/// </summary>
-			DotNetReady = 14,
+			DotNetReady = 13,
 
 			/// <summary>
 			/// Get/Send data from/to angular
 			/// </summary>
-			CustomData = 15
+			CustomData = 14
 		}
 
 		#endregion
@@ -303,6 +298,9 @@ namespace MAU
 			if (string.IsNullOrWhiteSpace(dataToSend) || !Connected)
 				return false;
 
+#if DEBUG
+			Debug.WriteLine($"SEND > {dataToSend}");
+#endif
 			return WebSocket.Send(dataToSend).GetAwaiter().GetResult();
 		}
 
@@ -363,6 +361,9 @@ namespace MAU
 		}
 		internal static void OnMessage(string message)
 		{
+#if DEBUG
+			Debug.WriteLine($"RECV > {message}");
+#endif
 			// Decode json
 			JObject jsonRequest = JObject.Parse(message);
 
@@ -458,7 +459,7 @@ namespace MAU
 
 			// Request value from angular side
 			foreach ((string propName, BoolHolder<PropertyInfo> _) in mauComponent.GetValidToSetHandledProps())
-				mauComponent.GetPropValue(propName);
+				mauComponent.RequestPropValue(propName);
 		}
 		private static void BootStrapMau()
 		{

@@ -50,10 +50,10 @@ namespace MAU.Core
 		//[MauProperty("textContent", MauPropertyType.NativeProperty)]
 		//public string TextContent { get; set; }
 
-		[MauProperty("style", MauProperty.MauPropertyType.NativeProperty, ReadOnly = true)]
+		[MauProperty("style", MauProperty.MauPropertyType.NativeProperty, PropStatus = MauProperty.MauPropertyStatus.ReadOnly)]
 		public string Style { get; internal set; }
 
-		[MauProperty("className", MauProperty.MauPropertyType.NativeProperty, ReadOnly = true)]
+		[MauProperty("className", MauProperty.MauPropertyType.NativeProperty, PropStatus = MauProperty.MauPropertyStatus.ReadOnly)]
 		public string ClassName { get; internal set; }
 
 		#endregion
@@ -234,7 +234,7 @@ namespace MAU.Core
 			return componentsProps;
 		}
 
-		internal void GetPropValue(string propName)
+		internal void RequestPropValue(string propName)
 		{
 			if (!HandledProps.ContainsKey(propName))
 				return;
@@ -243,7 +243,8 @@ namespace MAU.Core
 			var data = new JObject
 			{
 				{"propName", propName},
-				{"propType", (int)mauPropertyAttr.PropType}
+				{"propType", (int)mauPropertyAttr.PropType},
+				{"propStatus", (int)mauPropertyAttr.PropStatus} // Needed by `SetPropHandler`
 			};
 
 			MyAngularUi.SendRequest(MauId, RequestType.GetPropValue, data);

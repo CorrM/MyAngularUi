@@ -20,11 +20,16 @@ namespace MAU.Attributes
 			NativeProperty = 1,
 			ComponentProperty = 2
 		}
+		public enum MauPropertyStatus
+		{
+			Normal = 0,
+			ReadOnly = 1
+		}
 
 		public string PropertyName { get; private set; }
 		public MauPropertyType PropType { get; private set; }
+		public MauPropertyStatus PropStatus { get; set; } = MauPropertyStatus.Normal;
 		public bool Important { get; set; }
-		public bool ReadOnly { get; set; }
 
 		public MauProperty(string propertyName, MauPropertyType propType)
 		{
@@ -43,7 +48,7 @@ namespace MAU.Attributes
 			object propValue = holder.HandledProps[mauPropName].Holder.GetValue(holder);
 			bool bypass = false;
 
-			if (mauProp.ReadOnly)
+			if (mauProp.PropStatus == MauPropertyStatus.ReadOnly)
 			{
 				bypass = true;
 			}
@@ -76,13 +81,14 @@ namespace MAU.Attributes
 
 			if (bypass)
 			{
-				holder.GetPropValue(mauPropName);
+				holder.RequestPropValue(mauPropName);
 				return default;
 			}
 
 			var data = new JObject
 			{
 				{"propType", (int)mauProp.PropType},
+				{"propStatus", (int)mauProp.PropStatus},
 				{"propName", mauPropName},
 				{"propVal", MyAngularUi.ParseMauDataToFrontEnd(propType, propValue)}
 			};
@@ -108,7 +114,7 @@ namespace MAU.Attributes
 
 			// if it's set from angular side then will not hit this part
 			// because of 'HandleOnSet' will be 'false'
-			if (ReadOnly)
+			if (PropStatus == MauPropertyStatus.ReadOnly)
 				throw new Exception($"This prop '{holder.MauId}.{PropertyName}' is 'ReadOnly'.");
 
 			SendMauProp(holder, PropertyName);

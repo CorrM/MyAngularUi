@@ -5,11 +5,12 @@ import { MauUtils } from './mau-utils';
 export let AppInjector: Injector;
 
 export interface MauComponentProp {
-    Name: string,
-    Value: any,
-    Type: MauPropertyType,
-    NeedToPolling: boolean,
-    Listen: boolean
+    Name: string;
+    Value: any;
+    Type: MauPropertyType;
+    Status: MauPropertyStatus;
+    NeedToPolling: boolean;
+    Listen: boolean;
 }
 
 export interface MauComponent {
@@ -24,6 +25,11 @@ enum MauPropertyType {
     NativeAttribute = 0,
     NativeProperty = 1,
     ComponentProperty = 2
+}
+
+enum MauPropertyStatus {
+    Normal = 0,
+    ReadOnly = 1
 }
 
 enum MauMethodType {
@@ -41,10 +47,10 @@ export class MyAngularUiService {
     private static _wasConnected: boolean = false;
 
     private _webSock: MyAngularUiWebSocket;
-    private _mauVariables: Map<string, any>;
     private _renderer: Renderer2;
     private _working: boolean;
     private _dotNetReady: boolean;
+    private _mauVariables: Map<string, any>;
 
     public OnConnect: EventEmitter<void>;
     public OnDisConnect: EventEmitter<void>;
@@ -54,11 +60,8 @@ export class MyAngularUiService {
     public IP: string;
     public Port: number;
 
-    public Mutation: MutationObserver;
     public MauComponents: Map<string, MauComponent>;
-    public MauAccessibleServices: ReadonlyMap<string, any> = new Map([
-        // ["MatBottomSheet", MatBottomSheet]
-    ]);
+    public Mutation: MutationObserver;
 
     private MutationObserverCallBack(mutations: MutationRecord[]): void {
         mutations.forEach(async (mutation: MutationRecord) => {
@@ -69,8 +72,8 @@ export class MyAngularUiService {
 
                 if (mauComponent && mauComponent.HandledProps.has(attribute)) {
                     const propInfo = mauComponent.HandledProps.get(attribute);
-                    if (!propInfo.Listen) {
-                        this.GetProp(0, mauComponent, MauPropertyType.NativeAttribute, attribute);
+                    if (propInfo.Listen) {
+                        this.GetProp(0, mauComponent, MauPropertyType.NativeAttribute, attribute, true);
                     }
                 }
             }
@@ -264,14 +267,13 @@ export class MyAngularUiService {
             request.MauComponent = this.GetElement(msg["mauComponentId"]);
         }
 
-        // ! for request not need [MauComponent.(Component | Native)], ex: just need 'RequestType' and 'Data'.
+        // ! for request not need [MauComponent.(Component || Native)], ex: just need 'RequestType' and 'Data'.
         switch (request.RequestType) {
             case RequestType.GetPropValue:
             case RequestType.SetPropValue:
                 // * Set property change handler if it's not handled
-                if (!request.MauComponent.HandledProps.has(request.Data["propName"])) {
-                    this.SetPropHandler(request.MauComponent, request.Data["propType"], request.Data["propName"]);
-                }
+                if (!request.MauComponent.HandledProps.has(request.Data["propName"]))
+                    this.SetPropHandler(request.MauComponent, request.Data["propType"], request.Data["propStatus"], request.Data["propName"], request.Data["propVal"]);
                 break;
 
             case RequestType.SetVarValue:
@@ -285,10 +287,6 @@ export class MyAngularUiService {
             case RequestType.DotNetReady:
                 this._dotNetReady = true;
                 this.OnDotNetReady.emit();
-                break;
-
-            case RequestType.ServiceMethodCall:
-                this.ServiceMethodCall(request.Data["serviceName"], request.Data["methodName"], request.Data["methodArgs"]);
                 break;
 
             case RequestType.CustomData:
@@ -313,7 +311,7 @@ export class MyAngularUiService {
                 break;
 
             case RequestType.GetPropValue:
-                this.GetProp(request.RequestId, request.MauComponent, request.Data["propType"], request.Data["propName"]);
+                this.GetProp(request.RequestId, request.MauComponent, request.Data["propType"], request.Data["propName"], true);
                 break;
 
             case RequestType.SetPropValue:
@@ -346,7 +344,7 @@ export class MyAngularUiService {
     }
 
     private async FireEvent(mauComponent: MauComponent, eventName: string, event: Event): Promise<void> {
-        // * call `PropertyPollingCallBack`, so if the event affected by the event
+        // * call `PropertyPollingCallBack`, so if the property affected by the event
         // * then changed properties will sent before event
         await this.PropertyPollingCallBack();
 
@@ -392,7 +390,7 @@ export class MyAngularUiService {
         });
     }
 
-    private GetProp(requestId: number, mauComponent: MauComponent, propType: MauPropertyType, propName: string, wsSend: boolean = true): any {
+    private GetProp(requestId: number, mauComponent: MauComponent, propType: MauPropertyType, propName: string, wsSend: boolean): any {
         if (!mauComponent) {
             return null;
         }
@@ -425,16 +423,21 @@ export class MyAngularUiService {
         // ! Maybe val is Boolean so (val ? val : null) will be bad
         val = val !== undefined ? val : null;
 
-        if (wsSend && propHandled && propHandledSameType) {
+        if (wsSend && propHandled && propHandledSameType)
             this._webSock.Send(requestId, mauComponent, RequestType.GetPropValue, { propName: propName, propValue: val });
-        }
 
         return val;
     }
 
     private SetProp(mauComponent: MauComponent, propType: MauPropertyType, propName: string, propVal: any): void {
-        // ToDo: check if it's readonly prop
-        let propInfo: PropertyDescriptor;
+        if (mauComponent.HandledProps.has(propName)) {
+            const mauCompProp = mauComponent.HandledProps.get(propName);
+            if (mauCompProp.Status == MauPropertyStatus.ReadOnly)
+                return;
+            
+            mauCompProp.Value = propVal;
+        }
+
         switch (propType) {
             case MauPropertyType.NativeAttribute:
                 mauComponent.Native.nativeElement.setAttribute(propName, propVal);
@@ -451,7 +454,7 @@ export class MyAngularUiService {
                 try {
                     mauComponent.Component[propName] = propVal;
                 } catch (error) {
-                    // * So this prop not have setter
+                    // * So this prop not have a setter
                 }
                 break;
         }
@@ -464,16 +467,18 @@ export class MyAngularUiService {
      * @private
      * @param {string} mauComponent MauComponent
      * @param {MauPropertyType} propType Property type to know how to handle
+     * @param {MauPropertyStatus} propStatus Property status to know how to handle
      * @param {string} propName Property name to set handle on it
      * @memberof MyAngularUiService
      */
-    private SetPropHandler(mauComponent: MauComponent, propType: MauPropertyType, propName: string): void {
+    private SetPropHandler(mauComponent: MauComponent, propType: MauPropertyType, propStatus: MauPropertyStatus, propName: string, propVal: any = undefined): void {
         // NativeAttribute not need to be handled
         // MutationObserver will take care of it
         mauComponent.HandledProps.set(propName, {
             Name: propName,
             Type: propType,
-            Value: undefined,
+            Status: propStatus,
+            Value: propVal,
             NeedToPolling: propType != MauPropertyType.NativeAttribute,
             Listen: true
         });
@@ -544,14 +549,5 @@ export class MyAngularUiService {
 
     private RemoveClass(mauComponent: MauComponent, className: string): void {
         this._renderer.removeClass(mauComponent.Native.nativeElement, className);
-    }
-
-    private ServiceMethodCall(serviceName: string, methodName: string, methodArgs: any): void {
-        if (!this.MauAccessibleServices.has(serviceName)) {
-            return;
-        }
-
-        let service = AppInjector.get(this.MauAccessibleServices.get(serviceName));
-        service[methodName].call(this, ...methodArgs)
     }
 }

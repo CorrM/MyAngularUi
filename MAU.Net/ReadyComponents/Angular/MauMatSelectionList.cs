@@ -36,7 +36,7 @@ namespace MAU.ReadyComponents.Angular
 		[MauProperty("disabled", MauPropertyType.ComponentProperty)]
 		public bool Disabled { get; set; }
 
-		[MauProperty("_value", MauPropertyType.ComponentProperty, ReadOnly = true)]
+		[MauProperty("_value", MauPropertyType.ComponentProperty, PropStatus = MauPropertyStatus.ReadOnly)]
 		public List<string> Selected { get; internal set; }
 
 		#endregion

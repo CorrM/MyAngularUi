@@ -27,6 +27,11 @@
     <DocumentationFile></DocumentationFile>
     <DebugType>full</DebugType>
     <DebugSymbols>true</DebugSymbols>
+    <NoWarn>1701;1702;67</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <NoWarn>1701;1702;67</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
