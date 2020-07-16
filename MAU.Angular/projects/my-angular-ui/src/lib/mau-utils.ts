@@ -1,4 +1,4 @@
-import * as FastDeepEqual from 'fast-deep-equal/es6'
+import FastDeepEqual from 'fast-deep-equal/es6';
 
 export class MauUtils {
     public static readonly SelectorName: string = "mauid";

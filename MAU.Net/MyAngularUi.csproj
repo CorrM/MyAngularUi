@@ -16,11 +16,14 @@
     <RepositoryUrl>https://github.com/CorrM/MyAngularUi</RepositoryUrl>
     <RepositoryType>GUI</RepositoryType>
     <PackageTags>CorrM, MyAngularUi, MyAngularUi.Net</PackageTags>
-    <Version>2.0.1</Version>
-    <FileVersion>2.0.1.0</FileVersion>
-    <AssemblyVersion>2.0.1.0</AssemblyVersion>
-    <PackageReleaseNotes>- Add `id` Send/Recv CustomData.</PackageReleaseNotes>
+    <Version>2.1.0</Version>
+    <FileVersion>2.1.0.0</FileVersion>
+    <AssemblyVersion>2.1.0.0</AssemblyVersion>
+    <PackageReleaseNotes>- Add PropStatus.
+- Fix bug #4.
+- Fix bug #5.</PackageReleaseNotes>
     <PackageIcon>Mau.png</PackageIcon>
+    <Description>Make nice user interface with Angular for your .Net projects.</Description>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
