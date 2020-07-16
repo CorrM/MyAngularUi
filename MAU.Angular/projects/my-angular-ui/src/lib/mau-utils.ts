@@ -43,8 +43,8 @@ export class MauUtils {
                 else if (value instanceof Object) {
                     value = this.ObjectToJson(value, maxDepth, depth + 1, false);
                 }
+                obj[key] = value;
             }
-            obj[key] = value;
         }
 
         return depth ? obj : JSON.stringify(obj);
