@@ -1,6 +1,7 @@
 import { Injectable, ElementRef, Injector, EventEmitter, RendererFactory2, Renderer2 } from '@angular/core';
 import { MyAngularUiWebSocket, RequestType, MauRequestInfo } from './mau-web-socket';
 import { MauUtils } from './mau-utils';
+import { Subscription } from 'rxjs';
 
 export let AppInjector: Injector;
 
@@ -10,15 +11,38 @@ export interface MauComponentProp {
     Type: MauPropertyType;
     Status: MauPropertyStatus;
     NeedToPolling: boolean;
+
+    // ToDo: Change to safe to handle, since data is safe but not set when it's needed
+    /**
+     * SafeToHandle is true if it's value is safe to set,
+     * so it's just to not override angular prop value with bad values
+     *
+     * @type {boolean}
+     * @memberof MauComponentProp
+     */
+    SafeToHandle: boolean;
+
+    /**
+     * Listen to property changes and send changes to .Net side
+     *
+     * @type {boolean}
+     * @memberof MauComponentProp
+     */
     Listen: boolean;
 }
 
+export interface MauComponentEvent {
+    Name: string;
+    Handled: boolean;
+    Unsubscribe: () => void;
+}
+
 export interface MauComponent {
-    Id: string,
-    Native: ElementRef,
-    Component: any,
-    HandledEvents: Map<string, boolean>, // Key => Event Name, Value => Is Handeled
-    HandledProps: Map<string, MauComponentProp> // Key => Property Name, Value => Prop Info
+    Id: string;
+    Native: ElementRef;
+    Component: any;
+    HandledEvents: Map<string, MauComponentEvent>;
+    HandledProps: Map<string, MauComponentProp>;
 }
 
 enum MauPropertyType {
@@ -47,6 +71,7 @@ export class MyAngularUiService {
     private static _wasConnected: boolean = false;
 
     private _webSock: MyAngularUiWebSocket;
+    private _timerId: number;
     private _renderer: Renderer2;
     private _working: boolean;
     private _dotNetReady: boolean;
@@ -88,9 +113,13 @@ export class MyAngularUiService {
 
             // Check every `PollingHandledProp` it's value changed
             this.MauComponents.forEach((mauComponent) => {
-                mauComponent.HandledProps.forEach((propInfo) => {
+                if (!mauComponent.Component || !mauComponent.Native) {
+                    return;
+                }
+
+                mauComponent.HandledProps.forEach((propInfo: MauComponentProp) => {
                     if (!propInfo || !propInfo.NeedToPolling || !propInfo.Listen) {
-                        return resolve();
+                        return;
                     }
 
                     // Get value without send data to .Net Side
@@ -99,6 +128,7 @@ export class MyAngularUiService {
                         propInfo.Value = propNewVal;
 
                         // Send new value to .Net Side
+                        propInfo.SafeToHandle = true;
                         this.GetProp(0, mauComponent, propInfo.Type, propInfo.Name, true);
                     }
                 });
@@ -142,13 +172,13 @@ export class MyAngularUiService {
         this.Port = port;
 
         this._webSock.Start(`ws://${this.IP}:${this.Port}/MauHandler`, MyAngularUiService._reConnectTimeout);
-        setTimeout(async () => {
+        this._timerId = setInterval(async () => {
             await this.PropertyPollingCallBack();
-            setTimeout(async () => await this.PropertyPollingCallBack(), 0);
-        }, 0);
+        }, 150);
     }
 
     public Stop(): void {
+        clearInterval(this._timerId);
         this._webSock.Stop();
         this.Mutation.disconnect();
     }
@@ -220,16 +250,15 @@ export class MyAngularUiService {
         curElement.Native = mauComponent.Native;
 
         // Re set event handlers
-        curElement.HandledEvents.forEach((handled: boolean, eventName: string) => {
-            curElement.HandledEvents.set(eventName, false);
-        });
         this.SetEventHandler(curElement, Array.from(curElement.HandledEvents.keys()));
         this.Mutation.observe(mauComponent.Native.nativeElement, { attributes: true/*, characterData: true, childList: true, subtree: true */ });
 
-        // Re set props handlers
+        // Re set props handlers and values
         // Since `MauElementDirective.OnDestroy` set `Listen` to false
         curElement.HandledProps.forEach((prop: MauComponentProp) => {
-            this.SetProp(curElement, prop.Type, prop.Name, prop.Value);
+            if (prop.SafeToHandle) {
+                this.SetProp(curElement, prop.Type, prop.Name, prop.Value);
+            }
             prop.Listen = true;
         });
     }
@@ -260,7 +289,7 @@ export class MyAngularUiService {
                 Id: msg["mauComponentId"],
                 Native: undefined,
                 Component: undefined,
-                HandledEvents: new Map<string, boolean>(),
+                HandledEvents: new Map<string, MauComponentEvent>(),
                 HandledProps: new Map<string, MauComponentProp>()
             });
 
@@ -269,11 +298,13 @@ export class MyAngularUiService {
 
         // ! for request not need [MauComponent.(Component || Native)], ex: just need 'RequestType' and 'Data'.
         switch (request.RequestType) {
+            case RequestType.SetEvents:
+                this.SetEventHandler(request.MauComponent, request.Data["events"]);
+                break;
+            
             case RequestType.GetPropValue:
             case RequestType.SetPropValue:
-                // * Set property change handler if it's not handled
-                if (!request.MauComponent.HandledProps.has(request.Data["propName"]))
-                    this.SetPropHandler(request.MauComponent, request.Data["propType"], request.Data["propStatus"], request.Data["propName"], request.Data["propVal"]);
+                this.SetPropHandler(request.MauComponent, request.Data["propType"], request.Data["propStatus"], request.Data["propName"], request.Data["propVal"]);
                 break;
 
             case RequestType.SetVarValue:
@@ -306,10 +337,6 @@ export class MyAngularUiService {
         }
 
         switch (request.RequestType) {
-            case RequestType.SetEvents:
-                this.SetEventHandler(request.MauComponent, request.Data["events"]);
-                break;
-
             case RequestType.GetPropValue:
                 this.GetProp(request.RequestId, request.MauComponent, request.Data["propType"], request.Data["propName"], true);
                 break;
@@ -354,38 +381,40 @@ export class MyAngularUiService {
         this._webSock.SendEventCallback(mauComponent, eName, eType, MauUtils.ObjectToJson(event));
     }
 
-    private SetEventHandler(mauComponent: MauComponent, events: string[]) {
-        // Set events
-        events.forEach(event => {
-            if (!mauComponent.HandledEvents.has(event)) {
-                mauComponent.HandledEvents.set(event, false);
-            }
-        });
+    private SetEventHandler(mauComponent: MauComponent, events: string[]): void {
+        // Set Event
+        events.forEach((eventName: string) => {
+            mauComponent.HandledEvents.set(eventName, { Name: eventName, Handled: false, Unsubscribe: undefined });
+        })
+
+        if (!mauComponent.Component) {
+            return;
+        }
 
         // Set event handler
-        mauComponent.HandledEvents.forEach((handled: boolean, eventName: string) => {
-            if (handled || !mauComponent.Component) {
-                return;
-            }
-            mauComponent.HandledEvents.set(eventName, true);
-
+        mauComponent.HandledEvents.forEach((eventInfo: MauComponentEvent, eventName: string) => {
             // Access event as property
             const eventProp: any = mauComponent.Component[eventName];
 
             // * Set subscribe to EventEmitter, that's for some custom components
             // * Like Angular Matiral components (MatSelect, ...)
             if (eventProp !== undefined && typeof eventProp !== "function") {
-                eventProp.subscribe({
-                    next: (event: MessageEvent) => {
-                        this.FireEvent(mauComponent, eventName, event);
-                    }
-                });
+                const sub: Subscription = (eventProp.subscribe((event: MessageEvent) => {
+                    this.FireEvent(mauComponent, eventName, event);
+                }) as Subscription);
+
+                eventInfo.Unsubscribe = () => sub.unsubscribe();
+                eventInfo.Handled = true;
             }
             // * Add normal listener if it's normal HTML Element
             else if (mauComponent.Native) {
-                this._renderer.listen(mauComponent.Native.nativeElement, eventName, (event: Event) => {
-                    this.FireEvent(mauComponent, undefined, event);
+                eventInfo.Unsubscribe = this._renderer.listen(mauComponent.Native.nativeElement, eventName, (event: Event) => {
+                    this.FireEvent(mauComponent, eventName, event);
                 });
+                eventInfo.Handled = true;
+            }
+            else {
+                throw new Error(`Event '${eventName}' not found.`);
             }
         });
     }
@@ -430,14 +459,6 @@ export class MyAngularUiService {
     }
 
     private SetProp(mauComponent: MauComponent, propType: MauPropertyType, propName: string, propVal: any): void {
-        if (mauComponent.HandledProps.has(propName)) {
-            const mauCompProp = mauComponent.HandledProps.get(propName);
-            if (mauCompProp.Status == MauPropertyStatus.ReadOnly)
-                return;
-            
-            mauCompProp.Value = propVal;
-        }
-
         switch (propType) {
             case MauPropertyType.NativeAttribute:
                 mauComponent.Native.nativeElement.setAttribute(propName, propVal);
@@ -472,6 +493,10 @@ export class MyAngularUiService {
      * @memberof MyAngularUiService
      */
     private SetPropHandler(mauComponent: MauComponent, propType: MauPropertyType, propStatus: MauPropertyStatus, propName: string, propVal: any = undefined): void {
+        if (mauComponent.HandledProps.has(propName)) {
+            return;
+        }
+
         // NativeAttribute not need to be handled
         // MutationObserver will take care of it
         mauComponent.HandledProps.set(propName, {
@@ -480,6 +505,7 @@ export class MyAngularUiService {
             Status: propStatus,
             Value: propVal,
             NeedToPolling: propType != MauPropertyType.NativeAttribute,
+            SafeToHandle: propVal !== undefined,
             Listen: true
         });
     }

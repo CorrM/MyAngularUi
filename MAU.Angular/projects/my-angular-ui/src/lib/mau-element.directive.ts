@@ -1,5 +1,5 @@
 import { Directive, ElementRef, Input, OnInit, ViewContainerRef, OnDestroy } from '@angular/core';
-import { MyAngularUiService, AppInjector, MauComponentProp } from './mau.service';
+import { MyAngularUiService, AppInjector, MauComponentProp, MauComponentEvent } from './mau.service';
 
 @Directive({
     selector: `[mauId]`
@@ -30,7 +30,7 @@ export class MauElementDirective implements OnInit, OnDestroy {
             Id: this.ElementId,
             Native: this.el,
             Component: this._viewRef,
-            HandledEvents: new Map<string, boolean>(),
+            HandledEvents: new Map<string, MauComponentEvent>(),
             HandledProps: new Map<string, MauComponentProp>()
         });
     }
@@ -38,6 +38,13 @@ export class MauElementDirective implements OnInit, OnDestroy {
     public ngOnDestroy(): void {
         this.mau.GetElement(this.ElementId).HandledProps.forEach((prop: MauComponentProp) => {
             prop.Listen = false;
+        });
+
+        this.mau.GetElement(this.ElementId).HandledEvents.forEach((event: MauComponentEvent) => {
+            if (event.Unsubscribe) {
+                event.Unsubscribe();
+            }
+            event.Handled = false;
         });
 
         this.mau.GetElement(this.ElementId).Component = null;
