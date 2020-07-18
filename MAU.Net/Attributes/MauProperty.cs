@@ -46,6 +46,9 @@ namespace MAU.Attributes
 			MauProperty mauProp = holder.GetMauPropAttribute(mauPropName);
 			Type propType = holder.HandledProps[mauPropName].Holder.PropertyType;
 			object propValue = holder.HandledProps[mauPropName].Holder.GetValue(holder);
+			
+			// bypass is for props not yet changed from .Net side
+			// so it's just to not override angular prop value
 			bool bypass = false;
 
 			if (mauProp.PropStatus == MauPropertyStatus.ReadOnly)
