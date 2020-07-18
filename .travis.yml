@@ -1,4 +1,4 @@
-jops:
+jobs:
   include:
     - language: csharp
       solution: MAU.sln
