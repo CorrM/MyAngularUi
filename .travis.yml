@@ -1,4 +1,4 @@
-matrix:
+jops:
   include:
     - language: csharp
       solution: MAU.sln
