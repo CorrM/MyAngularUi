@@ -222,7 +222,19 @@ namespace MAU.Core
 
 			// Invoke all subscribers
 			foreach (Delegate handler in eventDelegate.GetInvocationList())
-				Task.Run(() => handler.Method.Invoke(handler.Target, new object[] { this, new MauEventInfo(eventName, eventType, eventData) }));
+			{
+				Task.Run(() =>
+				{
+					try
+					{
+						handler.Method.Invoke(handler.Target, new object[] { this, new MauEventInfo(eventName, eventType, eventData) });
+					}
+					catch (Exception ex)
+					{
+						RaiseExeption(ex.InnerException);
+					}
+				});
+			}
 		}
 		internal Dictionary<string, BoolHolder<PropertyInfo>> GetValidToSetHandledProps()
 		{

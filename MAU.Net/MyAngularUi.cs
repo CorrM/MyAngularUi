@@ -13,7 +13,9 @@ using MAU.Core;
 using MAU.DataParser;
 using MAU.Helper;
 using MAU.WebSocket;
+using MAU.Aspects.Exceptions;
 
+[assembly: MauException]
 namespace MAU
 {
 	/// <summary>
@@ -148,10 +150,17 @@ namespace MAU
 
 		#endregion
 
-		#region [ Public Props ]
+		#region [ Public Events ]
 
 		public delegate void CustomData(string id, JObject data);
 		public static event CustomData OnCustomData;
+
+		public delegate void UnhandledExceptionHandler(Exception exception);
+		public static event UnhandledExceptionHandler UnhandledException;
+
+		#endregion
+
+		#region [ Public Props ]
 
 		public static bool Connected { get; private set; }
 		public static MauWebSocket WebSocket { get; private set; }
@@ -431,6 +440,10 @@ namespace MAU
 
 		#region [ Helper ]
 
+		internal static void RaiseExeption(Exception ex)
+		{
+			UnhandledException?.Invoke(ex);
+		}
 		internal static bool IsComponentRegistered(string mauComponentId)
 		{
 			return _mauComponents.ContainsKey(mauComponentId);
@@ -489,6 +502,7 @@ namespace MAU
 
 			return (T)MauContainers[compName];
 		}
+
 
 		#endregion
 

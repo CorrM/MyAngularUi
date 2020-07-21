@@ -12,7 +12,6 @@ export interface MauComponentProp {
     Status: MauPropertyStatus;
     NeedToPolling: boolean;
 
-    // ToDo: Change to safe to handle, since data is safe but not set when it's needed
     /**
      * SafeToHandle is true if it's value is safe to set,
      * so it's just to not override angular prop value with bad values
