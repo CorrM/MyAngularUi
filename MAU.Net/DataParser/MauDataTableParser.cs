@@ -6,7 +6,7 @@ namespace MAU.DataParser
 {
 	public class MauDataTableParser : MauDataParser<MauDataTable>
 	{
-		public override JToken ParseToFrontEnd(MauDataTable varObj)
+		public override JToken ParseToFrontEnd(Type varType, MauDataTable varObj)
 		{
 			var retVal = new JObject()
 			{

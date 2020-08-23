@@ -14,7 +14,15 @@ namespace MAU.Attributes
 	[PSerializable]
 	public sealed class MauVariable : LocationInterceptionAspect
 	{
-		public static bool HasAttribute(FieldInfo fieldInfo)
+        public string VariableName { get; set; }
+
+		public MauVariable(string variableName)
+        {
+            VariableName = variableName;
+
+        }
+
+        public static bool HasAttribute(FieldInfo fieldInfo)
 		{
 			return fieldInfo.GetCustomAttributes(typeof(MauVariable), false).Any();
 		}
@@ -53,7 +61,7 @@ namespace MAU.Attributes
 		{
 			// Set value first, so i can reflect it in `UpdateVarBase`
 			base.OnSetValue(args);
-			SendMauVariable((MauComponent)args.Instance, args.LocationName);
+			SendMauVariable((MauComponent)args.Instance, VariableName /*args.LocationName*/);
 		}
 	}
 }

@@ -20,7 +20,7 @@ namespace MAU.ReadyComponents.Angular
 
 		#region [ Mau Variable ]
 
-		[MauVariable]
+		[MauVariable("Options")]
 		public MauDataList<string> Options { get; private set; }
 
 		#endregion

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -10,7 +9,6 @@ using MAU.Events;
 using MAU.Helper;
 using Newtonsoft.Json.Linq;
 using static MAU.Events.MauEventHandlers;
-using static MAU.MyAngularUi;
 
 namespace MAU.Core
 {
@@ -78,7 +76,7 @@ namespace MAU.Core
 				{"styleValue", styleValue},
 			};
 
-			MyAngularUi.SendRequest(MauId, RequestType.SetStyle, data);
+			MyAngularUi.SendRequest(MauId, MyAngularUi.RequestType.SetStyle, data);
 		}
 		public void RemoveStyle(string styleName)
 		{
@@ -87,7 +85,7 @@ namespace MAU.Core
 				{"styleName", styleName}
 			};
 
-			MyAngularUi.SendRequest(MauId, RequestType.RemoveStyle, data);
+			MyAngularUi.SendRequest(MauId, MyAngularUi.RequestType.RemoveStyle, data);
 		}
 
 		public void AddClass(string className)
@@ -97,7 +95,7 @@ namespace MAU.Core
 				{"className", className}
 			};
 
-			MyAngularUi.SendRequest(MauId, RequestType.AddClass, data);
+			MyAngularUi.SendRequest(MauId, MyAngularUi.RequestType.AddClass, data);
 		}
 		public void RemoveClass(string className)
 		{
@@ -106,7 +104,7 @@ namespace MAU.Core
 				{"className", className}
 			};
 
-			MyAngularUi.SendRequest(MauId, RequestType.RemoveClass, data);
+			MyAngularUi.SendRequest(MauId, MyAngularUi.RequestType.RemoveClass, data);
 		}
 
 		#endregion
@@ -189,7 +187,7 @@ namespace MAU.Core
 				}
 			}
 
-			RegisterComponent(this);
+			MyAngularUi.RegisterComponent(this);
 		}
 
 		internal void FireEvent(string eventName, string eventType, JObject eventData)
@@ -231,7 +229,7 @@ namespace MAU.Core
 					}
 					catch (Exception ex)
 					{
-						RaiseExeption(ex.InnerException);
+                        MyAngularUi.RaiseExeption(ex.InnerException);
 					}
 				});
 			}
@@ -259,7 +257,7 @@ namespace MAU.Core
 				{"propStatus", (int)mauPropertyAttr.PropStatus} // Needed by `SetPropHandler`
 			};
 
-			MyAngularUi.SendRequest(MauId, RequestType.GetPropValue, data);
+			MyAngularUi.SendRequest(MauId, MyAngularUi.RequestType.GetPropValue, data);
 		}
 		internal void SetPropValue(string propName, JToken propValueJson)
 		{
@@ -267,7 +265,7 @@ namespace MAU.Core
 				return;
 
 			Type propValType = GetPropType(propName);
-			object propValue = ParseMauDataFromFrontEnd(propValType, propValueJson);
+			object propValue = MyAngularUi.ParseMauDataFromFrontEnd(propValType, propValueJson);
 
 			// Make valid enum value
 			MauEnumMember.GetValidEnumValue(propValType, ref propValue);
@@ -287,10 +285,7 @@ namespace MAU.Core
 				return;
 
 			Type methodRetType = GetMethodReturnType(methodName);
-			if (methodRetType == typeof(void))
-				return;
-
-			object methodRet = ParseMauDataFromFrontEnd(methodRetType, methodRetValueJson);
+			object methodRet = MyAngularUi.ParseMauDataFromFrontEnd(methodRetType, methodRetValueJson);
 
 			// Make valid enum value
 			MauEnumMember.GetValidEnumValue(methodRetType, ref methodRet);
@@ -299,8 +294,11 @@ namespace MAU.Core
 		}
 		internal object GetMethodRetValue(int callMethodRequestId)
 		{
-			while (!MyAngularUi.OrdersResponse.ContainsKey(callMethodRequestId))
+			while (!MyAngularUi.OrdersResponse.ContainsKey(callMethodRequestId) && MyAngularUi.Connected)
 				Thread.Sleep(1);
+
+            if (!MyAngularUi.Connected)
+                return null;
 
 			// Get and remove data
 			MyAngularUi.OrdersResponse.TryRemove(callMethodRequestId, out object ret);

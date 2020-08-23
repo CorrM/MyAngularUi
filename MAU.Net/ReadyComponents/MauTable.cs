@@ -12,7 +12,7 @@ namespace MAU.ReadyComponents
 
 		#region [ Mau Variable ]
 
-		[MauVariable]
+		[MauVariable("Content")]
 		public MauDataTable Content { get; }
 
 		#endregion

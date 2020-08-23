@@ -196,7 +196,7 @@ namespace MAU
 				? _varParsers[typeof(object)]
 				: _varParsers[varType];
 
-			return parser.ParseToFrontEnd((dynamic)varObj);
+			return parser.ParseToFrontEnd(varType, (dynamic)varObj);
 		}
 		internal static JToken ParseMauDataToFrontEnd<T>(T var)
 		{

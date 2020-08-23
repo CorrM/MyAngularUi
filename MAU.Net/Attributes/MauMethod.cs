@@ -63,9 +63,16 @@ namespace MAU.Attributes
 			};
 
 			MyAngularUi.RequestState request = MyAngularUi.SendRequest(holder.MauId, MyAngularUi.RequestType.CallMethod, data);
-			if (((MethodInfo) args.Method).ReturnType == typeof(void))
-				return;
 
+			// If its void function then just wait until execution finish
+            if (((MethodInfo) args.Method).ReturnType == typeof(void))
+            {
+				// Wait function
+                holder.GetMethodRetValue(request.RequestId);
+				return;
+			}
+
+			// Set return value of function
 			args.ReturnValue = holder.GetMethodRetValue(request.RequestId);
 		}
 	}
