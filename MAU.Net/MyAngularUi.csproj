@@ -16,10 +16,10 @@
     <RepositoryUrl>https://github.com/CorrM/MyAngularUi</RepositoryUrl>
     <RepositoryType>GUI</RepositoryType>
     <PackageTags>CorrM, MyAngularUi, MyAngularUi.Net</PackageTags>
-    <Version>2.1.2</Version>
-    <FileVersion>2.1.2.0</FileVersion>
-    <AssemblyVersion>2.1.2.0</AssemblyVersion>
-    <PackageReleaseNotes>[-] Add Exception Handler.</PackageReleaseNotes>
+    <Version>2.2.0</Version>
+    <FileVersion>2.2.0.0</FileVersion>
+    <AssemblyVersion>2.2.0.0</AssemblyVersion>
+    <PackageReleaseNotes>[-] Support calling `MauMethod` from angular side.</PackageReleaseNotes>
     <PackageIcon>Mau.png</PackageIcon>
     <Description>Make nice user interface with Angular for your .Net projects.</Description>
   </PropertyGroup>
