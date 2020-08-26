@@ -13,9 +13,9 @@ namespace MAU.ReadyComponents.Angular
 		#region [ Mau Events ]
 
 		[MauEvent("input")]
-		public event MauEventHandler InputChange;
+		public event MauEventHandler OnInputChange;
 
-		public event MauEventHandler ValueChange;
+		public event MauEventHandler OnValueChange;
 
 		#endregion
 
@@ -28,7 +28,7 @@ namespace MAU.ReadyComponents.Angular
 		public string Placeholder { get; set; }
 
 		[MauProperty("autocomplete", MauPropertyType.NativeAttribute)]
-		public OnOff Autocomplete { get; set; }
+		public Off Autocomplete { get; set; }
 
 		[MauProperty("type", MauPropertyType.ComponentProperty)]
 		public string InputType { get; set; }
@@ -49,7 +49,7 @@ namespace MAU.ReadyComponents.Angular
 		/// <param name="mauComponent">Instance of the property.</param>
 		private static void ValueOnSet(MauComponent mauComponent)
 		{
-			((MauMatInput) mauComponent).ValueChange?.Invoke(mauComponent, new MauEventInfo("ValueChange", "ValueChange", new JObject()));
+			((MauMatInput) mauComponent).OnValueChange?.Invoke(mauComponent, new MauEventInfo("ValueChange", "ValueChange", new JObject()));
 		}
 	}
 }

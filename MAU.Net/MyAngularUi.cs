@@ -130,7 +130,12 @@ namespace MAU
 			/// <summary>
 			/// Get/Send data from/to angular
 			/// </summary>
-			CustomData = 14
+			CustomData = 14,
+
+			/// <summary>
+			/// Call method on .Net side from angular side
+			/// </summary>
+			CallNetMethod = 15
 		}
 
 		#endregion
@@ -156,7 +161,7 @@ namespace MAU
 		public static event CustomData OnCustomData;
 
 		public delegate void UnhandledExceptionHandler(Exception exception);
-		public static event UnhandledExceptionHandler UnhandledException;
+		public static event UnhandledExceptionHandler OnUnhandledException;
 
 		#endregion
 
@@ -222,7 +227,7 @@ namespace MAU
 		/// <summary>
 		/// Init MyAngularUi
 		/// </summary>
-		/// <param name="webSocketPort">Port to use for communication</param>
+		/// <param name="assembly"></param>
 		public static void Setup(Assembly assembly)
 		{
 			if (Init)
@@ -389,7 +394,7 @@ namespace MAU
 			switch (response.RequestType)
 			{
 				case RequestType.CustomData:
-					Task.Run(() => OnCustomData?.Invoke(response.Data["id"].Value<string>(), response.Data["data"].Value<JObject>()));
+					Task.Run(() => OnCustomData?.Invoke(response.Data["id"]!.Value<string>(), response.Data["data"]!.Value<JObject>()));
 					break;
 			}
 
@@ -422,6 +427,23 @@ namespace MAU
 					mauComponent.SetMethodRetValue(response.RequestId, methodName, methodRet);
 					break;
 
+                case RequestType.CallNetMethod:
+                    string methodCallerName = response.Data["methodName"]!.Value<string>();
+                    JToken methodArgs = response.Data["methodArgs"];
+
+                    List<object> argsList = methodArgs!.Select(arrItem => ParseMauDataFromFrontEnd(typeof(object), arrItem)).ToList();
+
+					Task.Run(() =>
+                    {
+                        object ret = mauComponent.CallMethod(methodCallerName, argsList);
+                        SendResponse(response.RequestId, response.MauId, RequestType.CallNetMethod, new JObject
+                        {
+                            { "methodName", methodCallerName },
+                            { "methodRet", ParseMauDataToFrontEnd(ret) }
+                        });
+					});
+					break;
+
 				default:
 					throw new ArgumentOutOfRangeException();
 			}
@@ -440,9 +462,9 @@ namespace MAU
 
 		#region [ Helper ]
 
-		internal static void RaiseExeption(Exception ex)
+		internal static void RaiseException(Exception ex)
 		{
-			UnhandledException?.Invoke(ex);
+			OnUnhandledException?.Invoke(ex);
 		}
 		internal static bool IsComponentRegistered(string mauComponentId)
 		{
@@ -497,7 +519,7 @@ namespace MAU
 				throw new Exception($"'{t.FullName}' not a MauContainer.");
 
 			string compName = typeof(T).FullName;
-			if (!MauContainers.ContainsKey(compName))
+			if (!MauContainers.ContainsKey(compName!))
 				return null;
 
 			return (T)MauContainers[compName];

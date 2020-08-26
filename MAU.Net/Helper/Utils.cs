@@ -18,11 +18,11 @@ namespace MAU.Helper
 
 	public static class Utils
 	{
-		private static readonly Random Randomizer = new Random();
+		private static readonly Random _randomizer = new Random();
 
 		public static int RandomInt(int min, int max)
 		{
-			return Randomizer.Next(min, max);
+			return _randomizer.Next(min, max);
 		}
 		public static bool IsIEnumerable(Type typeToCheck)
 		{

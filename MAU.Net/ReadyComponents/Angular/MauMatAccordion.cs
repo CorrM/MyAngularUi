@@ -26,10 +26,10 @@ namespace MAU.ReadyComponents.Angular
 
 		#region [ Mau Methods ]
 
-		[MauMethod("closeAll", MauMethodType.ComponentMethod)]
+		[MauMethod("closeAll", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
 		public void CloseAll() { }
 
-		[MauMethod("openAll", MauMethodType.ComponentMethod)]
+		[MauMethod("openAll", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
 		public void OpenAll() { }
 
 		#endregion

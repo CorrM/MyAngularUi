@@ -1,11 +1,13 @@
 import { NgModule } from '@angular/core';
 import { MauElementDirective } from './mau-element.directive';
 
+const MauTypes = [
+    MauElementDirective
+];
 
 @NgModule({
-    declarations: [MauElementDirective],
-    imports: [
-    ],
-    exports: [MauElementDirective]
+    declarations: MauTypes,
+    imports: [],
+    exports: MauTypes
 })
 export class MyAngularUiModule { }

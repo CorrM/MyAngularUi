@@ -12,10 +12,10 @@ namespace MAU.ReadyComponents.Angular
 		#region [ Mau Events ]
 
 		[MauEvent("change")]
-		public event MauEventHandler Change;
+		public event MauEventHandler OnChange;
 
 		[MauEvent("indeterminateChange")]
-		public event MauEventHandler IndeterminateChange;
+		public event MauEventHandler OnIndeterminateChange;
 
 		#endregion
 
@@ -58,10 +58,10 @@ namespace MAU.ReadyComponents.Angular
 
 		#region [ Mau Methods ]
 
-		[MauMethod("focus", MauMethodType.ComponentMethod)]
+		[MauMethod("focus", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
 		public void Focus() { }
 
-		[MauMethod("toggle", MauMethodType.ComponentMethod)]
+		[MauMethod("toggle", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
 		public void Toggle() { }
 
 		#endregion

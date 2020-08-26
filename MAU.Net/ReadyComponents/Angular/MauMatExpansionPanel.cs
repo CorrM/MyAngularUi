@@ -12,19 +12,19 @@ namespace MAU.ReadyComponents.Angular
 		#region [ Mau Events ]
 
 		[MauEvent("afterCollapse")]
-		public event MauEventHandler AfterCollapse;
+		public event MauEventHandler OnAfterCollapse;
 
 		[MauEvent("afterExpand")]
-		public event MauEventHandler AfterExpand;
+		public event MauEventHandler OnAfterExpand;
 
 		[MauEvent("closed")]
-		public event MauEventHandler Closed;
+		public event MauEventHandler OnClosed;
 
 		[MauEvent("destroyed")]
-		public event MauEventHandler Destroyed;
+		public event MauEventHandler OnDestroyed;
 
 		[MauEvent("opened")]
-		public event MauEventHandler Opened;
+		public event MauEventHandler OnOpened;
 
 		#endregion
 
@@ -49,13 +49,13 @@ namespace MAU.ReadyComponents.Angular
 
 		#region [ Mau Methods ]
 
-		[MauMethod("close", MauMethodType.ComponentMethod)]
+		[MauMethod("close", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
 		public void Close() { }
 
-		[MauMethod("open", MauMethodType.ComponentMethod)]
+		[MauMethod("open", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
 		public void Open() { }
 
-		[MauMethod("toggle", MauMethodType.ComponentMethod)]
+		[MauMethod("toggle", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
 		public void Toggle() { }
 
 		#endregion

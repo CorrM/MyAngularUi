@@ -12,13 +12,13 @@ namespace MAU.ReadyComponents.Angular
 		#region [ Mau Events ]
 
 		[MauEvent("openedChange")]
-		public event MauEventHandler OpenedChange;
+		public event MauEventHandler OnOpenedChange;
 
 		[MauEvent("selectionChange")]
-		public event MauEventHandler SelectionChange;
+		public event MauEventHandler OnSelectionChange;
 
 		[MauEvent("valueChange")]
-		public event MauEventHandler ValueChange;
+		public event MauEventHandler OnValueChange;
 
 		#endregion
 
@@ -68,16 +68,16 @@ namespace MAU.ReadyComponents.Angular
 
 		#region [ Mau Methods ]
 
-		[MauMethod("close", MauMethodType.ComponentMethod)]
+		[MauMethod("close", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
 		public void Close() { }
 
-		[MauMethod("focus", MauMethodType.ComponentMethod)]
+		[MauMethod("focus", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
 		public void Focus() { }
 
-		[MauMethod("open", MauMethodType.ComponentMethod)]
+		[MauMethod("open", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
 		public void Open() { }
 
-		[MauMethod("toggle", MauMethodType.ComponentMethod)]
+		[MauMethod("toggle", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
 		public void Toggle() { }
 
 		#endregion

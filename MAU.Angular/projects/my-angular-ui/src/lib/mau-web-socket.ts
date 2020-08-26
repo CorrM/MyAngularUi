@@ -4,21 +4,22 @@ import { EventEmitter } from '@angular/core';
 import { MauComponent } from './mau.service';
 
 export enum RequestType {
-    None = 0,
-    SetEvents = 1,
+    None          = 0,
+    SetEvents     = 1,
     EventCallback = 2,
-    GetPropValue = 3,
-    SetPropValue = 4,
-    ExecuteCode = 5,
-    SetVarValue = 6,
-    CallMethod = 7,
+    GetPropValue  = 3,
+    SetPropValue  = 4,
+    ExecuteCode   = 5,
+    SetVarValue   = 6,
+    CallMethod    = 7,
     ReceiveMethod = 8,
-    SetStyle = 9,
-    RemoveStyle = 10,
-    AddClass = 11,
-    RemoveClass = 12,
-    DotNetReady = 13,
-    CustomData = 14
+    SetStyle      = 9,
+    RemoveStyle   = 10,
+    AddClass      = 11,
+    RemoveClass   = 12,
+    DotNetReady   = 13,
+    CustomData    = 14,
+    CallNetMethod = 15,
 }
 
 export interface MauRequestInfo {
@@ -30,6 +31,11 @@ export interface MauRequestInfo {
 
 export interface WebSocketOnMessageCallback {
     (message: any): void;
+}
+
+export interface SendStates {
+    Sent: boolean;
+    RequestId: number;
 }
 
 export class MyAngularUiWebSocket {
@@ -105,14 +111,14 @@ export class MyAngularUiWebSocket {
      * @returns {boolean} Send state
      * @memberof WebSocketManager
      */
-    public Send(requestId: number, mauComponent: MauComponent, requestType: RequestType, data: any): boolean {
+    public Send(requestId: number, mauComponent: MauComponent, requestType: RequestType, data: any): SendStates {
         // Check
         if (!this.IsConnected) {
             console.log(`SendData Can't send to closed socket.`);
-            return false;
+            return { Sent: false, RequestId: requestId };
         }
         if (!this._wsSubject) {
-            return false;
+            return { Sent: false, RequestId: requestId };
         }
 
         // Send
@@ -122,7 +128,7 @@ export class MyAngularUiWebSocket {
             mauComponentId: mauComponent?.Id ?? "",
             data: !data ? {} : data
         });
-        return true;
+        return { Sent: true, RequestId: requestId };
     }
 
     /**
@@ -134,12 +140,12 @@ export class MyAngularUiWebSocket {
      * @returns {boolean} Send state
      * @memberof WebSocketManager
      */
-    public SendRequest(mauComponent: MauComponent, requestType: RequestType, data: any): boolean {
+    public SendRequest(mauComponent: MauComponent, requestType: RequestType, data: any): SendStates {
         let requestId: number = MauUtils.GetRandomInt(1, 100000);
         return this.Send(requestId, mauComponent, requestType, data);
     }
 
-    public SendEventCallback(mauComponent: MauComponent, eventName: string, eventType: string, data: any): boolean {
+    public SendEventCallback(mauComponent: MauComponent, eventName: string, eventType: string, data: any): SendStates {
         return this.SendRequest(mauComponent, RequestType.EventCallback, { eventName: eventName, eventType: eventType, data: data });
     }
 

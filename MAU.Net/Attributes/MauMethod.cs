@@ -19,15 +19,22 @@ namespace MAU.Attributes
 			NativeMethod = 0,
 			ComponentMethod = 1
 		}
+		public enum MauMethodCallType
+        {
+            ExecuteInAngular,
+            ExecuteFromAngular
+		}
 
 		public string MethodName { get; private set; }
 		public MauMethodType MethodType { get; private set; }
+		public MauMethodCallType MethodCallType { get; private set; }
 
-		public MauMethod(string methodName, MauMethodType methodType)
+        public MauMethod(string methodName, MauMethodType methodType, MauMethodCallType methodCallType)
 		{
 			MethodName = methodName;
 			MethodType = methodType;
-		}
+            MethodCallType = methodCallType;
+        }
 
 		public static bool HasAttribute(MethodInfo methodInfo)
 		{
@@ -48,6 +55,12 @@ namespace MAU.Attributes
 		}
 		public override void OnExit(MethodExecutionArgs args)
 		{
+            if (MethodCallType == MauMethodCallType.ExecuteFromAngular)
+            {
+                base.OnExit(args);
+                return;
+			}
+
 			if (!MyAngularUi.Connected)
 			{
 				base.OnExit(args);

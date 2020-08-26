@@ -8,14 +8,14 @@ namespace MAU.WebSocket
 	{
 		#region [ Events ]
 
-		public delegate void OnConnectCallBack();
-		public event OnConnectCallBack OnOpen;
+		public delegate void ConnectCallBack();
+		public event ConnectCallBack OnOpen;
 
-		public delegate void OnCloseCallBack();
-		public event OnCloseCallBack OnClose;
+		public delegate void CloseCallBack();
+		public event CloseCallBack OnClose;
 
-		public delegate void OnMessageCallBack(string message);
-		public event OnMessageCallBack OnMessage;
+		public delegate void MessageCallBack(string message);
+		public event MessageCallBack OnMessage;
 
 		#endregion
 

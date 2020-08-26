@@ -1,5 +1,5 @@
 import { Injectable, ElementRef, Injector, EventEmitter, RendererFactory2, Renderer2 } from '@angular/core';
-import { MyAngularUiWebSocket, RequestType, MauRequestInfo } from './mau-web-socket';
+import { MyAngularUiWebSocket, RequestType, MauRequestInfo, SendStates } from './mau-web-socket';
 import { MauUtils } from './mau-utils';
 import { Subscription } from 'rxjs';
 
@@ -66,7 +66,7 @@ enum MauMethodType {
 export class MyAngularUiService {
 
     private static _reConnectTimeout: number = 1000; // ms
-    private static _varSpliter: string = "#"; // front-end side only, just to store unique var names
+    private static _varSplitter: string = "#"; // front-end side only, just to split unique var names
     private static _wasConnected: boolean = false;
 
     private _webSock: MyAngularUiWebSocket;
@@ -75,6 +75,7 @@ export class MyAngularUiService {
     private _working: boolean;
     private _dotNetReady: boolean;
     private _mauVariables: Map<string, any>;
+    private _ordersResponse: Map<number, any>;
 
     public OnConnect: EventEmitter<void>;
     public OnDisConnect: EventEmitter<void>;
@@ -152,6 +153,7 @@ export class MyAngularUiService {
 
         this.MauComponents = new Map<string, MauComponent>();
         this._mauVariables = new Map<string, any>();
+        this._ordersResponse = new Map<number, any>();
 
         this._webSock = new MyAngularUiWebSocket(this);
         this._webSock.OnMessageCB = this.OnMessage;
@@ -212,7 +214,7 @@ export class MyAngularUiService {
             return false;
         }
 
-        return this._webSock.SendRequest(null, RequestType.CustomData, { id: id, data: data });
+        return this._webSock.SendRequest(null, RequestType.CustomData, { id: id, data: data }).Sent;
     }
 
     public SetElement(mauComponent: MauComponent): void {
@@ -283,7 +285,7 @@ export class MyAngularUiService {
 
         if (request.MauComponent === undefined && MauUtils.IsNonEmptyString(msg["mauComponentId"])) {
 
-            // Addn ew item, it's like early init, good for some stuff like MauVariables
+            // Add new item, it's like early init, good for some stuff like MauVariables
             this.SetElement({
                 Id: msg["mauComponentId"],
                 Native: undefined,
@@ -300,14 +302,14 @@ export class MyAngularUiService {
             case RequestType.SetEvents:
                 this.SetEventHandler(request.MauComponent, request.Data["events"]);
                 break;
-            
+
             case RequestType.GetPropValue:
             case RequestType.SetPropValue:
                 this.SetPropHandler(request.MauComponent, request.Data["propType"], request.Data["propStatus"], request.Data["propName"], request.Data["propVal"]);
                 break;
 
             case RequestType.SetVarValue:
-                this.SetVar(request.MauComponent.Id + MyAngularUiService._varSpliter + request.Data["varName"], request.Data["varValue"]);
+                this.SetVar(request.MauComponent.Id + MyAngularUiService._varSplitter + request.Data["varName"], request.Data["varValue"]);
                 break;
 
             /*case RequestType.ExecuteCode:
@@ -346,6 +348,10 @@ export class MyAngularUiService {
 
             case RequestType.CallMethod:
                 this.CallMethod(request.RequestId, request.MauComponent, request.Data["methodType"], request.Data["methodName"], request.Data["methodArgs"]);
+                break;
+
+            case RequestType.CallNetMethod:
+                this._ordersResponse.set(request.RequestId, request.Data["methodRet"])
                 break;
 
             case RequestType.SetStyle:
@@ -396,7 +402,7 @@ export class MyAngularUiService {
             const eventProp: any = mauComponent.Component[eventName];
 
             // * Set subscribe to EventEmitter, that's for some custom components
-            // * Like Angular Matiral components (MatSelect, ...)
+            // * Like Angular Material components (MatSelect, ...)
             if (eventProp !== undefined && typeof eventProp !== "function") {
                 const sub: Subscription = (eventProp.subscribe((event: MessageEvent) => {
                     this.FireEvent(mauComponent, eventName, event);
@@ -521,8 +527,8 @@ export class MyAngularUiService {
                 break;
         }
 
-        // if function return promis, will resolve first
-        // if not promis will send to .Net directly
+        // if function return promise, will resolve first
+        // if not promise will send to .Net directly
         Promise.resolve(methodRet).then((value) => {
             // Send method return value
             // ! Must send return value to .Net side even it's void or undefined
@@ -531,6 +537,47 @@ export class MyAngularUiService {
                 methodRet: value === undefined ? null : value
             });
         })
+    }
+
+    private GetMethodRetValue(callMethodRequestId: number): Promise<any> {
+        return new Promise<any>(async (resolve, reject) => {
+            while (!this._ordersResponse.has(callMethodRequestId) && this.IsConnected()) {
+                await new Promise(resolve => setTimeout(resolve, 1) );
+            }
+
+            if (!this.IsConnected())
+                return reject("Connection lost");
+
+            // Get and remove data
+            if (this._ordersResponse.has(callMethodRequestId)) {
+                const ret: any = this._ordersResponse.get(callMethodRequestId);
+                this._ordersResponse.delete(callMethodRequestId);
+                return resolve(ret);
+            }
+
+            return reject("Can't get return value");
+        });
+
+    }
+
+    public CallNetMethod(holderName: string, methodName: string, ...methodArgs: any): Promise<any> {
+        return new Promise<any>(async (resolve, reject) => {
+            const mauComponent: MauComponent = this.GetElement(holderName);
+
+            if (!mauComponent) {
+                return reject(`'${holderName}' MauComponent not found`);
+            }
+
+            // Send call to .Net
+            const callRequest: SendStates = this._webSock.SendRequest(mauComponent, RequestType.CallNetMethod, { methodName: methodName, methodArgs: methodArgs });
+            if (!callRequest.Sent) {
+                return reject("'CallNetMethod' request can't be done !");
+            }
+
+            // Wait for response
+            const ret: any = await this.GetMethodRetValue(callRequest.RequestId);
+            return resolve(ret);
+        });
     }
 
     /*private ExecuteCode(mauComponent: MauComponent, code: string): void {
@@ -553,7 +600,7 @@ export class MyAngularUiService {
     }
 
     public GetVar(holderName: string, varName: string): any {
-        let fullVarName = `${holderName}${MyAngularUiService._varSpliter}${varName}`;
+        let fullVarName = `${holderName}${MyAngularUiService._varSplitter}${varName}`;
 
         return this._mauVariables.has(fullVarName)
             ? this._mauVariables.get(fullVarName)

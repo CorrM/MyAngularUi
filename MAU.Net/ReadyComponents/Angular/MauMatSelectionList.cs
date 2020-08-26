@@ -14,7 +14,7 @@ namespace MAU.ReadyComponents.Angular
 		#region [ Mau Events ]
 
 		[MauEvent("selectionChange")]
-		public event MauEventHandler SelectionChange;
+		public event MauEventHandler OnSelectionChange;
 
 		#endregion
 
@@ -43,13 +43,13 @@ namespace MAU.ReadyComponents.Angular
 
 		#region [ Mau Methods ]
 
-		[MauMethod("deselectAll", MauMethodType.ComponentMethod)]
+		[MauMethod("deselectAll", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
 		public void DeselectAll() { }
 
-		[MauMethod("focus", MauMethodType.ComponentMethod)]
+		[MauMethod("focus", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
 		public void Focus() { }
 
-		[MauMethod("selectAll", MauMethodType.ComponentMethod)]
+		[MauMethod("selectAll", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
 		public void SelectAll() { }
 
 		#endregion

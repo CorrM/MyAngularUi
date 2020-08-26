@@ -12,7 +12,7 @@ namespace MAU.Aspects.Exceptions
 
         public override void OnException(MethodExecutionArgs args)
         {
-            MyAngularUi.RaiseExeption(args.Exception);
+            MyAngularUi.RaiseException(args.Exception);
         }
     }
 }

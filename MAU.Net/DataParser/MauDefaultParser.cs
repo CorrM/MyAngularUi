@@ -42,7 +42,10 @@ namespace MAU.DataParser
 		}
 
 		public override JToken ParseToFrontEnd(Type varType, object varObj)
-		{
+        {
+            if (varObj == null)
+                return null;
+
 			// ToDo: Try to get data in IEnumerable and pass it to parser
 			if (Utils.IsIEnumerable(varType) || varType.IsArray)
 				return JArray.FromObject(varObj);
@@ -61,6 +64,9 @@ namespace MAU.DataParser
 		}
 		public override object ParseFromFrontEnd(JToken varObj)
 		{
+            if (varObj == null)
+                return null;
+
 			object retVar;
 			switch (varObj.Type)
 			{

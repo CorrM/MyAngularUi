@@ -5,7 +5,7 @@ using System.Text;
 
 namespace MAU.Helper.Enums
 {
-	public enum OnOff
+	public enum Off
 	{
 		[MauEnumMember("")]
 		NotSet,

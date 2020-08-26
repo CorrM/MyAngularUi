@@ -36,6 +36,11 @@ namespace MAU.Helper.Types
 			base.Clear();
 			UpdateData();
 		}
+        public void ClearAndAddRange(IEnumerable<T> collection)
+        {
+			base.Clear();
+			AddRange(collection);
+        }
 		public new void Insert(int index, T item)
 		{
 			base.Insert(index, item);

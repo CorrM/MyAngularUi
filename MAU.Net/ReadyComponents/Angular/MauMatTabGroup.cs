@@ -12,16 +12,16 @@ namespace MAU.ReadyComponents.Angular
 		#region [ Mau Events ]
 
 		[MauEvent("animationDone")]
-		public event MauEventHandler AnimationDone;
+		public event MauEventHandler OnAnimationDone;
 
 		[MauEvent("focusChange")]
-		public event MauEventHandler FocusChange;
+		public event MauEventHandler OnFocusChange;
 
 		[MauEvent("selectedIndexChange")]
-		public event MauEventHandler SelectedIndexChange;
+		public event MauEventHandler OnSelectedIndexChange;
 
 		[MauEvent("selectedTabChange")]
-		public event MauEventHandler SelectedTabChange;
+		public event MauEventHandler OnSelectedTabChange;
 
 		#endregion
 
@@ -55,7 +55,7 @@ namespace MAU.ReadyComponents.Angular
 
 		#region [ Mau Methods ]
 
-		[MauMethod("realignInkBar", MauMethodType.ComponentMethod)]
+		[MauMethod("realignInkBar", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
 		public void RealignInkBar() { }
 
 		#endregion

@@ -29,7 +29,7 @@ namespace MAU.ReadyComponents.Angular
 
 		#region [ Mau Methods ]
 
-		[MauMethod("focus", MauMethodType.ComponentMethod)]
+		[MauMethod("focus", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
 		public void Focus() { }
 
 		#endregion
