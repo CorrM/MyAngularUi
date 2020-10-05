@@ -313,7 +313,7 @@ namespace MAU
 				return false;
 
 #if DEBUG
-			Debug.WriteLine($"SEND > {dataToSend}");
+			// Debug.WriteLine($"SEND > {dataToSend}");
 #endif
 			return WebSocket.Send(dataToSend).GetAwaiter().GetResult();
 		}
@@ -376,7 +376,7 @@ namespace MAU
 		internal static void OnMessage(string message)
 		{
 #if DEBUG
-			Debug.WriteLine($"RECV > {message}");
+			// Debug.WriteLine($"RECV > {message}");
 #endif
 			// Decode json
 			JObject jsonRequest = JObject.Parse(message);

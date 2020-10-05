@@ -16,10 +16,10 @@
     <RepositoryUrl>https://github.com/CorrM/MyAngularUi</RepositoryUrl>
     <RepositoryType>GUI</RepositoryType>
     <PackageTags>CorrM, MyAngularUi, MyAngularUi.Net</PackageTags>
-    <Version>2.2.1</Version>
-    <FileVersion>2.2.1.0</FileVersion>
-    <AssemblyVersion>2.2.1.0</AssemblyVersion>
-    <PackageReleaseNotes>[-] Some fixes for ENums.</PackageReleaseNotes>
+    <Version>2.2.2</Version>
+    <FileVersion>2.2.2.0</FileVersion>
+    <AssemblyVersion>2.2.2.0</AssemblyVersion>
+    <PackageReleaseNotes>[-] Some gernal fixes.</PackageReleaseNotes>
     <PackageIcon>Mau.png</PackageIcon>
     <Description>Make nice user interface with Angular for your .Net projects.</Description>
   </PropertyGroup>

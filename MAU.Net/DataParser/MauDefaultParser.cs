@@ -50,6 +50,7 @@ namespace MAU.DataParser
 			if (Utils.IsIEnumerable(varType) || varType.IsArray)
 				return JArray.FromObject(varObj);
 
+			/*
 			try
 			{
 				if (varType != typeof(string) && varType != typeof(bool) && varType != typeof(int) && varType != typeof(long))
@@ -59,6 +60,7 @@ namespace MAU.DataParser
 			{
 				// ignored
 			}
+			*/
 
 			return JToken.FromObject(varObj);
 		}
