@@ -1,56 +1,42 @@
-﻿using System;
-using System.Linq;
-using MAU.Helper;
-using Newtonsoft.Json;
+﻿using MAU.Helper;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Linq;
 
 namespace MAU.DataParser
 {
-	public class MauDefaultParser : MauDataParser<object>
-	{
-		private static object GetJsonArray(JToken array)
-		{
-			JTokenType? arrayType = array.Children().FirstOrDefault()?.Type;
+    public class MauDefaultParser : MauDataParser<object>
+    {
+        private static object GetJsonArray(JToken array)
+        {
+            JTokenType? arrayType = array.Children().FirstOrDefault()?.Type;
 
-			if (arrayType == null)
-				return array.Values<string>().ToList();
+            if (arrayType == null)
+                return array.Values<string>().ToList();
 
-			object retVar;
-			switch (arrayType)
-			{
-				case JTokenType.Object:
-					retVar = array.Values<JObject>().ToList();
-					break;
-				case JTokenType.Integer:
-					retVar = array.Values<int>().ToList();
-					break;
-				case JTokenType.Float:
-					retVar = array.Values<float>().ToList();
-					break;
-				case JTokenType.String:
-					retVar = array.Values<string>().ToList();
-					break;
-				case JTokenType.Boolean:
-					retVar = array.Values<bool>().ToList();
-					break;
-				default:
-					retVar = array.Values<string>().ToList();
-					break;
-			}
+            object retVar = arrayType switch
+            {
+                JTokenType.Object => array.Values<JObject>().ToList(),
+                JTokenType.Integer => array.Values<int>().ToList(),
+                JTokenType.Float => array.Values<float>().ToList(),
+                JTokenType.String => array.Values<string>().ToList(),
+                JTokenType.Boolean => array.Values<bool>().ToList(),
+                _ => array.Values<string>().ToList()
+            };
 
-			return retVar;
-		}
+            return retVar;
+        }
 
-		public override JToken ParseToFrontEnd(Type varType, object varObj)
+        public override JToken ParseToFrontEnd(Type varType, object varObj)
         {
             if (varObj == null)
                 return null;
 
-			// ToDo: Try to get data in IEnumerable and pass it to parser
-			if (Utils.IsIEnumerable(varType) || varType.IsArray)
-				return JArray.FromObject(varObj);
+            // ToDo: Try to get data in IEnumerable and pass it to parser
+            if (Utils.IsIEnumerable(varType) || varType.IsArray)
+                return JArray.FromObject(varObj);
 
-			/*
+            /*
 			try
 			{
 				if (varType != typeof(string) && varType != typeof(bool) && varType != typeof(int) && varType != typeof(long))
@@ -62,42 +48,26 @@ namespace MAU.DataParser
 			}
 			*/
 
-			return JToken.FromObject(varObj);
-		}
-		public override object ParseFromFrontEnd(JToken varObj)
-		{
+            return JToken.FromObject(varObj);
+        }
+        public override object ParseFromFrontEnd(JToken varObj)
+        {
             if (varObj == null)
                 return null;
 
-			object retVar;
-			switch (varObj.Type)
-			{
-				case JTokenType.Null:
-					retVar = null;
-					break;
-				case JTokenType.Object:
-					retVar = varObj.ToString();
-					break;
-				case JTokenType.Array:
-					retVar = GetJsonArray(varObj);
-					break;
-				case JTokenType.Integer:
-					retVar = varObj.Value<int>();
-					break;
-				case JTokenType.Float:
-					retVar = varObj.Value<float>();
-					break;
-				case JTokenType.String:
-					retVar = varObj.Value<string>();
-					break;
-				case JTokenType.Boolean:
-					retVar = varObj.Value<bool>();
-					break;
-				default:
-					throw new ArgumentOutOfRangeException();
-			}
+            object retVar = varObj.Type switch
+            {
+                JTokenType.Null => null,
+                JTokenType.Object => varObj.ToString(),
+                JTokenType.Array => GetJsonArray(varObj),
+                JTokenType.Integer => varObj.Value<int>(),
+                JTokenType.Float => varObj.Value<float>(),
+                JTokenType.String => varObj.Value<string>(),
+                JTokenType.Boolean => varObj.Value<bool>(),
+                _ => throw new ArgumentOutOfRangeException()
+            };
 
-			return retVar;
-		}
-	}
+            return retVar;
+        }
+    }
 }

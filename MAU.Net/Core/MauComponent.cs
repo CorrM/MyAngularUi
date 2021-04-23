@@ -1,31 +1,24 @@
-﻿using System;
+﻿using MAU.Attributes;
+using MAU.Events;
+using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using MAU.Attributes;
-using MAU.Events;
-using MAU.Helper;
-using Newtonsoft.Json.Linq;
+using MAU.Helper.Holders;
 using static MAU.Events.MauEventHandlers;
 
 namespace MAU.Core
 {
     public abstract class MauComponent
     {
-        #region [ Internal Props ]
-
-        #endregion
-
-        #region [ Internal Fields ]
 
         internal readonly Dictionary<string, EventInfo> HandledEvents;
-        internal readonly Dictionary<string, BoolHolder<PropertyInfo>> HandledProps; // bool for handleOnSet
+        internal readonly Dictionary<string, MauPropertyHolder> HandledProps;
         internal readonly Dictionary<string, PropertyInfo> HandledVars;
         internal readonly Dictionary<string, MethodInfo> HandledMethods;
-
-        #endregion
 
         #region [ Public Proparties ]
 
@@ -54,15 +47,18 @@ namespace MAU.Core
         [MauProperty("className", MauProperty.MauPropertyType.NativeProperty, PropStatus = MauProperty.MauPropertyStatus.ReadOnly)]
         public string ClassName { get; internal set; }
 
+        [MauProperty("id", MauProperty.MauPropertyType.NativeProperty, PropStatus = MauProperty.MauPropertyStatus.ReadOnly)]
+        public string Id { get; internal set; }
+
         #endregion
 
         #region [ UI Events ]
 
         [MauEvent("click")]
-        public event MauEventHandler OnClick;
+        public event MauEventHandlerAsync OnClick;
 
         [MauEvent("dblclick")]
-        public event MauEventHandler OnDoubleClick;
+        public event MauEventHandlerAsync OnDoubleClick;
 
         #endregion
 
@@ -76,7 +72,7 @@ namespace MAU.Core
                 {"styleValue", styleValue},
             };
 
-            MyAngularUi.SendRequest(MauId, MyAngularUi.RequestType.SetStyle, data);
+            MyAngularUi.SendRequestAsync(MauId, MyAngularUi.RequestType.SetStyle, data);
         }
         public void RemoveStyle(string styleName)
         {
@@ -85,7 +81,7 @@ namespace MAU.Core
                 {"styleName", styleName}
             };
 
-            MyAngularUi.SendRequest(MauId, MyAngularUi.RequestType.RemoveStyle, data);
+            MyAngularUi.SendRequestAsync(MauId, MyAngularUi.RequestType.RemoveStyle, data);
         }
 
         public void AddClass(string className)
@@ -95,7 +91,7 @@ namespace MAU.Core
                 {"className", className}
             };
 
-            MyAngularUi.SendRequest(MauId, MyAngularUi.RequestType.AddClass, data);
+            MyAngularUi.SendRequestAsync(MauId, MyAngularUi.RequestType.AddClass, data);
         }
         public void RemoveClass(string className)
         {
@@ -104,15 +100,15 @@ namespace MAU.Core
                 {"className", className}
             };
 
-            MyAngularUi.SendRequest(MauId, MyAngularUi.RequestType.RemoveClass, data);
+            MyAngularUi.SendRequestAsync(MauId, MyAngularUi.RequestType.RemoveClass, data);
         }
 
         #endregion
 
-        internal MauProperty GetMauPropAttribute(string propName)
+        internal MauPropertyHolder GetMauPropHolder(string propName)
         {
             return HandledProps.ContainsKey(propName)
-                ? HandledProps[propName].Holder.GetCustomAttribute<MauProperty>(false)
+                ? HandledProps[propName]
                 : null;
         }
         internal MauMethod GetMauMethodAttribute(string methodName)
@@ -141,7 +137,7 @@ namespace MAU.Core
 
             MauId = mauId;
             HandledEvents = new Dictionary<string, EventInfo>();
-            HandledProps = new Dictionary<string, BoolHolder<PropertyInfo>>();
+            HandledProps = new Dictionary<string, MauPropertyHolder>();
             HandledVars = new Dictionary<string, PropertyInfo>();
             HandledMethods = new Dictionary<string, MethodInfo>();
 
@@ -166,7 +162,7 @@ namespace MAU.Core
                 foreach (PropertyInfo propertyInfo in propertyInfos.Where(MauProperty.HasAttribute))
                 {
                     var attr = propertyInfo.GetCustomAttribute<MauProperty>();
-                    HandledProps.Add(attr.PropertyName, new BoolHolder<PropertyInfo>(propertyInfo, true));
+                    HandledProps.Add(attr.PropertyName, new MauPropertyHolder(propertyInfo, true));
                 }
             }
 
@@ -221,15 +217,18 @@ namespace MAU.Core
             // Invoke all subscribers
             foreach (Delegate handler in eventDelegate.GetInvocationList())
             {
-                Task.Run(() =>
+                // https://stackoverflow.com/questions/20350397/how-can-i-tell-if-a-c-sharp-method-is-async-await-via-reflection
+                // Fire & Forget
+                Task.Run(async () =>
                 {
                     try
                     {
-                        handler.Method.Invoke(handler.Target, new object[] { this, new MauEventInfo(eventName, eventType, eventData) });
+                        object[] param = { this, new MauEventInfo(eventName, eventType, eventData) };
+                        await ((ValueTask)handler.Method.Invoke(handler.Target, param)).ConfigureAwait(false);
                     }
                     catch (Exception ex)
                     {
-                        MyAngularUi.RaiseException(ex.InnerException);
+                        MyAngularUi.RaiseException(ex);
                     }
                 });
             }
@@ -250,30 +249,32 @@ namespace MAU.Core
 
             return null;
         }
-        internal Dictionary<string, BoolHolder<PropertyInfo>> GetValidToSetHandledProps()
+        internal Dictionary<string, MauPropertyHolder> GetValidToSetHandledProps()
         {
-            Dictionary<string, BoolHolder<PropertyInfo>> componentsProps = this.HandledProps
-                //.Where(x => !this.GetMauPropAttribute(x.Key).ReadOnly)
-                .OrderBy(x => this.GetMauPropAttribute(x.Key).Important)
+            return this.HandledProps
+                //.Where(x => this.GetMauPropAttribute(x.Key).PropStatus != MauProperty.MauPropertyStatus.ReadOnly)
+                .OrderBy(x => this.GetMauPropHolder(x.Key).PropAttr.Important)
                 .ToDictionary(x => x.Key, x => x.Value);
-
-            return componentsProps;
         }
 
+        /// <summary>
+        /// Send request to angular side to send property value via <see cref="MyAngularUi.OnMessage"/>
+        /// </summary>
+        /// <param name="propName">Property name</param>
         internal void RequestPropValue(string propName)
         {
             if (!HandledProps.ContainsKey(propName))
                 return;
 
-            MauProperty mauPropertyAttr = GetMauPropAttribute(propName);
+            MauPropertyHolder mauProperty = GetMauPropHolder(propName);
             var data = new JObject
             {
                 {"propName", propName},
-                {"propType", (int)mauPropertyAttr.PropType},
-                {"propStatus", (int)mauPropertyAttr.PropStatus} // Needed by `SetPropHandler`
+                {"propType", (int)mauProperty.PropAttr.PropType},
+                {"propStatus", (int)mauProperty.PropAttr.PropStatus} // Needed by `SetPropHandler`
 			};
 
-            MyAngularUi.SendRequest(MauId, MyAngularUi.RequestType.GetPropValue, data);
+            MyAngularUi.SendRequestAsync(MauId, MyAngularUi.RequestType.GetPropValue, data);
         }
         internal void SetPropValue(string propName, JToken propValueJson)
         {
@@ -286,13 +287,9 @@ namespace MAU.Core
             // Make valid enum value
             MauEnumMember.GetValidEnumValue(propValType, ref propValue);
 
-            // Deadlock will not happen because of 'HandledProps[propName].Value' (HandleOnSet)
+            // Deadlock will not happen because of 'HandledProps[propName].HandleOnSet'
             lock (HandledProps[propName])
-            {
-                HandledProps[propName].Value = false;
-                HandledProps[propName].Holder.SetValue(this, propValue);
-                HandledProps[propName].Value = true;
-            }
+                HandledProps[propName].DoWithoutHandling(p => p.Holder.SetValue(this, propValue));
         }
 
         internal void SetMethodRetValue(int callMethodRequestId, string methodName, JToken methodRetValueJson)
@@ -310,10 +307,10 @@ namespace MAU.Core
         }
         internal object GetMethodRetValue(int callMethodRequestId)
         {
-            while (!MyAngularUi.OrdersResponse.ContainsKey(callMethodRequestId) && MyAngularUi.Connected)
+            while (!MyAngularUi.OrdersResponse.ContainsKey(callMethodRequestId) && MyAngularUi.IsConnected)
                 Thread.Sleep(1);
 
-            if (!MyAngularUi.Connected)
+            if (!MyAngularUi.IsConnected)
                 return null;
 
             // Get and remove data

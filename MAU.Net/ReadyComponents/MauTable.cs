@@ -4,26 +4,26 @@ using MAU.Helper.Types;
 
 namespace MAU.ReadyComponents
 {
-	public class MauTable : MauComponent
-	{
-		#region [ Mau Properties ]
+    public class MauTable : MauComponent
+    {
+        #region [ Mau Properties ]
 
-		#endregion
+        #endregion
 
-		#region [ Mau Variable ]
+        #region [ Mau Variable ]
 
-		[MauVariable("Content")]
-		public MauDataTable Content { get; }
+        [MauVariable("Content")]
+        public MauDataTable Content { get; }
 
-		#endregion
+        #endregion
 
-		#region [ Mau Methods ]
+        #region [ Mau Methods ]
 
-		#endregion
+        #endregion
 
-		public MauTable(string mauId) : base(mauId)
-		{
-			Content = new MauDataTable(this, nameof(Content));
-		}
-	}
+        public MauTable(string mauId) : base(mauId)
+        {
+            Content = new MauDataTable(this, nameof(Content));
+        }
+    }
 }

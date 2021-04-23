@@ -2,11 +2,11 @@
 
 namespace MAU.Helper.Types
 {
-	public interface IMauDataType
-	{
-		public string MauDataName { get; }
-		public MauComponent Holder { get; }
+    public interface IMauDataType
+    {
+        public string MauDataName { get; }
+        public MauComponent Holder { get; }
 
-		public void UpdateData();
-	}
+        public void UpdateData();
+    }
 }

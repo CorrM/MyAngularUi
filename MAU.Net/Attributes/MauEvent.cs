@@ -1,35 +1,32 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
-using MAU.Core;
+﻿using MAU.Core;
 using Newtonsoft.Json.Linq;
+using System;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace MAU.Attributes
 {
-	[AttributeUsage(AttributeTargets.Event)]
-	public sealed class MauEvent : Attribute
-	{
-		public string EventName { get; }
+    [AttributeUsage(AttributeTargets.Event)]
+    public sealed class MauEvent : Attribute
+    {
+        public string EventName { get; }
 
-		public MauEvent(string eventName)
-		{
-			EventName = eventName;
-		}
+        public static bool HasAttribute(EventInfo eventInfo) => Attribute.IsDefined(eventInfo, typeof(MauEvent));
 
-		public static bool HasAttribute(EventInfo eventInfo)
-		{
-			return eventInfo.GetCustomAttributes(typeof(MauEvent), false).Any();
-		}
+        public MauEvent(string eventName)
+        {
+            EventName = eventName;
+        }
 
-		internal static MyAngularUi.RequestState SendMauEvents(MauComponent holder)
-		{
-			var ret = new JObject
-			{
-				{ "events", new JArray(holder.MauEvents) }
-			};
+        internal static Task<MyAngularUi.RequestState> SendMauEventsAsync(MauComponent holder)
+        {
+            var ret = new JObject
+            {
+                { "events", new JArray(holder.MauEvents) }
+            };
 
-			// Send response
-			return MyAngularUi.SendRequest(holder.MauId, MyAngularUi.RequestType.SetEvents, ret);
-		}
-	}
+            // Send response
+            return MyAngularUi.SendRequestAsync(holder.MauId, MyAngularUi.RequestType.SetEvents, ret);
+        }
+    }
 }

@@ -1,74 +1,79 @@
-﻿using System;
+﻿using Fleck;
+using System;
 using System.Threading.Tasks;
-using Fleck;
 
 namespace MAU.WebSocket
 {
-	public class MauWebSocket : IDisposable
-	{
-		#region [ Events ]
+    public class MauWebSocket : IDisposable
+    {
+        #region [ Events ]
 
-		public delegate void ConnectCallBack();
-		public event ConnectCallBack OnOpen;
+        public delegate void ConnectCallBack();
+        public event ConnectCallBack OnOpen;
 
-		public delegate void CloseCallBack();
-		public event CloseCallBack OnClose;
+        public delegate void CloseCallBack();
+        public event CloseCallBack OnClose;
 
-		public delegate void MessageCallBack(string message);
-		public event MessageCallBack OnMessage;
+        public delegate void MessageCallBack(string message);
+        public event MessageCallBack OnMessage;
 
-		#endregion
+        #endregion
 
-		private readonly WebSocketServer _wsServer;
-		private IWebSocketConnection WebSock { get; set; }
+        private readonly WebSocketServer _wsServer;
+        private IWebSocketConnection WebSock { get; set; }
 
-		public MauWebSocket(int port)
-		{
-			_wsServer = new WebSocketServer($"ws://0.0.0.0:{port}/MauHandler")
-			{
-				RestartAfterListenError = true
-			};
-		}
+        public MauWebSocket(int port)
+        {
+            _wsServer = new WebSocketServer($"ws://0.0.0.0:{port}/MauHandler")
+            {
+                RestartAfterListenError = true
+            };
 
-		public void Start()
-		{
-			_wsServer.Start(socket =>
-			{
-				WebSock = socket;
-				socket.OnOpen = () => OnOpen?.Invoke();
-				socket.OnClose = () => OnClose?.Invoke();
-				socket.OnMessage = (message) => OnMessage?.Invoke(message);
-			});
-		}
-		public async Task<bool> Send(string data)
-		{
-			if (WebSock == null || !WebSock.IsAvailable)
-				return false;
+            FleckLog.LogAction = delegate { };
+        }
 
-			try
-			{
-				Task sendR = WebSock.Send(data);
-				if (sendR == null)
-					return false;
+        public void Start()
+        {
+            if (IsConnected())
+                return;
 
-				await sendR;
-			}
-			catch (NullReferenceException)
-			{
-				return false;
-			}
+            _wsServer.Start(socket =>
+            {
+                WebSock = socket;
+                socket.OnOpen = () => OnOpen?.Invoke();
+                socket.OnClose = () => OnClose?.Invoke();
+                socket.OnMessage = (message) => OnMessage?.Invoke(message);
+            });
+        }
+        public async Task<bool> SendAsync(string data)
+        {
+            if (WebSock?.IsAvailable != true)
+                return false;
 
-			return true;
-		}
+            try
+            {
+                Task sendR = WebSock.Send(data);
+                if (sendR == null)
+                    return false;
 
-		public bool IsConnected()
-		{
-			return WebSock != null && WebSock.IsAvailable;
-		}
+                await sendR.ConfigureAwait(false);
+            }
+            catch (NullReferenceException)
+            {
+                return false;
+            }
 
-		public void Dispose()
-		{
-			_wsServer?.Dispose();
-		}
-	}
+            return true;
+        }
+
+        public bool IsConnected()
+        {
+            return WebSock?.IsAvailable == true;
+        }
+
+        public void Dispose()
+        {
+            _wsServer?.Dispose();
+        }
+    }
 }

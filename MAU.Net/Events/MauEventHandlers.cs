@@ -1,12 +1,10 @@
 ﻿using MAU.Core;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Threading.Tasks;
 
 namespace MAU.Events
 {
-	public class MauEventHandlers
-	{
-		public delegate void MauEventHandler(MauComponent component, MauEventInfo eventInfo);
-	}
+    public static class MauEventHandlers
+    {
+        public delegate ValueTask MauEventHandlerAsync(MauComponent component, MauEventInfo eventInfo);
+    }
 }

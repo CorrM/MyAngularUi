@@ -1,25 +1,25 @@
-﻿using System;
-using MAU.Helper.Types;
+﻿using MAU.Helper.Types;
 using Newtonsoft.Json.Linq;
+using System;
 
 namespace MAU.DataParser
 {
-	public class MauDataTableParser : MauDataParser<MauDataTable>
-	{
-		public override JToken ParseToFrontEnd(Type varType, MauDataTable varObj)
-		{
-			var retVal = new JObject()
-			{
-				{ "Columns", JArray.FromObject(varObj.Columns) },
-				{ "Rows", JArray.FromObject(varObj.Rows) }
-			};
+    public class MauDataTableParser : MauDataParser<MauDataTable>
+    {
+        public override JToken ParseToFrontEnd(Type varType, MauDataTable varObj)
+        {
+            var retVal = new JObject()
+            {
+                { "Columns", JArray.FromObject(varObj.Columns) },
+                { "Rows", JArray.FromObject(varObj.Rows) }
+            };
 
-			return retVal;
-		}
+            return retVal;
+        }
 
-		public override MauDataTable ParseFromFrontEnd(JToken varObj)
-		{
-			throw new NotImplementedException();
-		}
-	}
+        public override MauDataTable ParseFromFrontEnd(JToken varObj)
+        {
+            throw new NotImplementedException();
+        }
+    }
 }
