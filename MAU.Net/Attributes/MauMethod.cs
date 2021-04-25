@@ -4,6 +4,8 @@ using PostSharp.Aspects;
 using PostSharp.Extensibility;
 using PostSharp.Serialization;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace MAU.Attributes
@@ -51,38 +53,48 @@ namespace MAU.Attributes
         }
         public override void OnExit(MethodExecutionArgs args)
         {
-            if (MethodCallType == MauMethodCallType.ExecuteFromAngular)
+            Type retType = ((MethodInfo)args.Method).ReturnType;
+
+            if (MethodCallType == MauMethodCallType.ExecuteFromAngular || !MyAngularUi.IsConnected)
             {
                 base.OnExit(args);
                 return;
             }
 
-            if (!MyAngularUi.IsConnected)
+            // Prepare Args
+            List<object> argsToSend = args.Arguments.ToList();
+            for (int i = 0; i < argsToSend.Count; i++)
             {
-                base.OnExit(args);
-                return;
+                object param = argsToSend[i];
+                if (!param.GetType().IsEnum || !MauEnumMemberAttribute.HasAttribute((Enum) param))
+                    continue;
+
+                argsToSend[i] = MauEnumMemberAttribute.GetValue((Enum)param);
             }
 
+            // Send
             var holder = (MauComponent)args.Instance;
             var data = new JObject
             {
                 {"methodType", (int)MethodType},
                 {"methodName", MethodName},
-                {"methodArgs", JArray.FromObject(args.Arguments.ToArray())}
+                {"methodArgs", JArray.FromObject(argsToSend)}
             };
-
             MyAngularUi.RequestState request = MyAngularUi.SendRequestAsync(holder.MauId, MyAngularUi.RequestType.CallMethod, data).GetAwaiter().GetResult();
 
+            // Wait return
             // If its void function then just wait until execution finish
-            if (((MethodInfo)args.Method).ReturnType == typeof(void))
+            if (retType == typeof(void))
             {
                 // Wait function
                 holder.GetMethodRetValue(request.RequestId);
                 return;
             }
 
-            // Set return value of function
-            args.ReturnValue = holder.GetMethodRetValue(request.RequestId);
+            // Wait and set return value of function
+            object ret = holder.GetMethodRetValue(request.RequestId);
+            if (ret is not null)
+                args.ReturnValue = ret /*?? Activator.CreateInstance(retType)*/;
         }
     }
 }

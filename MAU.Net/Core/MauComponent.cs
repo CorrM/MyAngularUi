@@ -64,12 +64,13 @@ namespace MAU.Core
 
         #region [ UI Methods ]
 
-        public void SetStyle(string styleName, string styleValue)
+        public void SetStyle(string styleName, string styleValue, string childQuerySelector = "")
         {
             var data = new JObject
             {
                 {"styleName", styleName},
                 {"styleValue", styleValue},
+                {"childQuerySelector", childQuerySelector},
             };
 
             MyAngularUi.SendRequestAsync(MauId, MyAngularUi.RequestType.SetStyle, data);
@@ -149,9 +150,9 @@ namespace MAU.Core
             // Events
             {
                 EventInfo[] eventInfos = this.GetType().GetEvents(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                foreach (EventInfo eventInfo in eventInfos.Where(MauEvent.HasAttribute))
+                foreach (EventInfo eventInfo in eventInfos.Where(MauEventAttribute.HasAttribute))
                 {
-                    var attr = eventInfo.GetCustomAttribute<MauEvent>();
+                    var attr = eventInfo.GetCustomAttribute<MauEventAttribute>();
                     HandledEvents.Add(attr.EventName, eventInfo);
                 }
             }
@@ -211,7 +212,7 @@ namespace MAU.Core
             var eventDelegate = (MulticastDelegate)fi.GetValue(this);
 
             // There any subscriber .?
-            if (eventDelegate == null)
+            if (eventDelegate is null)
                 return;
 
             // Invoke all subscribers
@@ -271,7 +272,8 @@ namespace MAU.Core
             {
                 {"propName", propName},
                 {"propType", (int)mauProperty.PropAttr.PropType},
-                {"propStatus", (int)mauProperty.PropAttr.PropStatus} // Needed by `SetPropHandler`
+                {"propStatus", (int)mauProperty.PropAttr.PropStatus}, // Needed by `SetPropHandler`
+                {"propForce", mauProperty.PropAttr.ForceSet} // Needed by `SetPropHandler`
 			};
 
             MyAngularUi.SendRequestAsync(MauId, MyAngularUi.RequestType.GetPropValue, data);
@@ -285,7 +287,7 @@ namespace MAU.Core
             object propValue = MyAngularUi.ParseMauDataFromFrontEnd(propValType, propValueJson);
 
             // Make valid enum value
-            MauEnumMember.GetValidEnumValue(propValType, ref propValue);
+            MauEnumMemberAttribute.GetValidEnumValue(propValType, ref propValue);
 
             // Deadlock will not happen because of 'HandledProps[propName].HandleOnSet'
             lock (HandledProps[propName])
@@ -301,7 +303,7 @@ namespace MAU.Core
             object methodRet = MyAngularUi.ParseMauDataFromFrontEnd(methodRetType, methodRetValueJson);
 
             // Make valid enum value
-            MauEnumMember.GetValidEnumValue(methodRetType, ref methodRet);
+            MauEnumMemberAttribute.GetValidEnumValue(methodRetType, ref methodRet);
 
             MyAngularUi.OrdersResponse.TryAdd(callMethodRequestId, methodRet);
         }

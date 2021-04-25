@@ -32,6 +32,11 @@ namespace MAU.Attributes
         public MauPropertyStatus PropStatus { get; set; }
         public bool Important { get; set; }
 
+        /// <summary>
+        /// Set property value even not exists
+        /// </summary>
+        public bool ForceSet { get; set; }
+
         public MauProperty(string propertyName, MauPropertyType propType)
         {
             PropertyName = propertyName;
@@ -60,11 +65,11 @@ namespace MAU.Attributes
             }
             else if (propType.IsEnum)
             {
-                if (!MauEnumMember.HasNotSetValue(propValue.GetType()))
+                if (!MauEnumMemberAttribute.HasNotSetValue(propValue.GetType()))
                     throw new Exception($"NotSet must to be in any MauProperty value is 'Enum', {propValue.GetType().FullName}");
 
-                if (MauEnumMember.HasAttribute((Enum)propValue))
-                    propValue = MauEnumMember.GetValue((Enum)propValue);
+                if (MauEnumMemberAttribute.HasAttribute((Enum)propValue))
+                    propValue = MauEnumMemberAttribute.GetValue((Enum)propValue);
 
                 // If it's NotSet just ignore so the angular value will be set,
                 // Angular value will be in .Net side, so the value will be correct here.
@@ -96,6 +101,7 @@ namespace MAU.Attributes
             {
                 {"propType", (int)mauPropHolder.PropAttr.PropType},
                 {"propStatus", (int)mauPropHolder.PropAttr.PropStatus},
+                {"propForce", mauPropHolder.PropAttr.ForceSet},
                 {"propName", mauPropName},
                 {"propVal", MyAngularUi.ParseMauDataToFrontEnd(propType, propValue)}
             };

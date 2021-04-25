@@ -7,13 +7,13 @@ using System.Threading.Tasks;
 namespace MAU.Attributes
 {
     [AttributeUsage(AttributeTargets.Event)]
-    public sealed class MauEvent : Attribute
+    public sealed class MauEventAttribute : Attribute
     {
         public string EventName { get; }
 
-        public static bool HasAttribute(EventInfo eventInfo) => Attribute.IsDefined(eventInfo, typeof(MauEvent));
+        public static bool HasAttribute(EventInfo eventInfo) => Attribute.IsDefined(eventInfo, typeof(MauEventAttribute));
 
-        public MauEvent(string eventName)
+        public MauEventAttribute(string eventName)
         {
             EventName = eventName;
         }

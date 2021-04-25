@@ -5,7 +5,7 @@ using System.Reflection;
 namespace MAU.Attributes
 {
     [AttributeUsage(AttributeTargets.Field)]
-    public sealed class MauEnumMember : Attribute
+    public sealed class MauEnumMemberAttribute : Attribute
     {
         public enum EnumParser
         {
@@ -17,24 +17,24 @@ namespace MAU.Attributes
         public long ValueAsNum { get; }
         public EnumParser Parser { get; }
 
-        public MauEnumMember(string value)
+        public MauEnumMemberAttribute(string value)
         {
             ValueAsStr = value;
             Parser = EnumParser.String;
         }
-        public MauEnumMember(long value)
+        public MauEnumMemberAttribute(long value)
         {
             ValueAsNum = value;
             Parser = EnumParser.Number;
         }
 
-        public static bool HasAttribute(PropertyInfo pi) => Attribute.IsDefined(pi, typeof(MauEnumMember));
-        public static bool HasAttribute(FieldInfo fi) => Attribute.IsDefined(fi, typeof(MauEnumMember));
+        public static bool HasAttribute(PropertyInfo pi) => Attribute.IsDefined(pi, typeof(MauEnumMemberAttribute));
+        public static bool HasAttribute(FieldInfo fi) => Attribute.IsDefined(fi, typeof(MauEnumMemberAttribute));
         public static bool HasAttribute(Enum enumValue)
         {
             Type enumType = enumValue.GetType();
             string name = Enum.GetName(enumType, enumValue);
-            return Attribute.IsDefined(enumType.GetField(name), typeof(MauEnumMember));
+            return Attribute.IsDefined(enumType.GetField(name), typeof(MauEnumMemberAttribute));
         }
 
         public static bool HasNotSetValue(Type enumType)
@@ -48,15 +48,15 @@ namespace MAU.Attributes
             if (!valueType.IsEnum)
                 return false;
 
-            if (!MauEnumMember.HasNotSetValue(valueType))
+            if (!MauEnumMemberAttribute.HasNotSetValue(valueType))
                 throw new Exception($"'MauEnumMember.NotSet' must to be in any 'Enum' used as 'MauProperty' type or return of 'MauMethod'. {valueType.FullName}");
 
             object o = originalValue;
             string enumValName = valueType.GetFields()
-                .Where(MauEnumMember.HasAttribute)
+                .Where(MauEnumMemberAttribute.HasAttribute)
                 .FirstOrDefault(f =>
                 {
-                    MauEnumMember f1 = f.GetCustomAttributes<MauEnumMember>(false)
+                    var f1 = f.GetCustomAttributes<MauEnumMemberAttribute>(false)
                         .FirstOrDefault(memEnum => memEnum.IsEqual(o));
 
                     return f1?.IsEqual(o) == true;
@@ -89,13 +89,13 @@ namespace MAU.Attributes
         {
             Type enumType = enumValue.GetType();
             string name = Enum.GetName(enumType, enumValue);
-            MauEnumMember instance = enumType.GetField(name).GetCustomAttributes<MauEnumMember>(false).FirstOrDefault();
+            var instance = enumType.GetField(name).GetCustomAttributes<MauEnumMemberAttribute>(false).FirstOrDefault();
             if (instance == null)
                 return null;
 
             return instance.Parser == EnumParser.Number
                 ? instance.ValueAsNum
-                : (object)instance.ValueAsStr;
+                : instance.ValueAsStr;
         }
     }
 }

@@ -10,6 +10,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -259,8 +260,8 @@ namespace MAU
 
             Port = webSocketPort;
             WebSocket = new MauWebSocket(Port);
-            WebSocket.OnOpen += () => Task.Run(OnOpen);
-            WebSocket.OnClose += () => Task.Run(OnClose);
+            WebSocket.OnOpen += () => Task.Run(OpenCallback);
+            WebSocket.OnClose += () => Task.Run(CloseCallback);
             WebSocket.OnMessage += (message) => Task.Run(() => OnMessage(message));
             WebSocket.Start();
 
@@ -289,11 +290,12 @@ namespace MAU
                     MauVariable.SendMauVariable(mauComponent, varName);
 
                 // Props
-                foreach ((string propName, _) in mauComponent.GetValidToSetHandledProps())
+                Dictionary<string, MauPropertyHolder> props = mauComponent.GetValidToSetHandledProps();
+                foreach ((string propName, _) in props)
                     MauProperty.SendMauProp(mauComponent, propName);
 
                 // Events
-                MauEvent.SendMauEventsAsync(mauComponent);
+                MauEventAttribute.SendMauEventsAsync(mauComponent);
             }
 
             if (_mauComponents.Count > 0)
@@ -457,13 +459,13 @@ namespace MAU
             }
         }
 
-        internal static void OnOpen()
+        internal static void OpenCallback()
         {
             IsConnected = true;
             ReSyncMauComponents();
         }
 
-        internal static void OnClose()
+        internal static void CloseCallback()
         {
             IsConnected = false;
         }
@@ -513,7 +515,7 @@ namespace MAU
         private static void BootStrapMau()
         {
             // Create instance of all 'MauParentComponent'
-            foreach (Type item in AppAssembly.GetTypes().Where(t => !t.IsAbstract && MauContainer.HasAttribute(t)))
+            foreach (Type item in AppAssembly.GetTypes().Where(t => !t.IsAbstract && MauContainerAttribute.HasAttribute(t)))
             {
                 if (!item.IsSealed)
                     throw new Exception($"MauContainer must be 'Sealed', '{item.FullName}'.");
@@ -531,7 +533,7 @@ namespace MAU
         public static T GetMauContainer<T>() where T : class
         {
             Type t = typeof(T);
-            if (!MauContainer.HasAttribute(t))
+            if (!MauContainerAttribute.HasAttribute(t))
                 throw new Exception($"'{t.FullName}' not a MauContainer.");
 
             string compName = typeof(T).FullName;

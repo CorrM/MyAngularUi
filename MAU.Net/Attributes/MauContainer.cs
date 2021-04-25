@@ -3,8 +3,8 @@
 namespace MAU.Attributes
 {
     [AttributeUsage(AttributeTargets.Class)]
-    public sealed class MauContainer : Attribute
+    public sealed class MauContainerAttribute : Attribute
     {
-        public static bool HasAttribute(Type type) => Attribute.IsDefined(type, typeof(MauContainer));
+        public static bool HasAttribute(Type type) => Attribute.IsDefined(type, typeof(MauContainerAttribute));
     }
 }
