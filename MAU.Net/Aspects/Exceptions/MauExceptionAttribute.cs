@@ -1,14 +1,13 @@
 ﻿using PostSharp.Aspects;
 using PostSharp.Serialization;
 
-namespace MAU.Aspects.Exceptions
+namespace MAU.Aspects.Exceptions;
+
+[PSerializable]
+internal class MauExceptionAttribute : OnExceptionAspect
 {
-    [PSerializable]
-    internal class MauExceptionAttribute : OnExceptionAspect
+    public override void OnException(MethodExecutionArgs args)
     {
-        public override void OnException(MethodExecutionArgs args)
-        {
-            MyAngularUi.RaiseException(args.Exception);
-        }
+        MyAngularUi.RaiseException(args.Exception);
     }
 }

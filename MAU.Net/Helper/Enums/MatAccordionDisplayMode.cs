@@ -1,16 +1,15 @@
 ﻿using MAU.Attributes;
 
-namespace MAU.Helper.Enums
+namespace MAU.Helper.Enums;
+
+public enum MatAccordionDisplayMode
 {
-    public enum MatAccordionDisplayMode
-    {
-        [MauEnumMember("")]
-        NotSet,
+    [MauEnumMember("")]
+    NotSet,
 
-        [MauEnumMember("default")]
-        Default,
+    [MauEnumMember("default")]
+    Default,
 
-        [MauEnumMember("flat")]
-        Flat
-    }
+    [MauEnumMember("flat")]
+    Flat
 }

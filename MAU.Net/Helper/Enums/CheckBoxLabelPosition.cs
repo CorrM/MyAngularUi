@@ -1,16 +1,15 @@
 ﻿using MAU.Attributes;
 
-namespace MAU.Helper.Enums
+namespace MAU.Helper.Enums;
+
+public enum CheckBoxLabelPosition
 {
-    public enum CheckBoxLabelPosition
-    {
-        [MauEnumMember("")]
-        NotSet,
+    [MauEnumMember("")]
+    NotSet,
 
-        [MauEnumMember("before")]
-        Before,
+    [MauEnumMember("before")]
+    Before,
 
-        [MauEnumMember("after")]
-        After
-    }
+    [MauEnumMember("after")]
+    After
 }

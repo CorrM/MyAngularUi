@@ -4,36 +4,35 @@ using MAU.Helper.Enums;
 using static MAU.Attributes.MauMethod;
 using static MAU.Attributes.MauProperty;
 
-namespace MAU.ReadyComponents.Angular.Material
+namespace MAU.ReadyComponents.Angular.Material;
+
+public class MauMatButton : MauComponent
 {
-    public class MauMatButton : MauComponent
-    {
-        #region [ Mau Properties ]
+    #region [ Mau Properties ]
 
-        [MauProperty("color", MauPropertyType.ComponentProperty)]
-        public ThemePalette Color { get; set; }
+    [MauProperty("color", MauPropertyType.ComponentProperty)]
+    public ThemePalette Color { get; set; }
 
-        [MauProperty("disableRipple", MauPropertyType.ComponentProperty)]
-        public bool DisableRipple { get; set; }
+    [MauProperty("disableRipple", MauPropertyType.ComponentProperty)]
+    public bool DisableRipple { get; set; }
 
-        [MauProperty("disabled", MauPropertyType.ComponentProperty)]
-        public bool Disabled { get; set; }
+    [MauProperty("disabled", MauPropertyType.ComponentProperty)]
+    public bool Disabled { get; set; }
 
-        [MauProperty("isIconButton", MauPropertyType.ComponentProperty)]
-        public bool IsIconButton { get; set; }
+    [MauProperty("isIconButton", MauPropertyType.ComponentProperty)]
+    public bool IsIconButton { get; set; }
 
-        [MauProperty("isRoundButton", MauPropertyType.ComponentProperty)]
-        public bool IsRoundButton { get; set; }
+    [MauProperty("isRoundButton", MauPropertyType.ComponentProperty)]
+    public bool IsRoundButton { get; set; }
 
-        #endregion
+    #endregion
 
-        #region [ Mau Methods ]
+    #region [ Mau Methods ]
 
-        [MauMethod("focus", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-        public void Focus() { }
+    [MauMethod("focus", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
+    public void Focus() { }
 
-        #endregion
+    #endregion
 
-        public MauMatButton(string mauId) : base(mauId) { }
-    }
+    public MauMatButton(string mauId) : base(mauId) { }
 }

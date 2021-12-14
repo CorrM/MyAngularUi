@@ -1,16 +1,15 @@
 ﻿using MAU.Attributes;
 
-namespace MAU.Helper.Enums
+namespace MAU.Helper.Enums;
+
+public enum OneOffEnum
 {
-    public enum OneOffEnum
-    {
-        [MauEnumMember("")]
-        NotSet,
+    [MauEnumMember("")]
+    NotSet,
 
-        [MauEnumMember("on")]
-        On,
+    [MauEnumMember("on")]
+    On,
 
-        [MauEnumMember("off")]
-        Off
-    }
+    [MauEnumMember("off")]
+    Off
 }

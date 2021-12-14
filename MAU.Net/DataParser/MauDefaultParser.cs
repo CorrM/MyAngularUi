@@ -1,73 +1,72 @@
-﻿using MAU.Helper;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Linq;
+using MAU.Helper;
+using Newtonsoft.Json.Linq;
 
-namespace MAU.DataParser
+namespace MAU.DataParser;
+
+public class MauDefaultParser : MauDataParser<object>
 {
-    public class MauDefaultParser : MauDataParser<object>
+    private static object GetJsonArray(JToken array)
     {
-        private static object GetJsonArray(JToken array)
+        JTokenType? arrayType = array.Children().FirstOrDefault()?.Type;
+
+        if (arrayType == null)
+            return array.Values<string>().ToList();
+
+        object retVar = arrayType switch
         {
-            JTokenType? arrayType = array.Children().FirstOrDefault()?.Type;
+            JTokenType.Object => array.Values<JObject>().ToList(),
+            JTokenType.Integer => array.Values<int>().ToList(),
+            JTokenType.Float => array.Values<float>().ToList(),
+            JTokenType.String => array.Values<string>().ToList(),
+            JTokenType.Boolean => array.Values<bool>().ToList(),
+            _ => array.Values<string>().ToList()
+        };
 
-            if (arrayType == null)
-                return array.Values<string>().ToList();
+        return retVar;
+    }
 
-            object retVar = arrayType switch
-            {
-                JTokenType.Object => array.Values<JObject>().ToList(),
-                JTokenType.Integer => array.Values<int>().ToList(),
-                JTokenType.Float => array.Values<float>().ToList(),
-                JTokenType.String => array.Values<string>().ToList(),
-                JTokenType.Boolean => array.Values<bool>().ToList(),
-                _ => array.Values<string>().ToList()
-            };
+    public override JToken ParseToFrontEnd(Type varType, object varObj)
+    {
+        if (varObj == null)
+            return null;
 
-            return retVar;
-        }
+        // ToDo: Try to get data in IEnumerable and pass it to parser
+        if (Utils.IsIEnumerable(varType) || varType.IsArray)
+            return JArray.FromObject(varObj);
 
-        public override JToken ParseToFrontEnd(Type varType, object varObj)
+        /*
+        try
         {
-            if (varObj == null)
-                return null;
-
-            // ToDo: Try to get data in IEnumerable and pass it to parser
-            if (Utils.IsIEnumerable(varType) || varType.IsArray)
-                return JArray.FromObject(varObj);
-
-            /*
-			try
-			{
-				if (varType != typeof(string) && varType != typeof(bool) && varType != typeof(int) && varType != typeof(long))
-					return JObject.FromObject(varObj);
-			}
-			catch
-			{
-				// ignored
-			}
-			*/
-
-            return JToken.FromObject(varObj);
+            if (varType != typeof(string) && varType != typeof(bool) && varType != typeof(int) && varType != typeof(long))
+                return JObject.FromObject(varObj);
         }
-        public override object ParseFromFrontEnd(JToken varObj)
+        catch
         {
-            if (varObj == null)
-                return null;
-
-            object retVar = varObj.Type switch
-            {
-                JTokenType.Null => null,
-                JTokenType.Object => varObj.ToString(),
-                JTokenType.Array => GetJsonArray(varObj),
-                JTokenType.Integer => varObj.Value<int>(),
-                JTokenType.Float => varObj.Value<float>(),
-                JTokenType.String => varObj.Value<string>(),
-                JTokenType.Boolean => varObj.Value<bool>(),
-                _ => throw new ArgumentOutOfRangeException()
-            };
-
-            return retVar;
+            // ignored
         }
+        */
+
+        return JToken.FromObject(varObj);
+    }
+    public override object ParseFromFrontEnd(JToken varObj)
+    {
+        if (varObj == null)
+            return null;
+
+        object retVar = varObj.Type switch
+        {
+            JTokenType.Null => null,
+            JTokenType.Object => varObj.ToString(),
+            JTokenType.Array => GetJsonArray(varObj),
+            JTokenType.Integer => varObj.Value<int>(),
+            JTokenType.Float => varObj.Value<float>(),
+            JTokenType.String => varObj.Value<string>(),
+            JTokenType.Boolean => varObj.Value<bool>(),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        return retVar;
     }
 }

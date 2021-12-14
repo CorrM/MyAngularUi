@@ -1,13 +1,12 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
+using Newtonsoft.Json.Linq;
 
-namespace MAU.DataParser
+namespace MAU.DataParser;
+
+public abstract class MauDataParser<TVar>
 {
-    public abstract class MauDataParser<TVar>
-    {
-        public Type TargetType { get; } = typeof(TVar);
+    public Type TargetType { get; } = typeof(TVar);
 
-        public abstract JToken ParseToFrontEnd(Type varType, TVar varObj);
-        public abstract TVar ParseFromFrontEnd(JToken varObj);
-    }
+    public abstract JToken ParseToFrontEnd(Type varType, TVar varObj);
+    public abstract TVar ParseFromFrontEnd(JToken varObj);
 }

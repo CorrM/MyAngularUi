@@ -1,10 +1,9 @@
-﻿using MAU.Core;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using MAU.Core;
 
-namespace MAU.Events
+namespace MAU.Events;
+
+public static class MauEventHandlers
 {
-    public static class MauEventHandlers
-    {
-        public delegate ValueTask MauEventHandlerAsync(MauComponent component, MauEventInfo eventInfo);
-    }
+    public delegate ValueTask MauEventHandlerAsync(MauComponent component, MauEventInfo eventInfo);
 }

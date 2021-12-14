@@ -2,28 +2,19 @@
 using MAU.Core;
 using MAU.Helper.Types;
 
-namespace MAU.ReadyComponents
+namespace MAU.ReadyComponents;
+
+public class MauTable : MauComponent
 {
-    public class MauTable : MauComponent
+    #region [ Mau Variable ]
+
+    [MauVariable("Content")]
+    public MauDataTable Content { get; }
+
+    #endregion
+
+    public MauTable(string mauId) : base(mauId)
     {
-        #region [ Mau Properties ]
-
-        #endregion
-
-        #region [ Mau Variable ]
-
-        [MauVariable("Content")]
-        public MauDataTable Content { get; }
-
-        #endregion
-
-        #region [ Mau Methods ]
-
-        #endregion
-
-        public MauTable(string mauId) : base(mauId)
-        {
-            Content = new MauDataTable(this, nameof(Content));
-        }
+        Content = new MauDataTable(this, nameof(Content));
     }
 }

@@ -2,28 +2,27 @@
 using System.Reflection;
 using MAU.Attributes;
 
-namespace MAU.Helper.Holders
+namespace MAU.Helper.Holders;
+
+public class MauPropertyHolder
 {
-    public class MauPropertyHolder
+    public PropertyInfo Holder { get; }
+    public MauProperty PropAttr { get; }
+    public MethodInfo SetCallBackMethod { get; set; }
+    public bool HandleOnSet { get; private set; }
+    public bool Touched { get; set; }
+
+    public MauPropertyHolder(PropertyInfo holder, bool handleOnSet)
     {
-        public PropertyInfo Holder { get; }
-        public MauProperty PropAttr { get; }
-        public MethodInfo SetCallBackMethod { get; set; }
-        public bool HandleOnSet { get; private set; }
-        public bool Touched { get; set; }
+        Holder = holder;
+        HandleOnSet = handleOnSet;
+        PropAttr = Holder.GetCustomAttribute<MauProperty>(false);
+    }
 
-        public MauPropertyHolder(PropertyInfo holder, bool handleOnSet)
-        {
-            Holder = holder;
-            HandleOnSet = handleOnSet;
-            PropAttr = Holder.GetCustomAttribute<MauProperty>(false);
-        }
-
-        public void DoWithoutHandling(Action<MauPropertyHolder> body)
-        {
-            HandleOnSet = false;
-            body?.Invoke(this);
-            HandleOnSet = true;
-        }
+    public void DoWithoutHandling(Action<MauPropertyHolder> body)
+    {
+        HandleOnSet = false;
+        body?.Invoke(this);
+        HandleOnSet = true;
     }
 }

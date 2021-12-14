@@ -1,16 +1,15 @@
 ﻿using MAU.Attributes;
 
-namespace MAU.Helper.Enums
+namespace MAU.Helper.Enums;
+
+public enum MatTabHeaderPosition
 {
-    public enum MatTabHeaderPosition
-    {
-        [MauEnumMember("")]
-        NotSet,
+    [MauEnumMember("")]
+    NotSet,
 
-        [MauEnumMember("above")]
-        Above,
+    [MauEnumMember("above")]
+    Above,
 
-        [MauEnumMember("below")]
-        Below
-    }
+    [MauEnumMember("below")]
+    Below
 }

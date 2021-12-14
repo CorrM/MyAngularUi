@@ -1,27 +1,25 @@
 ﻿using MAU.Attributes;
 using MAU.Core;
-using MAU.Helper.Enums;
 using static MAU.Attributes.MauMethod;
 using static MAU.Attributes.MauProperty;
 
-namespace MAU.ReadyComponents
+namespace MAU.ReadyComponents;
+
+public class MauButton : MauComponent
 {
-    public class MauButton : MauComponent
-    {
-        #region [ Mau Properties ]
+    #region [ Mau Properties ]
 
-        [MauProperty("disabled", MauPropertyType.NativeProperty)]
-        public bool Disabled { get; set; }
+    [MauProperty("disabled", MauPropertyType.NativeProperty)]
+    public bool Disabled { get; set; }
 
-        #endregion
+    #endregion
 
-        #region [ Mau Methods ]
+    #region [ Mau Methods ]
 
-        [MauMethod("focus", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-        public void Focus() { }
+    [MauMethod("focus", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
+    public void Focus() { }
 
-        #endregion
+    #endregion
 
-        public MauButton(string mauId) : base(mauId) { }
-    }
+    public MauButton(string mauId) : base(mauId) { }
 }

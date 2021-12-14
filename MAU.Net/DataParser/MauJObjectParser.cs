@@ -1,28 +1,27 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
+using Newtonsoft.Json.Linq;
 
-namespace MAU.DataParser
+namespace MAU.DataParser;
+
+public class MauJObjectParser : MauDataParser<JObject>
 {
-    public class MauJObjectParser : MauDataParser<JObject>
+    public override JToken ParseToFrontEnd(Type varType, JObject varObj)
     {
-        public override JToken ParseToFrontEnd(Type varType, JObject varObj)
+        return varObj;
+    }
+
+    public override JObject ParseFromFrontEnd(JToken varObj)
+    {
+        if (!varObj.HasValues)
+            return new JObject();
+
+        try
         {
-            return varObj;
+            return JObject.Parse(varObj.ToString());
         }
-
-        public override JObject ParseFromFrontEnd(JToken varObj)
+        catch
         {
-            if (!varObj.HasValues)
-                return new JObject();
-
-            try
-            {
-                return JObject.Parse(varObj.ToString());
-            }
-            catch
-            {
-                return new JObject();
-            }
+            return new JObject();
         }
     }
 }
