@@ -263,8 +263,7 @@ public static class MyAngularUi
         WebSocket.OnMessage += (message) => Task.Run(() => OnMessage(message));
         WebSocket.Start();
 
-        while (true)
-            await Task.Delay(8).ConfigureAwait(false);
+        await Task.Delay(-1).ConfigureAwait(false);
     }
 
     /// <summary>
