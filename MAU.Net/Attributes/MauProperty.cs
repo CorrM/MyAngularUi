@@ -44,7 +44,7 @@ public sealed class MauProperty : LocationInterceptionAspect
         PropType = propType;
     }
 
-    public static bool HasAttribute(PropertyInfo propertyInfo) => Attribute.IsDefined(propertyInfo, typeof(MauProperty));
+    public static bool HasAttribute(PropertyInfo propertyInfo) => IsDefined(propertyInfo, typeof(MauProperty));
 
     internal static void SendMauProp(MauComponent holder, string mauPropName)
     {
@@ -85,7 +85,7 @@ public sealed class MauProperty : LocationInterceptionAspect
                     break;
             }
         }
-        else if (propValue == null && propType == typeof(string))
+        else if (propValue is null && propType == typeof(string))
         {
             // null not same as empty string
             bypass = true;
@@ -107,7 +107,7 @@ public sealed class MauProperty : LocationInterceptionAspect
             {"propVal", MyAngularUi.ParseMauDataToFrontEnd(propType, propValue)}
         };
 
-        MyAngularUi.SendRequestAsync(holder.MauId, MyAngularUi.RequestType.SetPropValue, data);
+        MyAngularUi.SendRequestAsync(holder.MauId, RequestType.SetPropValue, data);
     }
 
     public override void OnSetValue(LocationInterceptionArgs args)
@@ -124,7 +124,7 @@ public sealed class MauProperty : LocationInterceptionAspect
 
         // Todo: make that 'callBackMethod' an global var 
         mauPropHolder.SetCallBackMethod ??= holder.GetType().GetMethod($"{args.LocationName}OnSet", BindingFlags.NonPublic | BindingFlags.Static);
-        if (mauPropHolder.SetCallBackMethod != null && args.Value?.Equals(curValue) == false)
+        if (mauPropHolder.SetCallBackMethod is not null && args.Value?.Equals(curValue) == false)
             mauPropHolder.SetCallBackMethod.Invoke(null, new object[] { holder });
 
         // HandleOnSet .?

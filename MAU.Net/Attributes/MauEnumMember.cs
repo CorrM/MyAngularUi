@@ -28,13 +28,13 @@ public sealed class MauEnumMemberAttribute : Attribute
         Parser = EnumParser.Number;
     }
 
-    public static bool HasAttribute(PropertyInfo pi) => Attribute.IsDefined(pi, typeof(MauEnumMemberAttribute));
-    public static bool HasAttribute(FieldInfo fi) => Attribute.IsDefined(fi, typeof(MauEnumMemberAttribute));
+    public static bool HasAttribute(PropertyInfo pi) => IsDefined(pi, typeof(MauEnumMemberAttribute));
+    public static bool HasAttribute(FieldInfo fi) => IsDefined(fi, typeof(MauEnumMemberAttribute));
     public static bool HasAttribute(Enum enumValue)
     {
         Type enumType = enumValue.GetType();
         string name = Enum.GetName(enumType, enumValue);
-        return Attribute.IsDefined(enumType.GetField(name), typeof(MauEnumMemberAttribute));
+        return IsDefined(enumType.GetField(name), typeof(MauEnumMemberAttribute));
     }
 
     public static bool HasNotSetValue(Type enumType)
@@ -48,12 +48,12 @@ public sealed class MauEnumMemberAttribute : Attribute
         if (!valueType.IsEnum)
             return false;
 
-        if (!MauEnumMemberAttribute.HasNotSetValue(valueType))
+        if (!HasNotSetValue(valueType))
             throw new Exception($"'MauEnumMember.NotSet' must to be in any 'Enum' used as 'MauProperty' type or return of 'MauMethod'. {valueType.FullName}");
 
         object o = originalValue;
         string enumValName = valueType.GetFields()
-            .Where(MauEnumMemberAttribute.HasAttribute)
+            .Where(HasAttribute)
             .FirstOrDefault(f =>
             {
                 var f1 = f.GetCustomAttributes<MauEnumMemberAttribute>(false)
@@ -90,7 +90,7 @@ public sealed class MauEnumMemberAttribute : Attribute
         Type enumType = enumValue.GetType();
         string name = Enum.GetName(enumType, enumValue);
         var instance = enumType.GetField(name).GetCustomAttributes<MauEnumMemberAttribute>(false).FirstOrDefault();
-        if (instance == null)
+        if (instance is null)
             return null;
 
         return instance.Parser == EnumParser.Number

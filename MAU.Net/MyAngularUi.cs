@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -10,6 +9,7 @@ using MAU.Core;
 using MAU.DataParser;
 using MAU.Helper;
 using MAU.Helper.Holders;
+using MAU.Models;
 using MAU.WebSocket;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -18,167 +18,114 @@ using Newtonsoft.Json.Linq;
 namespace MAU;
 
 /// <summary>
+/// Type of request for MyAngularUi
+/// </summary>
+internal enum RequestType
+{
+    /// <summary>
+    /// I just love to set none in my enums xD
+    /// </summary>
+    None = 0,
+
+    /// <summary>
+    /// Tell angular what events handled in dotnet
+    /// </summary>
+    SetEvents = 1,
+
+    /// <summary>
+    /// Angular fire event
+    /// </summary>
+    EventCallback = 2,
+
+    /// <summary>
+    /// Request angular to send property value
+    /// </summary>
+    GetPropValue = 3,
+
+    /// <summary>
+    /// Set property value in angular side
+    /// </summary>
+    SetPropValue = 4,
+
+    /// <summary>
+    /// Execute TypeScript code in front-end side
+    /// </summary>
+    ExecuteCode = 5,
+
+    /// <summary>
+    /// Set variable value in front-end side
+    /// </summary>
+    SetVarValue = 6,
+
+    /// <summary>
+    /// Call method on front-end side
+    /// </summary>
+    CallMethod = 7,
+
+    /// <summary>
+    /// Get return of <see cref="CallMethod"/> from front-end side
+    /// </summary>
+    ReceiveMethod = 8,
+
+    /// <summary>
+    /// Set style on front-end side
+    /// </summary>
+    SetStyle = 9,
+
+    /// <summary>
+    /// Remove style on front-end side
+    /// </summary>
+    RemoveStyle = 10,
+
+    /// <summary>
+    /// Set/Add class on front-end side
+    /// </summary>
+    AddClass = 11,
+
+    /// <summary>
+    /// Remove class on front-end side
+    /// </summary>
+    RemoveClass = 12,
+
+    /// <summary>
+    /// Tell angular side all components are ready [Props, Vars and etc]
+    /// </summary>
+    DotNetReady = 13,
+
+    /// <summary>
+    /// Get/Send data from/to angular
+    /// </summary>
+    CustomData = 14,
+
+    /// <summary>
+    /// Call method on .Net side from angular side
+    /// </summary>
+    CallNetMethod = 15
+}
+
+/// <summary>
 /// MyAngularUi main class
 /// </summary>
 public static class MyAngularUi
 {
-    #region [ Types ]
-
-    /// <summary>
-    /// Struct contains request information
-    /// </summary>
-    public readonly struct RequestState
-    {
-        /// <summary>
-        /// Request Id that's used to communicate with front-end side
-        /// </summary>
-        public int RequestId { get; }
-
-        /// <summary>
-        /// Request send successfully
-        /// </summary>
-        public bool SuccessSent { get; }
-
-        public RequestState(int requestId, bool successSent)
-        {
-            RequestId = requestId;
-            SuccessSent = successSent;
-        }
-    }
-
-    /// <summary>
-    /// Struct contains response information
-    /// </summary>
-    private struct ResponseInfo
-    {
-        public int RequestId;
-        public string MauId;
-        public RequestType RequestType;
-        public JObject Data;
-    }
-
-    /// <summary>
-    /// Type of request for MyAngularUi
-    /// </summary>
-    internal enum RequestType
-    {
-        /// <summary>
-        /// I just love to set none in my enums xD
-        /// </summary>
-        None = 0,
-
-        /// <summary>
-        /// Tell angular what events handled in dotnet
-        /// </summary>
-        SetEvents = 1,
-
-        /// <summary>
-        /// Angular fire event
-        /// </summary>
-        EventCallback = 2,
-
-        /// <summary>
-        /// Request angular to send property value
-        /// </summary>
-        GetPropValue = 3,
-
-        /// <summary>
-        /// Set property value in angular side
-        /// </summary>
-        SetPropValue = 4,
-
-        /// <summary>
-        /// Execute TypeScript code in front-end side
-        /// </summary>
-        ExecuteCode = 5,
-
-        /// <summary>
-        /// Set variable value in front-end side
-        /// </summary>
-        SetVarValue = 6,
-
-        /// <summary>
-        /// Call method on front-end side
-        /// </summary>
-        CallMethod = 7,
-
-        /// <summary>
-        /// Get return of <see cref="CallMethod"/> from front-end side
-        /// </summary>
-        ReceiveMethod = 8,
-
-        /// <summary>
-        /// Set style on front-end side
-        /// </summary>
-        SetStyle = 9,
-
-        /// <summary>
-        /// Remove style on front-end side
-        /// </summary>
-        RemoveStyle = 10,
-
-        /// <summary>
-        /// Set/Add class on front-end side
-        /// </summary>
-        AddClass = 11,
-
-        /// <summary>
-        /// Remove class on front-end side
-        /// </summary>
-        RemoveClass = 12,
-
-        /// <summary>
-        /// Tell angular side all components are ready [Props, Vars and etc]
-        /// </summary>
-        DotNetReady = 13,
-
-        /// <summary>
-        /// Get/Send data from/to angular
-        /// </summary>
-        CustomData = 14,
-
-        /// <summary>
-        /// Call method on .Net side from angular side
-        /// </summary>
-        CallNetMethod = 15
-    }
-
-    #endregion
-
-    #region [ Private Fields ]
-
     private static ConcurrentDictionary<string, MauComponent> _mauComponents;
     private static Dictionary<Type, dynamic> _varParsers;
 
-    #endregion
-
-    #region [ Internal Props ]
-
     internal static Assembly AppAssembly { get; private set; }
     internal static ConcurrentDictionary<int, object> OrdersResponse { get; private set; }
-    internal static Dictionary<string, object> MauContainers { get; private set; }
-
-    #endregion
-
-    #region [ Public Events ]
+    internal static Dictionary<Type, object> MauContainers { get; private set; }
 
     public delegate ValueTask CustomData(string id, JObject data);
-
     public static event CustomData OnCustomData;
     public static event Action<Exception> OnUnhandledException;
-
-    #endregion
-
-    #region [ Public Props ]
 
     private static MauWebSocket WebSocket { get; set; }
     public static int Port { get; private set; }
     public static bool IsConnected { get; private set; }
     public static bool IsInit { get; private set; }
+    public static bool IsDependencyInit { get; private set; }
 
-    #endregion
-
-    /*private static Task<RequestState> ExecuteTsCodeAsync(string mauComponentId, string code)
+    /*private static Task<RequestStateModel> ExecuteTsCodeAsync(string mauComponentId, string code)
     {
         var data = new JObject()
         {
@@ -187,8 +134,6 @@ public static class MyAngularUi
 
         return SendRequestAsync(mauComponentId, RequestType.ExecuteCode, data);
     }*/
-
-    #region [ Methods ]
 
     #region [ Parser ]
 
@@ -228,23 +173,29 @@ public static class MyAngularUi
 
     #region [ Mau ]
 
-    /// <summary>
-    /// Init MyAngularUi
-    /// </summary>
-    /// <param name="assembly"></param>
-    public static void Init(Assembly assembly)
+    internal static void Init(Assembly marker, bool isDependencyInit)
     {
         if (IsInit)
             return;
         IsInit = true;
+        IsDependencyInit = isDependencyInit;
 
-        AppAssembly = assembly;
+        AppAssembly = marker;
         _mauComponents = new ConcurrentDictionary<string, MauComponent>();
         OrdersResponse = new ConcurrentDictionary<int, object>();
-        MauContainers = new Dictionary<string, object>();
+        MauContainers = new Dictionary<Type, object>();
 
         InitParsers();
-        BootStrapMau();
+        InitContainers(!isDependencyInit);
+    }
+
+    /// <summary>
+    /// Init MyAngularUi
+    /// </summary>
+    /// <param name="marker"></param>
+    public static void Init(Assembly marker)
+    {
+        Init(marker, false);
     }
 
     /// <summary>
@@ -295,7 +246,7 @@ public static class MyAngularUi
             MauEventAttribute.SendMauEventsAsync(mauComponent);
         }
 
-        if (_mauComponents.Count > 0)
+        if (!_mauComponents.IsEmpty)
             SendRequest(string.Empty, RequestType.DotNetReady);
     }
 
@@ -331,7 +282,7 @@ public static class MyAngularUi
     /// <param name="requestType">Type of request</param>
     /// <param name="data">Request data</param>
     /// <returns>Information about request state</returns>
-    internal static async Task<RequestState> SendResponseAsync(int requestId, string mauComponentId, RequestType requestType, JObject data)
+    internal static async Task<RequestStateModel> SendResponseAsync(int requestId, string mauComponentId, RequestType requestType, JObject data)
     {
         var dSend = new JObject
         {
@@ -344,7 +295,11 @@ public static class MyAngularUi
         string dataToSend = dSend.ToString(Formatting.None);
         bool sendState = await SendAsync(dataToSend).ConfigureAwait(false);
 
-        return new RequestState(requestId, sendState);
+        return new RequestStateModel()
+        {
+            RequestId = requestId,
+            SuccessSent = sendState
+        };
     }
 
     /// <summary>
@@ -353,7 +308,7 @@ public static class MyAngularUi
     /// <param name="mauComponentId">MauId of your target</param>
     /// <param name="requestType">Type of request</param>
     /// <param name="data">Request Data</param>
-    internal static Task<RequestState> SendRequestAsync(string mauComponentId, RequestType requestType, JObject data)
+    internal static Task<RequestStateModel> SendRequestAsync(string mauComponentId, RequestType requestType, JObject data)
     {
         int requestId = Utils.RandomInt(1, 100000);
         return SendResponseAsync(requestId, mauComponentId, requestType, data ?? new JObject());
@@ -364,7 +319,7 @@ public static class MyAngularUi
         SendRequestAsync(mauComponentId, requestType, null);
     }
 
-    public static async Task<RequestState> SendCustomDataAsync(string id, JObject data)
+    public static async Task<RequestStateModel> SendCustomDataAsync(string id, JObject data)
     {
         if (!WebSocket.IsConnected())
             return default;
@@ -387,7 +342,7 @@ public static class MyAngularUi
         JObject jsonRequest = JObject.Parse(message);
 
         // Get request info
-        var response = new ResponseInfo()
+        var response = new ResponseInfoModel()
         {
             RequestId = jsonRequest["requestId"]!.Value<int>(),
             MauId = jsonRequest["mauComponentId"]!.Value<string>(),
@@ -400,7 +355,7 @@ public static class MyAngularUi
         {
             _ = Task.Run(async () =>
             {
-                if (OnCustomData != null)
+                if (OnCustomData is not null)
                     await OnCustomData.Invoke(response.Data["id"]!.Value<string>(), response.Data["data"]!.Value<JObject>()).ConfigureAwait(false);
             });
         }
@@ -471,6 +426,19 @@ public static class MyAngularUi
 
     #region [ Helper ]
 
+    private static void InitContainers(bool instantiateContainers)
+    {
+        // Create instance of all 'MauParentComponent'
+        foreach (Type type in AppAssembly.GetTypes().Where(t => !t.IsAbstract && MauContainerAttribute.HasAttribute(t)))
+        {
+            if (!type.IsSealed)
+                throw new Exception($"MauContainer must to be 'Sealed', '{type.FullName}'.");
+
+            if (!MauContainers.TryAdd(type, instantiateContainers ? Activator.CreateInstance(type) : null))
+                throw new Exception($"Can't register MauContainer '{type.FullName}'.");
+        }
+    }
+
     internal static void RaiseException(Exception ex)
     {
         OnUnhandledException?.Invoke(ex);
@@ -479,6 +447,22 @@ public static class MyAngularUi
     internal static bool IsComponentRegistered(string mauComponentId)
     {
         return _mauComponents.ContainsKey(mauComponentId);
+    }
+
+    internal static void RegisterComponent(MauComponent mauComponent)
+    {
+        if (string.IsNullOrWhiteSpace(mauComponent.MauId))
+            return;
+
+        // Register itself
+        if (IsComponentRegistered(mauComponent.MauId))
+            throw new Exception("MauComponent with same mauId was registered.");
+
+        _mauComponents.TryAdd(mauComponent.MauId, mauComponent);
+
+        // Request value from angular side
+        foreach ((string propName, MauPropertyHolder _) in mauComponent.GetValidToSetHandledProps())
+            mauComponent.RequestPropValue(propName);
     }
 
     internal static bool GetMauComponent(string mauComponentId, out MauComponent component)
@@ -493,54 +477,30 @@ public static class MyAngularUi
         return false;
     }
 
-    internal static void RegisterComponent(MauComponent mauComponent)
-    {
-        if (string.IsNullOrWhiteSpace(mauComponent.MauId))
-            return;
-
-        // Register itself
-        if (MyAngularUi.IsComponentRegistered(mauComponent.MauId))
-            throw new Exception("MauComponent with same mauId was registered.");
-
-        _mauComponents.TryAdd(mauComponent.MauId, mauComponent);
-
-        // Request value from angular side
-        foreach ((string propName, MauPropertyHolder _) in mauComponent.GetValidToSetHandledProps())
-            mauComponent.RequestPropValue(propName);
-    }
-
-    private static void BootStrapMau()
-    {
-        // Create instance of all 'MauParentComponent'
-        foreach (Type item in AppAssembly.GetTypes().Where(t => !t.IsAbstract && MauContainerAttribute.HasAttribute(t)))
-        {
-            if (!item.IsSealed)
-                throw new Exception($"MauContainer must be 'Sealed', '{item.FullName}'.");
-
-            if (!MauContainers.TryAdd(item.FullName, Activator.CreateInstance(item)))
-                throw new Exception($"Can't register MauContainer '{item.FullName}'.");
-        }
-    }
-
     internal static IReadOnlyDictionary<string, MauComponent> GetAllComponents()
     {
-        return new ReadOnlyDictionary<string, MauComponent>(_mauComponents);
+        return _mauComponents;
+    }
+
+    internal static IReadOnlyDictionary<Type, object> GetAllContainers()
+    {
+        return MauContainers;
     }
 
     public static T GetMauContainer<T>() where T : class
     {
+        if (IsDependencyInit)
+            throw new Exception("You must to get your container from your 'Dependency Injection Container'");
+
         Type t = typeof(T);
         if (!MauContainerAttribute.HasAttribute(t))
             throw new Exception($"'{t.FullName}' not a MauContainer.");
 
-        string compName = typeof(T).FullName;
-        if (!MauContainers.ContainsKey(compName!))
+        if (!MauContainers.ContainsKey(t!))
             return null;
 
-        return (T)MauContainers[compName];
+        return (T)MauContainers[t];
     }
-
-    #endregion
 
     #endregion
 }

@@ -20,14 +20,14 @@ public sealed class MauVariable : LocationInterceptionAspect
         VariableName = variableName;
     }
 
-    public static bool HasAttribute(FieldInfo fieldInfo) => Attribute.IsDefined(fieldInfo, typeof(MauVariable));
+    public static bool HasAttribute(FieldInfo fieldInfo) => IsDefined(fieldInfo, typeof(MauVariable));
 
-    public static bool HasAttribute(PropertyInfo propertyInfo) => Attribute.IsDefined(propertyInfo, typeof(MauVariable));
+    public static bool HasAttribute(PropertyInfo propertyInfo) => IsDefined(propertyInfo, typeof(MauVariable));
 
     internal static void SendMauVariable(MauComponent holder, string mauVarName)
     {
         PropertyInfo pInfo = holder.GetType().GetProperty(mauVarName);
-        if (pInfo == null)
+        if (pInfo is null)
             throw new ArgumentException("Variable not found", nameof(mauVarName));
         if (!HasAttribute(pInfo))
             throw new ArgumentException("Variable not 'MauVariable'", nameof(mauVarName));
@@ -43,7 +43,7 @@ public sealed class MauVariable : LocationInterceptionAspect
             { "varValue", MyAngularUi.ParseMauDataToFrontEnd(pInfo.PropertyType, pInfo.GetValue(holder)) }
         };
 
-        MyAngularUi.SendRequestAsync(holder.MauId, MyAngularUi.RequestType.SetVarValue, data);
+        MyAngularUi.SendRequestAsync(holder.MauId, RequestType.SetVarValue, data);
     }
     public static void UpdateVar(MauComponent mauComponent, string mauVarName)
     {

@@ -72,7 +72,7 @@ public abstract class MauComponent
             {"childQuerySelector", childQuerySelector},
         };
 
-        MyAngularUi.SendRequestAsync(MauId, MyAngularUi.RequestType.SetStyle, data);
+        MyAngularUi.SendRequestAsync(MauId, RequestType.SetStyle, data);
     }
 
     public void RemoveStyle(string styleName)
@@ -82,7 +82,7 @@ public abstract class MauComponent
             {"styleName", styleName}
         };
 
-        MyAngularUi.SendRequestAsync(MauId, MyAngularUi.RequestType.RemoveStyle, data);
+        MyAngularUi.SendRequestAsync(MauId, RequestType.RemoveStyle, data);
     }
 
     public void AddClass(string className)
@@ -92,7 +92,7 @@ public abstract class MauComponent
             {"className", className}
         };
 
-        MyAngularUi.SendRequestAsync(MauId, MyAngularUi.RequestType.AddClass, data);
+        MyAngularUi.SendRequestAsync(MauId, RequestType.AddClass, data);
     }
     public void RemoveClass(string className)
     {
@@ -101,7 +101,7 @@ public abstract class MauComponent
             {"className", className}
         };
 
-        MyAngularUi.SendRequestAsync(MauId, MyAngularUi.RequestType.RemoveClass, data);
+        MyAngularUi.SendRequestAsync(MauId, RequestType.RemoveClass, data);
     }
 
     #endregion
@@ -276,7 +276,7 @@ public abstract class MauComponent
             {"propForce", mauProperty.PropAttr.ForceSet} // Needed by `SetPropHandler`
         };
 
-        MyAngularUi.SendRequestAsync(MauId, MyAngularUi.RequestType.GetPropValue, data);
+        MyAngularUi.SendRequestAsync(MauId, RequestType.GetPropValue, data);
     }
     internal void SetPropValue(string propName, JToken propValueJson)
     {

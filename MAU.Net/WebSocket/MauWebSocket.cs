@@ -53,7 +53,7 @@ public class MauWebSocket : IDisposable
         try
         {
             Task sendR = WebSock.Send(data);
-            if (sendR == null)
+            if (sendR is null)
                 return false;
 
             await sendR.ConfigureAwait(false);

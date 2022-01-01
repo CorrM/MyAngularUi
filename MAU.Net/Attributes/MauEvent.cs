@@ -2,6 +2,7 @@
 using System.Reflection;
 using System.Threading.Tasks;
 using MAU.Core;
+using MAU.Models;
 using Newtonsoft.Json.Linq;
 
 namespace MAU.Attributes;
@@ -11,14 +12,14 @@ public sealed class MauEventAttribute : Attribute
 {
     public string EventName { get; }
 
-    public static bool HasAttribute(EventInfo eventInfo) => Attribute.IsDefined(eventInfo, typeof(MauEventAttribute));
+    public static bool HasAttribute(EventInfo eventInfo) => IsDefined(eventInfo, typeof(MauEventAttribute));
 
     public MauEventAttribute(string eventName)
     {
         EventName = eventName;
     }
 
-    internal static Task<MyAngularUi.RequestState> SendMauEventsAsync(MauComponent holder)
+    internal static Task<RequestStateModel> SendMauEventsAsync(MauComponent holder)
     {
         var ret = new JObject
         {
@@ -26,6 +27,6 @@ public sealed class MauEventAttribute : Attribute
         };
 
         // Send response
-        return MyAngularUi.SendRequestAsync(holder.MauId, MyAngularUi.RequestType.SetEvents, ret);
+        return MyAngularUi.SendRequestAsync(holder.MauId, RequestType.SetEvents, ret);
     }
 }

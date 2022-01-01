@@ -11,7 +11,7 @@ public class MauDefaultParser : MauDataParser<object>
     {
         JTokenType? arrayType = array.Children().FirstOrDefault()?.Type;
 
-        if (arrayType == null)
+        if (arrayType is null)
             return array.Values<string>().ToList();
 
         object retVar = arrayType switch
@@ -29,7 +29,7 @@ public class MauDefaultParser : MauDataParser<object>
 
     public override JToken ParseToFrontEnd(Type varType, object varObj)
     {
-        if (varObj == null)
+        if (varObj is null)
             return null;
 
         // ToDo: Try to get data in IEnumerable and pass it to parser
@@ -52,7 +52,7 @@ public class MauDefaultParser : MauDataParser<object>
     }
     public override object ParseFromFrontEnd(JToken varObj)
     {
-        if (varObj == null)
+        if (varObj is null)
             return null;
 
         object retVar = varObj.Type switch

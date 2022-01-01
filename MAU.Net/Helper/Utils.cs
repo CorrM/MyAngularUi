@@ -13,6 +13,6 @@ public static class Utils
     public static bool IsIEnumerable(Type typeToCheck)
     {
         return typeToCheck != typeof(string) &&
-               typeToCheck.GetInterface("IEnumerable`1") != null;
+               typeToCheck.GetInterface("IEnumerable`1") is not null;
     }
 }

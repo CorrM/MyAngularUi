@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using MAU.Core;
+using MAU.Models;
 using Newtonsoft.Json.Linq;
 using PostSharp.Aspects;
 using PostSharp.Extensibility;
@@ -33,7 +34,7 @@ public sealed class MauMethod : OnMethodBoundaryAspect
     public MauMethodType MethodType { get; private set; }
     public MauMethodCallType MethodCallType { get; private set; }
 
-    public static bool HasAttribute(MethodInfo methodInfo) => Attribute.IsDefined(methodInfo, typeof(MauMethod));
+    public static bool HasAttribute(MethodInfo methodInfo) => IsDefined(methodInfo, typeof(MauMethod));
 
     public MauMethod(string methodName, MauMethodType methodType, MauMethodCallType methodCallType)
     {
@@ -85,7 +86,7 @@ public sealed class MauMethod : OnMethodBoundaryAspect
             {"methodArgs", JArray.FromObject(argsToSend)}
         };
 
-        MyAngularUi.RequestState request = MyAngularUi.SendRequestAsync(holder.MauId, MyAngularUi.RequestType.CallMethod, data).GetAwaiter().GetResult();
+        RequestStateModel request = MyAngularUi.SendRequestAsync(holder.MauId, RequestType.CallMethod, data).GetAwaiter().GetResult();
 
         // Wait return
         // If its void function then just wait until execution finish
