@@ -205,11 +205,8 @@ public abstract class MauComponent
             t = t.BaseType;
         }
 
-        if (fi is null)
-            return;
-
         // Get event
-        var eventDelegate = (MulticastDelegate)fi.GetValue(this);
+        var eventDelegate = (MulticastDelegate)fi?.GetValue(this);
 
         // There any subscriber .?
         if (eventDelegate is null)
