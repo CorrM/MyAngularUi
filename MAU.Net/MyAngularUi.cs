@@ -111,11 +111,13 @@ public static class MyAngularUi
     private static ConcurrentDictionary<string, MauComponent> _mauComponents;
     private static Dictionary<Type, dynamic> _varParsers;
 
+    public delegate ValueTask CustomData(string id, JObject data);
+
     internal static Assembly AppAssembly { get; private set; }
     internal static ConcurrentDictionary<int, object> OrdersResponse { get; private set; }
     internal static Dictionary<Type, object> MauContainers { get; private set; }
 
-    public delegate ValueTask CustomData(string id, JObject data);
+    public static event Action OnConnect;
     public static event CustomData OnCustomData;
     public static event Action<Exception> OnUnhandledException;
 
@@ -353,6 +355,7 @@ public static class MyAngularUi
         // ! for request not need [MauComponent], ex: just need 'RequestType' and 'Data'.
         if (response.RequestType == RequestType.CustomData)
         {
+            // !Fire and forget
             _ = Task.Run(async () =>
             {
                 if (OnCustomData is not null)
@@ -414,6 +417,7 @@ public static class MyAngularUi
     internal static void OpenCallback()
     {
         IsConnected = true;
+        OnConnect?.Invoke();
         ReSyncMauComponents();
     }
 
