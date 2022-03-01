@@ -321,7 +321,7 @@ public static class MyAngularUi
         SendRequestAsync(mauComponentId, requestType, null);
     }
 
-    public static async Task<RequestStateModel> SendCustomDataAsync(string id, JObject data)
+    public static async Task<RequestStateModel> SendCustomDataAsync(string id, JToken data)
     {
         if (!WebSocket.IsConnected())
             return default;
