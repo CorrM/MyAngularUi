@@ -86,7 +86,7 @@ public sealed class MauMethod : OnMethodBoundaryAspect
             {"methodArgs", JArray.FromObject(argsToSend)}
         };
 
-        RequestStateModel request = MyAngularUi.SendRequestAsync(holder.MauId, RequestType.CallMethod, data).GetAwaiter().GetResult();
+        RequestState request = MyAngularUi.SendRequestAsync(holder.MauId, RequestType.CallMethod, data).GetAwaiter().GetResult();
 
         // Wait return
         // If its void function then just wait until execution finish

@@ -19,7 +19,7 @@ public sealed class MauEventAttribute : Attribute
         EventName = eventName;
     }
 
-    internal static Task<RequestStateModel> SendMauEventsAsync(MauComponent holder)
+    internal static Task<RequestState> SendMauEventsAsync(MauComponent holder)
     {
         var ret = new JObject
         {

@@ -284,7 +284,7 @@ public static class MyAngularUi
     /// <param name="requestType">Type of request</param>
     /// <param name="data">Request data</param>
     /// <returns>Information about request state</returns>
-    internal static async Task<RequestStateModel> SendResponseAsync(int requestId, string mauComponentId, RequestType requestType, JObject data)
+    internal static async Task<RequestState> SendResponseAsync(int requestId, string mauComponentId, RequestType requestType, JObject data)
     {
         var dSend = new JObject
         {
@@ -297,7 +297,7 @@ public static class MyAngularUi
         string dataToSend = dSend.ToString(Formatting.None);
         bool sendState = await SendAsync(dataToSend).ConfigureAwait(false);
 
-        return new RequestStateModel()
+        return new RequestState()
         {
             RequestId = requestId,
             SuccessSent = sendState
@@ -310,7 +310,7 @@ public static class MyAngularUi
     /// <param name="mauComponentId">MauId of your target</param>
     /// <param name="requestType">Type of request</param>
     /// <param name="data">Request Data</param>
-    internal static Task<RequestStateModel> SendRequestAsync(string mauComponentId, RequestType requestType, JObject data)
+    internal static Task<RequestState> SendRequestAsync(string mauComponentId, RequestType requestType, JObject data)
     {
         int requestId = Utils.RandomInt(1, 100000);
         return SendResponseAsync(requestId, mauComponentId, requestType, data ?? new JObject());
@@ -321,7 +321,7 @@ public static class MyAngularUi
         SendRequestAsync(mauComponentId, requestType, null);
     }
 
-    public static async Task<RequestStateModel> SendCustomDataAsync(string id, JToken data)
+    public static async Task<RequestState> SendCustomDataAsync(string id, JToken data)
     {
         if (!WebSocket.IsConnected())
             return default;
@@ -344,7 +344,7 @@ public static class MyAngularUi
         JObject jsonRequest = JObject.Parse(message);
 
         // Get request info
-        var response = new ResponseInfoModel()
+        var response = new ResponseInfo()
         {
             RequestId = jsonRequest["requestId"]!.Value<int>(),
             MauId = jsonRequest["mauComponentId"]!.Value<string>(),

@@ -5,7 +5,7 @@ namespace MAU.Models;
 /// <summary>
 /// Struct contains response information
 /// </summary>
-internal readonly struct ResponseInfoModel
+internal readonly struct ResponseInfo
 {
     public int RequestId { get; init; }
     public string MauId { get; init; }
