@@ -226,7 +226,7 @@ public abstract class MauComponent
                 }
                 catch (Exception ex)
                 {
-                    MyAngularUi.RaiseException(ex);
+                    await MyAngularUi.RaiseException(ex).ConfigureAwait(false);
                 }
             });
         }

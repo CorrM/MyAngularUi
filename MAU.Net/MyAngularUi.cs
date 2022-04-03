@@ -119,7 +119,7 @@ public static class MyAngularUi
 
     public static event Action OnConnect;
     public static event CustomData OnCustomData;
-    public static event Action<Exception> OnUnhandledException;
+    public static event Func<Exception, ValueTask> OnUnhandledException;
 
     private static MauWebSocket WebSocket { get; set; }
     public static int Port { get; private set; }
@@ -443,9 +443,9 @@ public static class MyAngularUi
         }
     }
 
-    internal static void RaiseException(Exception ex)
+    internal static ValueTask RaiseException(Exception ex)
     {
-        OnUnhandledException?.Invoke(ex);
+        return OnUnhandledException?.Invoke(ex) ?? ValueTask.CompletedTask;
     }
 
     internal static bool IsComponentRegistered(string mauComponentId)
