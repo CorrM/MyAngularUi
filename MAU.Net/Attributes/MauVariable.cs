@@ -37,7 +37,7 @@ public sealed class MauVariable : LocationInterceptionAspect
             return;
 
         // Get Data
-        var data = new JObject
+        var data = new JObject()
         {
             { "varName", mauVarName },
             { "varValue", MyAngularUi.ParseMauDataToFrontEnd(pInfo.PropertyType, pInfo.GetValue(holder)) }

@@ -3,7 +3,7 @@
 /// <summary>
 /// Struct contains request information
 /// </summary>
-public readonly struct RequestStateModel
+public readonly struct RequestState
 {
     /// <summary>
     /// Request Id that's used to communicate with front-end side
