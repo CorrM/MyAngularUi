@@ -20,6 +20,7 @@ public sealed class MauProperty : LocationInterceptionAspect
         NativeProperty = 1,
         ComponentProperty = 2
     }
+
     public enum MauPropertyStatus
     {
         None = 0,
@@ -100,11 +101,11 @@ public sealed class MauProperty : LocationInterceptionAspect
 
         var data = new JObject
         {
-            {"propType", (int)mauPropHolder.PropAttr.PropType},
-            {"propStatus", (int)mauPropHolder.PropAttr.PropStatus},
-            {"propForce", mauPropHolder.PropAttr.ForceSet},
-            {"propName", mauPropName},
-            {"propVal", MyAngularUi.ParseMauDataToFrontEnd(propType, propValue)}
+            { "propType", (int)mauPropHolder.PropAttr.PropType },
+            { "propStatus", (int)mauPropHolder.PropAttr.PropStatus },
+            { "propForce", mauPropHolder.PropAttr.ForceSet },
+            { "propName", mauPropName },
+            { "propVal", MyAngularUi.ParseMauDataToFrontEnd(propType, propValue) }
         };
 
         MyAngularUi.SendRequestAsync(holder.MauId, RequestType.SetPropValue, data);

@@ -21,13 +21,19 @@ public class MauMatVerticalStepper : MauComponent
     #region [ Mau Methods ]
 
     [MauMethod("next", MauMethod.MauMethodType.ComponentMethod, MauMethod.MauMethodCallType.ExecuteInAngular)]
-    public void Next() { }
+    public void Next()
+    {
+    }
 
     [MauMethod("previous", MauMethod.MauMethodType.ComponentMethod, MauMethod.MauMethodCallType.ExecuteInAngular)]
-    public void Previous() { }
+    public void Previous()
+    {
+    }
 
     [MauMethod("reset", MauMethod.MauMethodType.ComponentMethod, MauMethod.MauMethodCallType.ExecuteInAngular)]
-    public void Reset() { }
+    public void Reset()
+    {
+    }
 
     #endregion
 

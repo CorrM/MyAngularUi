@@ -50,12 +50,18 @@ public class MauMatSlideToggle : MauComponent
     #region [ Mau Methods ]
 
     [MauMethod("focus", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-    public void Focus() { }
+    public void Focus()
+    {
+    }
 
     [MauMethod("toggle", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-    public void Toggle() { }
+    public void Toggle()
+    {
+    }
 
     #endregion
 
-    public MauMatSlideToggle(string mauId) : base(mauId) { }
+    public MauMatSlideToggle(string mauId) : base(mauId)
+    {
+    }
 }

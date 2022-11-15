@@ -45,6 +45,7 @@ public sealed class MauVariable : LocationInterceptionAspect
 
         MyAngularUi.SendRequestAsync(holder.MauId, RequestType.SetVarValue, data);
     }
+
     public static void UpdateVar(MauComponent mauComponent, string mauVarName)
     {
         SendMauVariable(mauComponent, mauVarName);

@@ -63,16 +63,24 @@ public class MauAutocomplete : MauComponent
     #region [ Mau Methods ]
 
     [MauMethod("open", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-    public void Open() { }
+    public void Open()
+    {
+    }
 
     [MauMethod("close", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-    public void Close() { }
+    public void Close()
+    {
+    }
 
     [MauMethod("focus", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-    public void Focus() { }
+    public void Focus()
+    {
+    }
 
     [MauMethod("clear", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-    public void Clear() { }
+    public void Clear()
+    {
+    }
 
     #endregion
 

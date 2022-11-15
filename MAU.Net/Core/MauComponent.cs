@@ -67,9 +67,9 @@ public abstract class MauComponent
     {
         var data = new JObject
         {
-            {"styleName", styleName},
-            {"styleValue", styleValue},
-            {"childQuerySelector", childQuerySelector},
+            { "styleName", styleName },
+            { "styleValue", styleValue },
+            { "childQuerySelector", childQuerySelector },
         };
 
         MyAngularUi.SendRequestAsync(MauId, RequestType.SetStyle, data);
@@ -79,7 +79,7 @@ public abstract class MauComponent
     {
         var data = new JObject
         {
-            {"styleName", styleName}
+            { "styleName", styleName }
         };
 
         MyAngularUi.SendRequestAsync(MauId, RequestType.RemoveStyle, data);
@@ -89,16 +89,17 @@ public abstract class MauComponent
     {
         var data = new JObject
         {
-            {"className", className}
+            { "className", className }
         };
 
         MyAngularUi.SendRequestAsync(MauId, RequestType.AddClass, data);
     }
+
     public void RemoveClass(string className)
     {
         var data = new JObject
         {
-            {"className", className}
+            { "className", className }
         };
 
         MyAngularUi.SendRequestAsync(MauId, RequestType.RemoveClass, data);
@@ -112,18 +113,21 @@ public abstract class MauComponent
             ? HandledProps[propName]
             : null;
     }
+
     internal MauMethod GetMauMethodAttribute(string methodName)
     {
         return HandledMethods.ContainsKey(methodName)
             ? HandledMethods[methodName].GetCustomAttribute<MauMethod>()
             : null;
     }
+
     internal Type GetPropType(string propName)
     {
         return HandledProps.ContainsKey(propName)
             ? HandledProps[propName].Holder.PropertyType
             : null;
     }
+
     internal Type GetMethodReturnType(string methodName)
     {
         return HandledMethods.ContainsKey(methodName)
@@ -231,6 +235,7 @@ public abstract class MauComponent
             });
         }
     }
+
     internal object CallMethod(string methodCallerName, List<object> methodArgs)
     {
         if (!HandledMethods.ContainsKey(methodCallerName))
@@ -247,6 +252,7 @@ public abstract class MauComponent
 
         return null;
     }
+
     internal Dictionary<string, MauPropertyHolder> GetValidToSetHandledProps()
     {
         return this.HandledProps
@@ -267,14 +273,15 @@ public abstract class MauComponent
         MauPropertyHolder mauProperty = GetMauPropHolder(propName);
         var data = new JObject
         {
-            {"propName", propName},
-            {"propType", (int)mauProperty.PropAttr.PropType},
-            {"propStatus", (int)mauProperty.PropAttr.PropStatus}, // Needed by `SetPropHandler`
-            {"propForce", mauProperty.PropAttr.ForceSet} // Needed by `SetPropHandler`
+            { "propName", propName },
+            { "propType", (int)mauProperty.PropAttr.PropType },
+            { "propStatus", (int)mauProperty.PropAttr.PropStatus }, // Needed by `SetPropHandler`
+            { "propForce", mauProperty.PropAttr.ForceSet } // Needed by `SetPropHandler`
         };
 
         MyAngularUi.SendRequestAsync(MauId, RequestType.GetPropValue, data);
     }
+
     internal void SetPropValue(string propName, JToken propValueJson)
     {
         if (!HandledProps.ContainsKey(propName))
@@ -307,6 +314,7 @@ public abstract class MauComponent
 
         MyAngularUi.OrdersResponse.TryAdd(callMethodRequestId, methodRet);
     }
+
     internal object GetMethodRetValue(int callMethodRequestId)
     {
         while (!MyAngularUi.OrdersResponse.ContainsKey(callMethodRequestId) && MyAngularUi.IsConnected)

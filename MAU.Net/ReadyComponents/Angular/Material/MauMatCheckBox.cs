@@ -56,12 +56,18 @@ public class MauMatCheckBox : MauComponent
     #region [ Mau Methods ]
 
     [MauMethod("focus", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-    public void Focus() { }
+    public void Focus()
+    {
+    }
 
     [MauMethod("toggle", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-    public void Toggle() { }
+    public void Toggle()
+    {
+    }
 
     #endregion
 
-    public MauMatCheckBox(string mauId) : base(mauId) { }
+    public MauMatCheckBox(string mauId) : base(mauId)
+    {
+    }
 }

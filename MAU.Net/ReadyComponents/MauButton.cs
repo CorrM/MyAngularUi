@@ -17,9 +17,13 @@ public class MauButton : MauComponent
     #region [ Mau Methods ]
 
     [MauMethod("focus", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-    public void Focus() { }
+    public void Focus()
+    {
+    }
 
     #endregion
 
-    public MauButton(string mauId) : base(mauId) { }
+    public MauButton(string mauId) : base(mauId)
+    {
+    }
 }

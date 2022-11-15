@@ -22,6 +22,7 @@ public sealed class MauEnumMemberAttribute : Attribute
         ValueAsStr = value;
         Parser = EnumParser.String;
     }
+
     public MauEnumMemberAttribute(long value)
     {
         ValueAsNum = value;
@@ -30,6 +31,7 @@ public sealed class MauEnumMemberAttribute : Attribute
 
     public static bool HasAttribute(PropertyInfo pi) => IsDefined(pi, typeof(MauEnumMemberAttribute));
     public static bool HasAttribute(FieldInfo fi) => IsDefined(fi, typeof(MauEnumMemberAttribute));
+
     public static bool HasAttribute(Enum enumValue)
     {
         Type enumType = enumValue.GetType();
@@ -43,6 +45,7 @@ public sealed class MauEnumMemberAttribute : Attribute
         string[] names = Enum.GetNames(enumType);
         return names.Contains("NotSet");
     }
+
     public static bool GetValidEnumValue(Type valueType, ref object originalValue)
     {
         if (!valueType.IsEnum)
@@ -76,6 +79,7 @@ public sealed class MauEnumMemberAttribute : Attribute
             _ => false
         };
     }
+
     public object GetValue()
     {
         return Parser switch
@@ -85,6 +89,7 @@ public sealed class MauEnumMemberAttribute : Attribute
             _ => null
         };
     }
+
     public static object GetValue(Enum enumValue)
     {
         Type enumType = enumValue.GetType();

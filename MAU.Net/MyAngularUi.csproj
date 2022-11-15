@@ -1,52 +1,52 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
-		<LangVersion>latest</LangVersion>
-		<RootNamespace>MAU</RootNamespace>
-		<AssemblyName>MyAngularUi</AssemblyName>
-		<PackageId>MyAngularUi</PackageId>
-		<Authors>CorrM</Authors>
-		<Product>MyAngularUi</Product>
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-		<Copyright>CorrM</Copyright>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageProjectUrl>https://github.com/CorrM/MyAngularUi</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/CorrM/MyAngularUi</RepositoryUrl>
-		<RepositoryType>GUI</RepositoryType>
-		<PackageTags>CorrM, MyAngularUi, MyAngularUi.Net</PackageTags>
-		<Version>2.2.2</Version>
-		<FileVersion>2.2.2.0</FileVersion>
-		<AssemblyVersion>2.2.2.0</AssemblyVersion>
-		<PackageReleaseNotes>[-] Some gernal fixes.</PackageReleaseNotes>
-		<PackageIcon>Mau.png</PackageIcon>
-		<Description>Make nice user interface with Angular for your .Net projects.</Description>
-	</PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <RootNamespace>MAU</RootNamespace>
+        <AssemblyName>MyAngularUi</AssemblyName>
+        <PackageId>MyAngularUi</PackageId>
+        <Authors>CorrM</Authors>
+        <Product>MyAngularUi</Product>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Copyright>CorrM</Copyright>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageProjectUrl>https://github.com/CorrM/MyAngularUi</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/CorrM/MyAngularUi</RepositoryUrl>
+        <RepositoryType>GUI</RepositoryType>
+        <PackageTags>CorrM, MyAngularUi, MyAngularUi.Net</PackageTags>
+        <Version>2.2.2</Version>
+        <FileVersion>2.2.2.0</FileVersion>
+        <AssemblyVersion>2.2.2.0</AssemblyVersion>
+        <PackageReleaseNotes>[-] Some gernal fixes.</PackageReleaseNotes>
+        <PackageIcon>Mau.png</PackageIcon>
+        <Description>Make nice user interface with Angular for your .Net projects.</Description>
+    </PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-		<DocumentationFile></DocumentationFile>
-		<DebugType>full</DebugType>
-		<DebugSymbols>true</DebugSymbols>
-		<NoWarn>1701;1702;67</NoWarn>
-	</PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+        <DocumentationFile></DocumentationFile>
+        <DebugType>full</DebugType>
+        <DebugSymbols>true</DebugSymbols>
+        <NoWarn>1701;1702;67</NoWarn>
+    </PropertyGroup>
 
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-		<NoWarn>1701;1702;67</NoWarn>
-	</PropertyGroup>
+    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+        <NoWarn>1701;1702;67</NoWarn>
+    </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Fleck" Version="1.2.0" />
-		<PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-		<PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-		<PackageReference Include="PostSharp" Version="6.10.7" />
-	</ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Fleck" Version="1.2.0"/>
+        <PackageReference Include="Microsoft.CSharp" Version="4.7.0"/>
+        <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="6.0.0"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.1"/>
+        <PackageReference Include="PostSharp" Version="6.10.15"/>
+    </ItemGroup>
 
-	<ItemGroup>
-		<None Include="..\Mau.png">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
-	</ItemGroup>
+    <ItemGroup>
+        <None Include="..\Mau.png">
+            <Pack>True</Pack>
+            <PackagePath></PackagePath>
+        </None>
+    </ItemGroup>
 
 </Project>

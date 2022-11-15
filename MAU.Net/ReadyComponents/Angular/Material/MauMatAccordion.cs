@@ -27,12 +27,18 @@ public class MauMatAccordion : MauComponent
     #region [ Mau Methods ]
 
     [MauMethod("closeAll", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-    public void CloseAll() { }
+    public void CloseAll()
+    {
+    }
 
     [MauMethod("openAll", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-    public void OpenAll() { }
+    public void OpenAll()
+    {
+    }
 
     #endregion
 
-    public MauMatAccordion(string mauId) : base(mauId) { }
+    public MauMatAccordion(string mauId) : base(mauId)
+    {
+    }
 }

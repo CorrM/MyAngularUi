@@ -44,13 +44,19 @@ public class MauMatSelectionList : MauComponent
     #region [ Mau Methods ]
 
     [MauMethod("deselectAll", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-    public void DeselectAll() { }
+    public void DeselectAll()
+    {
+    }
 
     [MauMethod("focus", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-    public void Focus() { }
+    public void Focus()
+    {
+    }
 
     [MauMethod("selectAll", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-    public void SelectAll() { }
+    public void SelectAll()
+    {
+    }
 
     #endregion
 

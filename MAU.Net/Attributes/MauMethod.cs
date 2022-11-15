@@ -24,6 +24,7 @@ public sealed class MauMethod : OnMethodBoundaryAspect
         NativeMethod = 0,
         ComponentMethod = 1
     }
+
     public enum MauMethodCallType
     {
         ExecuteInAngular,
@@ -81,9 +82,9 @@ public sealed class MauMethod : OnMethodBoundaryAspect
         var holder = (MauComponent)args.Instance;
         var data = new JObject
         {
-            {"methodType", (int)MethodType},
-            {"methodName", MethodName},
-            {"methodArgs", JArray.FromObject(argsToSend)}
+            { "methodType", (int)MethodType },
+            { "methodName", MethodName },
+            { "methodArgs", JArray.FromObject(argsToSend) }
         };
 
         RequestState request = MyAngularUi.SendRequestAsync(holder.MauId, RequestType.CallMethod, data).GetAwaiter().GetResult();

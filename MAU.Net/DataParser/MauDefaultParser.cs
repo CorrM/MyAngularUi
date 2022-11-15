@@ -50,6 +50,7 @@ public class MauDefaultParser : MauDataParser<object>
 
         return JToken.FromObject(varObj);
     }
+
     public override object ParseFromFrontEnd(JToken varObj)
     {
         if (varObj is null)

@@ -10,6 +10,7 @@ public static class Utils
     {
         return _randomizer.Next(min, max);
     }
+
     public static bool IsIEnumerable(Type typeToCheck)
     {
         return typeToCheck != typeof(string) &&

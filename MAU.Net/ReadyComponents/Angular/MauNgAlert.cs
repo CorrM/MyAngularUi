@@ -71,9 +71,13 @@ public class MauNgAlert : MauComponent
     #region [ Mau Methods ]
 
     [MauMethod("close", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-    public void Close() { }
+    public void Close()
+    {
+    }
 
     #endregion
 
-    public MauNgAlert(string mauId) : base(mauId) { }
+    public MauNgAlert(string mauId) : base(mauId)
+    {
+    }
 }

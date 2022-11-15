@@ -66,16 +66,24 @@ public class MauMatSelect : MauComponent
     #region [ Mau Methods ]
 
     [MauMethod("close", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-    public void Close() { }
+    public void Close()
+    {
+    }
 
     [MauMethod("focus", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-    public void Focus() { }
+    public void Focus()
+    {
+    }
 
     [MauMethod("open", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-    public void Open() { }
+    public void Open()
+    {
+    }
 
     [MauMethod("toggle", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-    public void Toggle() { }
+    public void Toggle()
+    {
+    }
 
     #endregion
 
@@ -94,6 +102,7 @@ public class MauMatSelect : MauComponent
         SelectedItem = newOption;
         return true;
     }
+
     public bool SelectOption(int newOptionIndex)
     {
         if (newOptionIndex >= Options.Count)

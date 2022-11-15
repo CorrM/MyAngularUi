@@ -9,12 +9,15 @@ public class MauWebSocket : IDisposable
     #region [ Events ]
 
     public delegate void ConnectCallBack();
+
     public event ConnectCallBack OnOpen;
 
     public delegate void CloseCallBack();
+
     public event CloseCallBack OnClose;
 
     public delegate void MessageCallBack(string message);
+
     public event MessageCallBack OnMessage;
 
     #endregion
@@ -45,6 +48,7 @@ public class MauWebSocket : IDisposable
             socket.OnMessage = (message) => OnMessage?.Invoke(message);
         });
     }
+
     public async Task<bool> SendAsync(string data)
     {
         if (WebSock?.IsAvailable != true)

@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using MAU.Attributes;
 using MAU.Core;
@@ -146,6 +147,7 @@ public static class MyAngularUi
             .Select(val => (dynamic)Activator.CreateInstance(val))
             .ToDictionary(key => (Type)key.TargetType, val => val);
     }
+
     internal static JToken ParseMauDataToFrontEnd(Type varType, object varObj)
     {
         dynamic parser = !_varParsers.ContainsKey(varType)
@@ -154,10 +156,12 @@ public static class MyAngularUi
 
         return parser.ParseToFrontEnd(varType, (dynamic)varObj);
     }
+
     internal static JToken ParseMauDataToFrontEnd<T>(T var)
     {
         return ParseMauDataToFrontEnd(typeof(T), var);
     }
+
     internal static object ParseMauDataFromFrontEnd(Type varType, JToken varObj)
     {
         dynamic parser = !_varParsers.ContainsKey(varType)
@@ -166,6 +170,7 @@ public static class MyAngularUi
 
         return parser.ParseFromFrontEnd((dynamic)varObj);
     }
+
     internal static T ParseMauDataFromFrontEnd<T>(JToken var)
     {
         return (T)ParseMauDataFromFrontEnd(typeof(T), var);
@@ -204,19 +209,26 @@ public static class MyAngularUi
     /// Start MyAngularUi
     /// </summary>
     /// <returns>If start correctly return true</returns>
-    public static async Task StartAsync(int webSocketPort = 2911)
+    public static async Task StartAsync(int webSocketPort = 2911, CancellationToken ct = default)
     {
         if (!IsInit)
             return;
 
         Port = webSocketPort;
         WebSocket = new MauWebSocket(Port);
-        WebSocket.OnOpen += () => Task.Run(OpenCallback);
-        WebSocket.OnClose += () => Task.Run(CloseCallback);
-        WebSocket.OnMessage += (message) => Task.Run(() => OnMessage(message));
+        WebSocket.OnOpen += () => Task.Run(OpenCallback, ct);
+        WebSocket.OnClose += () => Task.Run(CloseCallback, ct);
+        WebSocket.OnMessage += (message) => Task.Run(() => OnMessage(message), ct);
         WebSocket.Start();
 
-        await Task.Delay(-1).ConfigureAwait(false);
+        try
+        {
+            await Task.Delay(-1, ct).ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            Stop();
+        }
     }
 
     /// <summary>

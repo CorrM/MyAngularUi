@@ -41,7 +41,9 @@ public class MauMatInput : MauComponent
 
     #endregion
 
-    public MauMatInput(string mauId) : base(mauId) { }
+    public MauMatInput(string mauId) : base(mauId)
+    {
+    }
 
     /// <summary>
     /// Auto called function, called when <see cref="Value"/> changed

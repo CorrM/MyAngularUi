@@ -47,15 +47,23 @@ public class MauMatExpansionPanel : MauComponent
     #region [ Mau Methods ]
 
     [MauMethod("close", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-    public void Close() { }
+    public void Close()
+    {
+    }
 
     [MauMethod("open", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-    public void Open() { }
+    public void Open()
+    {
+    }
 
     [MauMethod("toggle", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-    public void Toggle() { }
+    public void Toggle()
+    {
+    }
 
     #endregion
 
-    public MauMatExpansionPanel(string mauId) : base(mauId) { }
+    public MauMatExpansionPanel(string mauId) : base(mauId)
+    {
+    }
 }

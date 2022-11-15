@@ -56,9 +56,13 @@ public class MauMatTabGroup : MauComponent
     #region [ Mau Methods ]
 
     [MauMethod("realignInkBar", MauMethodType.ComponentMethod, MauMethodCallType.ExecuteInAngular)]
-    public void RealignInkBar() { }
+    public void RealignInkBar()
+    {
+    }
 
     #endregion
 
-    public MauMatTabGroup(string mauId) : base(mauId) { }
+    public MauMatTabGroup(string mauId) : base(mauId)
+    {
+    }
 }
